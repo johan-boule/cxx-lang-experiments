@@ -27,7 +27,7 @@ mkdir_target = mkdir -p $(dir $@)
 ifeq ($(origin CXX),default)
 CXX  := c++
 endif
-compile = $(CXX) -o $@ $(dep_flags) $(CPPFLAGS) $(CXXFLAGS) $<
+compile = $(CXX) -o $@ $(dep_flags) $(CPPFLAGS) $(CXXFLAGS) -c $<
 link = $(CXX) -o $@ $(LDFLAGS) $^ $(LIBS)
 dep_flags = -I$(src_dir)$(include_path) -MT $@ -MF $*.d -MMD -MP
 
@@ -38,7 +38,7 @@ $(bin): $(obj)
 %.o: %.cpp %.d
 	@echo '================ compile $* ================'
 	@$(mkdir_target)
-	$(compile) -c
+	$(compile)
 
 %.d: ;
 .PRECIOUS: %.d

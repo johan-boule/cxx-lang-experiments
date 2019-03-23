@@ -5,4 +5,4 @@ set -eux &&
 cd "$(dirname "$0")"
 
 mkdir -p ++build
-exec make -C ++build/ -f ../Makefile -j$(nproc) -O CXX=$clang/bin/c++ "$@"
+exec make -C ++build/ -f ../Makefile -j$(nproc) -O CXX=${CXX:-$clang/bin/c++} "$@"
