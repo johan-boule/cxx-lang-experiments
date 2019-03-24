@@ -39,7 +39,7 @@ endif
 link = $(LD) -o $@ $(LDFLAGS) $^ $(LIBS)
 compile = $(CXX) -o $@ -std=c++2a -fmodules-ts -fprebuilt-module-path=$(include_path) $(CXXFLAGS)
 preprocess = $(CXX) -o $@ -I$(src_dir)$(include_path) -MT $@ -MF $@.d -MMD -MP $(CPPFLAGS) -E $<
-parse_imports = $$(grep -E '^ *import +[^ ]+ *; *$$' $@ | sed -r -e 's: *import +:$(include_path)/:' -e 's: *; *$$:.pcm:')
+parse_imports = printf '%s\n' "$(1): $$(grep -E '^ *import +[^ ]+ *; *$$' $@ | sed -r -e 's: *import +:$(include_path)/:' -e 's: *; *$$:.pcm:')" >> $@.d
 mkdir_target = mkdir -p $(dir $@)
 
 $(bin): $(obj)
@@ -61,14 +61,14 @@ $(bin): $(obj)
 	@echo '================ preprocess $* ================'
 	@$(mkdir_target)
 	$(preprocess)
-	printf '%s\n' "$*.cpp.o: $(parse_imports)" >> $@.d
+	$(call parse_imports,$*.cpp.o)
 
 %.cppm.ii.d: %.cppm.ii ;
 %.cppm.ii: %.cppm
 	@echo '================ preprocess module interface $* ================'
 	@$(mkdir_target)
 	$(preprocess)
-	printf '%s\n' "$*.pcm: $(parse_imports)" >> $@.d
+	$(call parse_imports,$*.pcm)
 
 .PRECIOUS: %.pcm %.cpp.ii %.cppm.ii
 -include $(dep)
