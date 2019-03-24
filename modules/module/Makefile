@@ -33,21 +33,21 @@ preprocess = $(CPP) -o $@ -I$(src_dir)$(include_path) -MT $@ -MF $@.d -MMD -MP $
 define parse_export_module_keyword
   $(call echo,parse export module keyword $@ >> $@.d)
   $(GNU_GREP) -E '^[ 	]*export[ 	]+module[ 	]+[^[ 	;]+[ 	;]' $@ | \
-  $(GNU_SED) -r -e 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],\1_MODULE = $(include_path)/\1.pcm,' \
+  $(GNU_SED) -r -e 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],MODULE.\1 := $(include_path)/\1.pcm,' \
   >> $@.d
 endef
 
 define parse_module_keyword # $(1) = target
   $(call echo,parse module keyword $@ >> $@.d)
   $(GNU_GREP) -E '^[ 	]*module[ 	]+[^[ 	;]+[ 	;]' $@ | \
-  $(GNU_SED) -r -e 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$(1): $(include_path)/\1.pcm,' \
+  $(GNU_SED) -r -e 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$(1): MODULE = $$(MODULE.\1)\n$(1): $$(MODULE),' \
   >> $@.d
 endef
 
 define parse_import_keyword # $(1) = target
   $(call echo,parse imports keyword $@ >> $@.d)
   $(GNU_GREP) -E '^[ 	]*import[ 	]+[^[ 	;]+[ 	;]' $@ | \
-  $(GNU_SED) -r -e 's,^[ 	]*import[ 	]+([^[ 	;]+)[ 	;],$(1): $(include_path)/\1.pcm,' \
+  $(GNU_SED) -r -e 's,^[ 	]*import[ 	]+([^[ 	;]+)[ 	;],$(1): $$(MODULE.\1),' \
   >> $@.d
 endef
 
@@ -62,10 +62,10 @@ $(bin): $(obj)
 	$(call echo,link $@ from objects $^)
 	$(link)
 
-$(obj): %.cpp.o: %.cpp.ii %.pcm
+$(obj): %.cpp.o: %.cpp.ii
 	$(call echo,compile $< to $@)
 	@$(mkdir_target)
-	$(compile) -fmodule-file=$*.pcm -c $<
+	$(compile) -fmodule-file=$(MODULE) -c $<
 
 $(bmi): %.pcm: %.cppm.ii
 	$(call echo,precompile module interface $< to $@)
