@@ -33,7 +33,7 @@ preprocess = $(CPP) -o $@ -I$(src_dir)$(include_path) -MT $@ -MF $@.d -MMD -MP $
 define parse_export_module_keyword
   $(call echo,parse export module keyword $@ >> $@.d)
   $(GNU_GREP) -E '^[ 	]*export[ 	]+module[ 	]+[^[ 	;]+[ 	;]' $@ | \
-  $(GNU_SED) -r -e 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],MODULE.\1 := $(include_path)/\1.pcm,' \
+  $(GNU_SED) -r -e 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],MODULE.\1 := $*.pcm,' \
   >> $@.d
 endef
 
