@@ -2,7 +2,7 @@ with import <nixpkgs> {};
 derivation {
 	name = "bohan-module";
 	src = ./.;
-	inherit gnumake coreutils findutils gnugrep gnused clang patchelf;
+	inherit gnumake coreutils findutils gnused clang patchelf;
 	binutils = binutils-unwrapped;
 	builder = "${dash}/bin/dash";
 	args = [ "-c" ''

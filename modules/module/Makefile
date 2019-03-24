@@ -22,7 +22,6 @@ endif
 CPP := $(CXX) -E
 LD := $(CXX)
 
-GNU_GREP ?= grep
 GNU_SED ?= sed
 
 mkdir_target = mkdir -p $(dir $@)
@@ -32,23 +31,17 @@ preprocess = $(CPP) -o $@ -I$(src_dir)$(include_path) -MT $@ -MF $@.d -MMD -MP $
 
 define parse_export_module_keyword
   $(call echo,parse export module keyword $@ >> $@.d)
-  $(GNU_GREP) -E '^[ 	]*export[ 	]+module[ 	]+[^[ 	;]+[ 	;]' $@ | \
-  $(GNU_SED) -r -e 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],MODULE.\1 := $*.pcm,' \
-  >> $@.d
+  $(GNU_SED) -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],MODULE.\1 := $*.pcm,p' $@ >> $@.d
 endef
 
-define parse_module_keyword # $(1) = target
+define parse_module_keyword
   $(call echo,parse module keyword $@ >> $@.d)
-  $(GNU_GREP) -E '^[ 	]*module[ 	]+[^[ 	;]+[ 	;]' $@ | \
-  $(GNU_SED) -r -e 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$(1): MODULE := $$(MODULE.\1)\n$(1): $$(MODULE.\1),' \
-  >> $@.d
+  $(GNU_SED) -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$*.cpp.o: private MODULE := $$(MODULE.\1)\n$*.cpp.o: $$(MODULE.\1),p' $@ >> $@.d
 endef
 
 define parse_import_keyword # $(1) = target
   $(call echo,parse imports keyword $@ >> $@.d)
-  $(GNU_GREP) -E '^[ 	]*import[ 	]+[^[ 	;]+[ 	;]' $@ | \
-  $(GNU_SED) -r -e 's,^[ 	]*import[ 	]+([^[ 	;]+)[ 	;],$(1): $$(MODULE.\1),' \
-  >> $@.d
+  $(GNU_SED) -rn 's,^[ 	]*import[ 	]+([^[ 	;]+)[ 	;],$(1): $$(MODULE.\1),p' $@ >> $@.d
 endef
 
 bmi := $(patsubst $(src_dir)%.cppm,%.pcm,$(srcm))
@@ -77,7 +70,7 @@ $(bmi): %.pcm: %.cppm.ii
 	$(call echo,preprocess $< to $@)
 	@$(mkdir_target)
 	$(preprocess)
-	$(call parse_module_keyword,$*.cpp.o)
+	$(parse_module_keyword)
 	$(call parse_import_keyword,$*.cpp.o)
 
 %.cppm.ii.d: %.cppm.ii ;
