@@ -40,7 +40,7 @@ endef
 define parse_module_keyword # $(1) = target
   $(call echo,parse module keyword $@ >> $@.d)
   $(GNU_GREP) -E '^[ 	]*module[ 	]+[^[ 	;]+[ 	;]' $@ | \
-  $(GNU_SED) -r -e 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$(1): MODULE = $$(MODULE.\1)\n$(1): $$(MODULE),' \
+  $(GNU_SED) -r -e 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$(1): MODULE := $$(MODULE.\1)\n$(1): $$(MODULE.\1),' \
   >> $@.d
 endef
 
