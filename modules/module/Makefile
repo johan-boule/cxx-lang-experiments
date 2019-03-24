@@ -25,8 +25,8 @@ vpath %.cppm $(src_dir)
 vpath %.cpp $(src_dir)
 
 bmi := $(patsubst $(src_dir)%.cppm,%.pcm,$(srcm))
-obj := $(patsubst $(src_dir)%.cpp,%.o,$(src))
-dep := $(patsubst $(src_dir)%.cpp,%.ii.d,$(src)) $(patsubst $(src_dir)%.cppm,%.cppm-ii.d,$(srcm))
+obj := $(patsubst $(src_dir)%.cpp,%.cpp.o,$(src))
+dep := $(patsubst $(src_dir)%.cpp,%.cpp.ii.d,$(src)) $(patsubst $(src_dir)%.cppm,%.cppm.ii.d,$(srcm))
 
 ifeq ($(origin LD),default)
 LD  = $(CXX)
@@ -46,29 +46,29 @@ $(bin): $(obj)
 	@echo '================ link $@ ================'
 	$(link)
 
-%.o: %.ii %.pcm
+%.cpp.o: %.cpp.ii %.pcm
 	@echo '================ compile $* ================'
 	@$(mkdir_target)
 	$(compile) -fmodule-file=$*.pcm -c $<
 
-%.pcm: %.cppm-ii
+%.pcm: %.cppm.ii
 	@echo '================ precompile $* ================'
 	@$(mkdir_target)
 	$(compile) --precompile -x c++-module $<
 
-%.ii.d: %.ii ;
-%.ii: %.cpp
+%.cpp.ii.d: %.cpp.ii ;
+%.cpp.ii: %.cpp
 	@echo '================ preprocess $* ================'
 	@$(mkdir_target)
 	$(preprocess)
-	printf '%s\n' "$*.o: $(parse_imports)" >> $@.d
+	printf '%s\n' "$*.cpp.o: $(parse_imports)" >> $@.d
 
-%.cppm-ii.d: %.cppm-ii ;
-%.cppm-ii: %.cppm
+%.cppm.ii.d: %.cppm.ii ;
+%.cppm.ii: %.cppm
 	@echo '================ preprocess module interface $* ================'
 	@$(mkdir_target)
 	$(preprocess)
 	printf '%s\n' "$*.pcm: $(parse_imports)" >> $@.d
 
-.PRECIOUS: %.pcm %.ii %.cppm-ii
+.PRECIOUS: %.pcm %.cpp.ii %.cppm.ii
 -include $(dep)
