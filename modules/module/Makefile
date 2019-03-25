@@ -22,7 +22,9 @@ endif
 CPP := $(CXX) -E
 LD := $(CXX)
 
-GNU_SED ?= sed
+ifndef GNU_SED
+  GNU_SED := $(shell command -v gsed || command -v sed)
+endif
 
 mkdir_target = mkdir -p $(dir $@)
 link = $(LD) -o $@ $(LDFLAGS) $^ $(LDLIBS)
@@ -88,10 +90,10 @@ ifneq '$(MAKECMDGOALS)' 'clean'
 endif
 
 # check whether make is in silent mode
-ifeq '' '$(findstring s, $(firstword $(MAKEFLAGS)))'
+ifeq '' '$(findstring s, $(firstword x$(MAKEFLAGS)))'
   echo = @echo $${MAKE_TERMOUT:+'\033[1;36m'}'$(1)'$${MAKE_TERMOUT:+'\033[0m'}
 else
-  echo = :
+  echo := @:
 endif
 
 clean:
