@@ -41,10 +41,10 @@ $(obj): %.o: %.cpp %.d
   -include $(dep)
 
 # check whether make is in silent mode
-ifeq '' '$(findstring s, $(firstword $(MAKEFLAGS)))'
+ifeq '' '$(findstring s, $(firstword x$(MAKEFLAGS)))'
   echo = @echo $${MAKE_TERMOUT:+'\033[1;36m'}'$(1)'$${MAKE_TERMOUT:+'\033[0m'}
 else
-  echo = :
+  echo := @:
 endif
 
 clean:
