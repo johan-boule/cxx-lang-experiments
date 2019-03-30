@@ -4,18 +4,31 @@ set -eux &&
 
 cd "$(dirname "$0")"
 
-if test -z "${IN_NIX_SHELL:-}"
+if test -n "${IN_NIX_SHELL:-}"
 then
-	echo "$0: warning: this build script is intended to be used from inside a nixpkg environment." >&2
-	clang=$(dirname $(dirname $(command -v ${CXX:-clang++}))) 
-	gnumake=$(dirname $(dirname $(command -v gmake || command -v make)))
-	gnused=$(dirname $(dirname $(command -v gsed || command -v sed)))
-	NIX_BUILD_CORES=$(getconf _NPROCESSORS_ONLN)
+	clang=${CXX:-$clang/bin/c++}
+	gnumake=$gnumake/bin/make
+	gnused=$gnused/bin/sed
+	jobs=$NIX_BUILD_CORES
+else
+	clang=$(command -v ${CXX:-clang++})
+	gnumake=$(command -v gmake || command -v make)
+	gnused=$(command -v gsed || command -v sed)
+	jobs=$(getconf _NPROCESSORS_ONLN)
 fi
 
-mkdir -p ++build
-exec $gnumake/bin/make \
-	-C ++build/ -f ../Makefile -j$NIX_BUILD_CORES -O --no-print-directory \
-	CXX=${CXX:-$clang/bin/clang++} \
-	GNU_SED=$gnused/bin/sed \
+bld_dir=++build
+
+mkdir -p $bld_dir
+
+$gnumake \
+	-C $bld_dir -f ../Makefile -j$jobs -O --no-print-directory \
+	--warn-undefined-variables \
+	CXX=$clang \
+	GNU_SED=$gnused \
 	"$@"
+
+if test -x $bld_dir/main
+then
+	$bld_dir/main
+fi
