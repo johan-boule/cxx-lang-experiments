@@ -1,4 +1,5 @@
+#include <string>
+
 export module hello;
-export {
-	const char* say_hello();
-}
+
+export std::string say_hello();

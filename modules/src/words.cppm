@@ -1,0 +1,8 @@
+#include <string>
+
+export module words;
+
+export namespace words {
+	std::string hello();
+	std::string world();
+}

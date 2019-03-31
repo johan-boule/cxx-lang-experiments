@@ -9,11 +9,12 @@ src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
 bin := main
 src_path := src
-module_path := $(src_path)
-include_path := $(src_path)
+module_path :=
+module_map :=
+include_path :=
 
-srcm := $(shell find $(patsubst %,$(src_dir)%/,$(module_path)) -name '*.cppm')
-src  := $(shell find $(patsubst %,$(src_dir)%/,$(src_path))    -name '*.cpp' )
+srcm := $(shell find $(patsubst %,$(src_dir)%/,$(src_path)) -name '*.cppm')
+src  := $(shell find $(patsubst %,$(src_dir)%/,$(src_path)) -name '*.cpp' )
 
 vpath %.cppm $(src_dir)
 vpath %.cpp  $(src_dir)
@@ -31,7 +32,7 @@ endif
 
 mkdir_target = mkdir -p $(dir $@)
 link       = $(LD)  -o $@ $(LDFLAGS) $^ $(LDLIBS)
-compile    = $(CXX) -o $@ -std=c++2a -fmodules-ts $(patsubst %,-fprebuilt-module-path=%,$(module_path)) $(CXXFLAGS)
+compile    = $(CXX) -o $@ -std=c++2a -fmodules-ts $(patsubst %,-fprebuilt-module-path=%,$(module_path)) $(patsubst %,-fmodule-file=%,$(module_map)) $(CXXFLAGS)
 preprocess = $(CPP) -o $@ $(patsubst %,-I$(src_dir)%,$(include_path)) -MT $@ -MF $@.d -MMD -MP $(CPPFLAGS) $<
 
 define parse_export_module_keyword
@@ -41,12 +42,12 @@ endef
 
 define parse_module_keyword
   $(call echo,parse module keyword $< >> $@)
-  $(GNU_SED) -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$*.o: private belong_to_module := $$(module_map[\1])\n$*.o: $$(module_map[\1]),p' $< >> $@
+  $(GNU_SED) -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$*.o: private module_map := $$(module_map[\1])\n$*.o: $$(module_map[\1]),p' $< >> $@
 endef
 
 define parse_import_keyword # $(1) = dependency target
   $(call echo,parse import keyword $< >> $@)
-  $(GNU_SED) -rn 's,^[ 	]*import[ 	]+([^[ 	;]+)[ 	;],$(1): $$(module_map[\1]),p' $< >> $@
+  $(GNU_SED) -rn 's,^[ 	]*(export[ 	]+|)import[ 	]+([^[ 	;]+)[ 	;],$(1): private module_map += \2=$$(module_map[\2])\n$(1): $$(module_map[\2]),p' $< >> $@
 endef
 
 bmi := $(patsubst $(src_dir)%.cppm,%.pcm,$(srcm))
@@ -63,7 +64,7 @@ $(bin): $(obj)
 %.o: %.cpp.ii
 	$(call echo,compile $< to $@)
 	@$(mkdir_target)
-	$(compile) -fmodule-file=$(belong_to_module) -c $<
+	$(compile) -c -x c++-cpp-output $<
 
 %.pcm: %.cppm.ii
 	$(call echo,precompile module interface $< to $@)

@@ -1,7 +1,10 @@
+#include <string>
+
 module hello;
 
-#include "dummy.hpp"
+import words;
 
-const char* say_hello() {
-	return "hello";
+std::string say_hello() {
+	using namespace words;
+	return hello() + std::string(", ") + world();
 }
