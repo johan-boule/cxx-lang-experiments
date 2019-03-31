@@ -2,8 +2,8 @@
 
 module main;
 
-import hello;
+import phrases;
 
 int main() {
-	std::cout << say_hello() << '\n';
+	std::cout << phrases::hello_world() << '\n';
 }
