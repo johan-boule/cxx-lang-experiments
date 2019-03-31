@@ -13,7 +13,7 @@ module_path := $(src_path)
 include_path := $(src_path)
 
 srcm := $(shell find $(patsubst %,$(src_dir)%/,$(module_path)) -name '*.cppm')
-src  := $(shell find $(patsubst %,$(src_dir)%/,$(module_path)) -name '*.cpp' )
+src  := $(shell find $(patsubst %,$(src_dir)%/,$(src_path))    -name '*.cpp' )
 
 vpath %.cppm $(src_dir)
 vpath %.cpp  $(src_dir)
