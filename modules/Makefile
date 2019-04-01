@@ -174,8 +174,8 @@ test:: $(bin)
 	$(<D)/$(<F)
 
 clean::
-	@$(call echo,cleaning)
-	rm -f $(bin) $(obj) $(bmi) $(ii) $(dep) env env.checksum env.checksum.new
+	@$(call echo,clean)
+	rm -f $(bin) $(obj) $(bmi) $(ii) $(dep) env env.checksum env.checksum.new configure
 
 debug::
 	@$(call echo,debug: dumping variables and files contents)
