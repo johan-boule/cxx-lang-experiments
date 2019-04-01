@@ -21,14 +21,9 @@ bld_dir=++build
 
 mkdir -p $bld_dir
 
-$gnumake \
+exec $gnumake \
 	-C $bld_dir -f ../Makefile -j$jobs -O --no-print-directory \
-	--warn-undefined-variables \
-	CXX=$clang \
-	GNU_SED=$gnused \
+	CXX=$clang GNU_SED=$gnused \
 	"$@"
 
-if test -x $bld_dir/main
-then
-	$bld_dir/main
-fi
+#	--warn-undefined-variables \

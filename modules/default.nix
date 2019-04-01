@@ -2,7 +2,8 @@ with import <nixpkgs> {};
 derivation {
 	name = "cxx-lang-experiments-modules";
 	src = ./.;
-	inherit gnumake coreutils findutils gnused clang patchelf;
+	clang = clang_8;
+	inherit gnumake coreutils findutils gnused patchelf;
 	binutils = binutils-unwrapped;
 	builder = "${dash}/bin/dash";
 	args = [ "-c" ''
