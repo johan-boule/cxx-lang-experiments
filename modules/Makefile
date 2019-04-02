@@ -147,7 +147,7 @@ configure: env.checksum
 env: $(if $(MAKE_RESTARTS),,FORCE)
 	@$(call echo,dump env to $@)
 	@printf '%s\n' \
-        "makefile $$(stat -Lc%Y $(this_makefile))" \
+		"makefile $$(stat -Lc%Y $(this_makefile))" \
 		"CPP $$(stat -Lc%Y $$(command -v $(firstword $(CPP)))) $(CPP) $(CPPFLAGS)" \
 		"CXX $$(stat -Lc%Y $$(command -v $(firstword $(CXX)))) $(CXX) $(CXXFLAGS)" \
 		"LD  $$(stat -Lc%Y $$(command -v $(firstword $(LD)))) $(LD) $(LDFLAGS)" \
