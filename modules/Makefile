@@ -190,7 +190,7 @@ debug::
 	@echo obj $(obj)
 	@echo ii $(ii)
 	@echo dep $(dep)
-	@for dep in $(dep) env.text; \
+	@for dep in $(dep) env; \
 	do \
 		echo; \
 		echo ================ $$dep ================; \
