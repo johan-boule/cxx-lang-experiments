@@ -134,7 +134,7 @@ configure: env.checksum
 	@touch $@
 
 # This rule updates the target when the source content has actually changed, regardless of timestamp.
-%.checksum: %
+%.checksum: $(if $(MAKE_RESTARTS),,%) # only do this on the first make phase
 	@set -e; \
 	$(call echo,checksum $+ to $@); \
 	md5sum $+ > $@.new; \
