@@ -77,55 +77,63 @@ endef
 
 define parse_module_keyword
   @$(call echo,parse module keyword $< >> $@)
-  sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$*$(obj_suffix): $$(module_map[\1])\n$*$(obj_suffix): private module_map := $$(module_map[\1]),p' $< >> $@
+  sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$*$(obj_suffix): $$$$(module_map[\1])\n$*$(obj_suffix): private module_map = $$(module_map[\1]),p' $< >> $@
 endef
 
 define parse_import_keyword # $1 = rule target
   @$(call echo,parse import keyword $< >> $@)
-  sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$(module_map[\2])\n$1: private module_map += \2=$$(module_map[\2]),p' $< >> $@
+  sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$$$(module_map[\2])\n$1: private module_map += \2=$$(module_map[\2]),p' $< >> $@
 endef
 
 bin := $(addsuffix $(bin_suffix),$(bin))
 obj := $(src:$(src_suffix)=$(obj_suffix))
 bmi := $(srcm:$(srcm_suffix)=$(bmi_suffix))
-ii  := $(addsuffix .ii,$(srcm) $(src)) # <- BEWARE list srcm before src!
-dep := $(ii:ii=d)
+dep := $(addsuffix .d,$(src) $(srcm)) # see note below about .SECONDEXPANSION.
+ii := $(dep:d=ii)
 
 default: $(bin)
 
 all: $(bin) test
 
+# Linker rule
 $(bin): $(obj)
 	@$(call echo,link $@ from objects $+)
 	$(link)
 
+# Rule to compile a module implementation file to an object file
 %$(obj_suffix): %$(src_suffix).ii | %$(src_suffix).d
 	@$(call echo,compile $< to $@)
 	$(compile) -c -xc++-cpp-output $<
 
+# Rule to produce a binary module interface file
 %$(bmi_suffix): %$(srcm_suffix).ii | %$(srcm_suffix).d
 	@$(call echo,precompile module interface $< to $@)
 	$(compile) --precompile -xc++-module $<
 
+# Rule to append extra vars and rules after preprocessing a module interface file
 %$(srcm_suffix).d: %$(srcm_suffix).ii
 	$(parse_export_module_keyword)
 	$(call parse_import_keyword,$*$(bmi_suffix))
 
+# Rule to append extra vars and rules after preprocessing a module implementation file
 %$(src_suffix).d: %$(src_suffix).ii
 	$(parse_module_keyword)
 	$(call parse_import_keyword,$*$(obj_suffix))
 
+# Rule to preprocess any c++ file
 %.ii: % configure
 	@$(call echo,preprocess $< to $@)
 	@$(mkdir_target)
 	$(preprocess)
 
+# This rule is done only on first build or when changes in the env are detected.
 configure: min_required_clang_major_version := 6
 configure: env.checksum
 	@$(call echo,configure)
 	$(call check_toolchain_version,$(min_required_clang_major_version))
 	@touch $@
 
+# This rule updates the target when the source content has actually changed, regardless of timestamp.
 %.checksum: %
 	@set -e; \
 	$(call echo,checksum $+ to $@); \
@@ -139,7 +147,12 @@ configure: env.checksum
 		rm $@.new; \
 	fi
 
-env: $(if $(MAKE_RESTARTS),,FORCE)
+# This rule creates a "signature" of the variables and tools that affects compilation.
+# It allows to detect that a rebuild is needed:
+# - after changes in the compiler flags,
+# - after a different compiler has been selected.
+# This rule is always executed.
+env: $(if $(MAKE_RESTARTS),,FORCE) # only do this on the first make phase
 	@$(call echo,dump program timestamps and variables to $@); \
 	printf '%s\n' \
 		"stat makefile CPP CXX LD" \
@@ -156,16 +169,14 @@ env: $(if $(MAKE_RESTARTS),,FORCE)
 
 .PHONY: FORCE
 
-.PRECIOUS: $(ii) $(bmi)
+#.PRECIOUS: $(ii) $(bmi)
 
-ifneq '$(MAKECMDGOALS)' 'clean'
-  include $(dep)
-endif
-
-# check whether make is in silent mode
-ifeq '' '$(findstring s, $(firstword x$(MAKEFLAGS)))'
+# check whether make is in silent mode and the VERBOSE var is not set to a nonempty value
+ifeq '' '$(if $(VERBOSE),,$(findstring s, $(firstword x$(MAKEFLAGS))))'
+  # if so, emit messages (both make phases have their own color)
   echo = echo $${MAKE_TERMOUT:+'\033[$(if $(MAKE_RESTARTS),1;36,1;34)m'}'$1'$${MAKE_TERMOUT:+'\033[0m'}
 else
+  # else, be quiet
   echo := :
 endif
 
@@ -204,3 +215,15 @@ debug::
 		echo ================ $$dep ================; \
 		if test -f $$dep; then cat $$dep; else echo no file; fi; \
 	done
+
+ifneq '$(MAKECMDGOALS)' 'clean' # don't remake the .d files when cleaning
+  # include the dynamically generated makefiles (.d files)
+	# GNU make will first build (if need be) all of these makefiles
+	# before restarting itself to build the actual goal.
+	# This will in turn trigger the building of the .ii files, on which the .d files depend.
+	# So, preprocessing occurs on the first make phase.
+	# Secondary expansion is used to allow variables to be defined out of order.
+	# (Without secondary expansion, we have to include $(srcm).d before $(src).d)
+  .SECONDEXPANSION:
+  -include $(dep)
+endif
