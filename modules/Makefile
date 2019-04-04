@@ -82,7 +82,7 @@ endef
 
 define parse_import_keyword # $1 = rule target
   @$(call echo,parse import keyword $< >> $@)
-  sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$$$(module_map[\2])\n$1: private module_map += \2=$$(module_map[\2]),p' $< >> $@
+  sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$$$(module_map[\2])\n$1: private module_map += $$(module_map[\2]:%=\2=%),p' $< >> $@
 endef
 
 bin := $(addsuffix $(bin_suffix),$(bin))
