@@ -53,6 +53,7 @@ preprocess = $(CPP) -o$@ $(include_path:%=-I$(src_dir)%) -MT$@ -MF$*.d -MMD -MP 
 
 bin_suffix :=
 obj_suffix := .o
+objm_suffix := .m.o
 bmi_suffix := .pcm
 
 # parsers http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1103r3.pdf
@@ -86,7 +87,7 @@ define parse_import_keyword # $1 = rule target
 endef
 
 bin := $(addsuffix $(bin_suffix),$(bin))
-obj := $(src:$(src_suffix)=$(obj_suffix))
+obj := $(src:$(src_suffix)=$(obj_suffix)) $(srcm:$(srcm_suffix)=$(objm_suffix))
 bmi := $(srcm:$(srcm_suffix)=$(bmi_suffix))
 dep := $(addsuffix .d,$(src) $(srcm)) # see note below about .SECONDEXPANSION.
 ii := $(dep:d=ii)
@@ -101,19 +102,24 @@ $(bin): $(obj)
 	$(link)
 
 # Rule to compile a module implementation file to an object file
-%$(obj_suffix): %$(src_suffix).ii | %$(src_suffix).d
+%$(obj_suffix): %$(src_suffix).ii
+	@$(call echo,compile $< to $@)
+	$(compile) -c -xc++-cpp-output $<
+
+# Rule to compile a module interface file to an object file
+%$(objm_suffix): %$(srcm_suffix).ii
 	@$(call echo,compile $< to $@)
 	$(compile) -c -xc++-cpp-output $<
 
 # Rule to produce a binary module interface file
-%$(bmi_suffix): %$(srcm_suffix).ii | %$(srcm_suffix).d
+%$(bmi_suffix): %$(srcm_suffix).ii
 	@$(call echo,precompile module interface $< to $@)
 	$(compile) --precompile -xc++-module $<
 
 # Rule to append extra vars and rules after preprocessing a module interface file
 %$(srcm_suffix).d: %$(srcm_suffix).ii
 	$(parse_export_module_keyword)
-	$(call parse_import_keyword,$*$(bmi_suffix))
+	$(call parse_import_keyword,$*$(objm_suffix) $*$(bmi_suffix))
 
 # Rule to append extra vars and rules after preprocessing a module implementation file
 %$(src_suffix).d: %$(src_suffix).ii
