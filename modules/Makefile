@@ -218,12 +218,12 @@ debug::
 
 ifneq '$(MAKECMDGOALS)' 'clean' # don't remake the .d files when cleaning
   # include the dynamically generated makefiles (.d files)
-	# GNU make will first build (if need be) all of these makefiles
-	# before restarting itself to build the actual goal.
-	# This will in turn trigger the building of the .ii files, on which the .d files depend.
-	# So, preprocessing occurs on the first make phase.
-	# Secondary expansion is used to allow variables to be defined out of order.
-	# (Without secondary expansion, we have to include $(srcm).d before $(src).d)
+  # GNU make will first build (if need be) all of these makefiles
+  # before restarting itself to build the actual goal.
+  # This will in turn trigger the building of the .ii files, on which the .d files depend.
+  # So, preprocessing occurs on the first make phase.
+  # Secondary expansion is used to allow variables to be defined out of order.
+  # (Without secondary expansion, we have to include $(srcm).d before $(src).d)
   .SECONDEXPANSION:
   -include $(dep)
 endif
