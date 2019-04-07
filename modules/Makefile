@@ -27,7 +27,7 @@ vpath %$(srcm_suffix) $(src_dir)
 
 # beware that setting --no-builtin-variables via MAKEFLAGS does not entirely get rid of default variables
 ifneq '' '$(findstring $(origin CXX), undefined default)'
-  CXX := $(shell command -v clang++)
+  CXX := $(shell command -v clang++;) # command is a shell built-in, so we need that ';' to force make to really invoke the shell
 endif
 
 CPP := $(CXX) -E
