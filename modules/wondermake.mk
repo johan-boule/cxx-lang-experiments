@@ -30,31 +30,34 @@ wondermake.obj_suffix := o
 
 wondermake.mkdir_target = mkdir -p $(@D)
 
+define wondermake.inherit # $1 = scope, $2 = var, $3 = default
+$(or
+	$($1.$2),
+	$(if $($1.inherit)
+		,$(call $0,$($1.inherit),$2,$3),$(or $(wondermake.$2),$3)))
+endef
+
 define wondermake.cpp.command # $1 = target
-  @echo $(or \
-    $(wondermake[$1].cpp), \
-	$(wondermake[$(wondermake[$1].inherit)].cpp), \
-	$(wondermake.cpp) \
-	$(CPP) \
-  ) \
-  $(wondermake{$(wondermake[$1].binary_type)}.cpp.flags) \
+  @echo $(call wondermake.inherit,$1,cpp,$(CPP))
+  $(call wondermake.inherit,$1,cpp_flags[$(call wondermake.inherit,$($1.type))])
+  $(wondermake.cpp_flags[$(wondermake[$1].binary_type)]) \
   -o$$@ \
   $(wondermake[$(wondermake[$1].inherit)].cpp.flags) \
   $(wondermake[$1].cpp.flags) \
   $(CPPFLAGS) \
   $(wondermake.lang.pattern:%=$(or \
     $(wondermake.targets[$1].src.lang), \
-	$(wondermake.inherit[$(wondermake.targets[$1].inherit)].src.lang), \
-	$(wondermake.src.lang) \
+    $(wondermake.inherit[$(wondermake.targets[$1].inherit)].src.lang), \
+    $(wondermake.src.lang) \
   )) $$<
 endef
 
 define wondermake.mxx.command # $1 = target
   @echo $(or \
     $(wondermake.target[$1].cxx), \
-	  $(wondermake.inherit[$(wondermake.targets[$1].inherit)].cxx), \
-	  $(wondermake.cxx) \
-	  $(CXX) \
+   $(wondermake.inherit[$(wondermake.targets[$1].inherit)].cxx), \
+    $(wondermake.cxx) \
+    $(CXX) \
   ) \
   -precompile \
   $(wondermake.types[$(wondermake.targets[$1].type)].cxxflags) \
@@ -64,17 +67,17 @@ define wondermake.mxx.command # $1 = target
   $(CXXFLAGS) \
   -x$(or \
     $(wondermake.target[$1].lang), \
-	  $(wondermake.inherit[$(wondermake.targets[$1].inherit)].lang), \
-	  $(wondermake.lang) \
+    $(wondermake.inherit[$(wondermake.targets[$1].inherit)].lang), \
+    $(wondermake.lang) \
   )-module $$<
 endef
 
 define wondermake.cxx.command # $1 = scope
   @echo $(or \
     $(wondermake.target[$1].cxx), \
-	  $(wondermake.inherit[$(wondermake.targets[$1].inherit)].cxx), \
-	  $(wondermake.cxx) \
-	  $(CXX) \
+    $(wondermake.inherit[$(wondermake.targets[$1].inherit)].cxx), \
+    $(wondermake.cxx) \ 
+    $(CXX) \
   ) \
   -c -fmodules-ts \
   $(wondermake.types[$(wondermake.targets[$1].type)].cxxflags) \
@@ -84,17 +87,17 @@ define wondermake.cxx.command # $1 = scope
   $(CXXFLAGS) \
   -x$(or \
       $($1.lang), \
-	  $(wondermake[$($1.inherit)].lang), \
-	  $(wondermake.lang) \
+      $(wondermake[$($1.inherit)].lang), \
+      $(wondermake.lang) \
   )-cpp-output $$<
 endef
 
 define wondermake.ld_command # $1 = scope
   @echo $(or \
     $($1.ld), \
-	  $(wondermake[$($1.inherit)].ld), \
-	  $(wondermake.ld) \
-	  $(LD) \
+    $(wondermake[$($1.inherit)].ld), \
+    $(wondermake.ld) \
+    $(LD) \
   ) \
   $(wondermake.ld_flags[$($1.type)]) \
   -o$$@ \
