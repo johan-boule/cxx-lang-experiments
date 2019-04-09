@@ -9,6 +9,6 @@ bld_dir=++build
 mkdir -p $bld_dir
 
 exec make \
-	-C $bld_dir -f ../Makefile \
-	-j$(getconf _NPROCESSORS_ONLN) -O --no-print-directory \
+	-C $bld_dir -f ../GNUmakefile \
+	-j$(($(getconf _NPROCESSORS_ONLN) * 2)) -O --no-print-directory \
 	"$@"
