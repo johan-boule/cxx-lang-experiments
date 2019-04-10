@@ -38,18 +38,12 @@ $(or
 endef
 
 define wondermake.cpp.command # $1 = target
-  @echo $(call wondermake.inherit,$1,cpp,$(CPP))
-  $(call wondermake.inherit,$1,cpp_flags[$(call wondermake.inherit,$($1.type))])
-  $(wondermake.cpp_flags[$(wondermake[$1].binary_type)]) \
+  @echo $(call wondermake.inherit,$1,cpp,$(CPP)) \
+  $(call wondermake.inherit,$1,cpp_flags[$(call wondermake.inherit,$($1.type))]) \
   -o$$@ \
-  $(wondermake[$(wondermake[$1].inherit)].cpp.flags) \
-  $(wondermake[$1].cpp.flags) \
-  $(CPPFLAGS) \
-  $(wondermake.lang.pattern:%=$(or \
-    $(wondermake.targets[$1].src.lang), \
-    $(wondermake.inherit[$(wondermake.targets[$1].inherit)].src.lang), \
-    $(wondermake.src.lang) \
-  )) $$<
+  $(call wondermake.inherit,$1,cpp_flags,$(CPPFLAGS)) \
+  $(call wondermake.inherit,$1,lang_flag[$(call wondermake.inherit,$($1.lang))][cpp]) \
+  $$<
 endef
 
 define wondermake.mxx.command # $1 = target
