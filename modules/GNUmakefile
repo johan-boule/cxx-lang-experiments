@@ -1,6 +1,7 @@
 #! /usr/bin/make -f
 
 wondermake += hello
+hello.name := hello-world
 hello.type := exe
 hello.src := src/main.cpp src/main.cppm
 hello.inherit := module_demo

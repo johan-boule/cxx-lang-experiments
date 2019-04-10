@@ -39,7 +39,7 @@ wondermake.ld_flags[shared_lib]  := -shared
 wondermake.bmi_suffix := pcm
 wondermake.obj_suffix := o
 
-wondermake.binary_file_pattern[exe]        := %
+wondermake.binary_file_pattern[exe]        := %.exe
 wondermake.binary_file_pattern[shared_lib] := lib%.so
 wondermake.binary_file_pattern[import_lib] :=
 wondermake.binary_file_pattern(static_lib) := lib%.a
@@ -99,40 +99,60 @@ define wondermake.ld_command # $1 = scope
   $(call wondermake.inherit_append,$1,ld_libs,$(LDLIBS):%=$(call wondermake.inherit_unique,$1,ld_libs_pattern))
 endef
 
-define wondermake.template.with_temporary_vars
+define wondermake.template.tmp.begin
+	$(eval wondermake.tmp.name := $(or $($(scope).name),$(scope))) \
+	$(eval
+		wondermake.tmp.target_file := $(wondermake.tmp.name:%=$(call wondermake.inherit_unique,$(scope),binary_file_pattern[$(call wondermake.inherit_unique,$(scope),type)]))
+		wondermake.tmp.cxx_files := $(shell find $($(scope).src) -name '' $(patsubst %,-o -name '*.%',$(call wondermake.inherit_unique,$(scope),cxx_suffix[$(call wondermake.inherit_unique,$(scope),lang)])))
+		wondermake.tmp.mxx_files := $(shell find $($(scope).src) -name '' $(patsubst %,-o -name '*.%',$(call wondermake.inherit_unique,$(scope),mxx_suffix[$(call wondermake.inherit_unique,$(scope),lang)])))
+		wondermake.tmp.bmi_suffix := $(call wondermake.inherit_unique,$(scope),bmi_suffix)
+		wondermake.tmp.obj_suffix := $(call wondermake.inherit_unique,$(scope),obj_suffix)
+	)
+endef
 
-############# $(scope) #############
-.PHONY: $(scope)
-all: $(scope)
-ifneq '$(scope)' '$(wondermake.tmp.name)'
-  .PHONY: $(wondermake.tmp.name)
-  $(scope): $(wondermake.tmp.name)
-endif
-$(wondermake.tmp.name): $(wondermake.tmp.target_file)
-$(wondermake.tmp.target_file): $(addsuffix .$(wondermake.tmp.obj_suffix),$(wondermake.tmp.cxx_files) $(wondermake.tmp.mxx_files))
-	$$(call wondermake.ld_command,$(scope))
-
-$(foreach cxx_file, $(wondermake.tmp.cxx_files),
-$(wondermake.tmp.cxx_file).$(wondermake.tmp.obj_suffix): $(wondermake.tmp.cxx_file)
-	$$(call wondermake.cxx_command,$(scope)))
-
-$(foreach mxx_file, $(wondermake.tmp.mxx_files),
-$(wondermake.tmp.mxx_file).$(wondermake.tmp.obj_suffix): $(wondermake.tmp.mxx_file)
-	$$(call wondermake.cxx_command,$(scope)))
-$(basename $(wondermake.tmp.mxx_file)).$(call wondermake.inherit_unique,$(scope),bmi_suffix)): $(wondermake.tmp.mxx_file)
-	$$(call wondermake.mxx_command,$(scope)))
+define wondermake.template.tmp.end
+$(eval
+	undefine wondermake.tmp.name
+	undefine wondermake.tmp.target_file
+	undefine wondermake.tmp.cxx_files
+	undefine wondermake.tmp.mxx_files
+	undefine wondermake.tmp.bmi_suffix
+	undefine wondermake.tmp.obj_suffix
+)
 endef
 
 define wondermake.template
-$(eval wondermake.tmp.name := $(or $($(scope).name),$(scope)))
-$(eval wondermake.tmp.target_file := $(wondermake.tmp.name:%=$(call wondermake.inherit_unique,$(scope),binary_file_pattern[$(call wondermake.inherit_unique,$(scope),type)]))) \
-$(eval wondermake.tmp.cxx_files := $(call wondermake.inherit_unique,$(scope),cxx_suffix)) \
-$(info cxx_files $(wondermake.tmp.cxx_files))
+############# $(scope) #############
+all: $(scope)
+ifneq '$(scope)' '$(wondermake.tmp.name)'
+  .PHONY: $(scope)
+  $(scope): $(wondermake.tmp.name)
+endif
+ifneq '$(wondermake.tmp.name)' '$(wondermake.tmp.target_file)'
+  .PHONY: $(wondermake.tmp.name)
+  $(wondermake.tmp.name): $(wondermake.tmp.target_file)
+endif
+
+$(wondermake.tmp.target_file): $(addsuffix .$(wondermake.tmp.obj_suffix),$(wondermake.tmp.cxx_files) $(wondermake.tmp.mxx_files))
+	$$(call wondermake.ld_command,$(scope))
+\
+$(foreach mxx_file, $(wondermake.tmp.mxx_files),
+$(basename $(mxx_file)).$(wondermake.tmp.bmi_suffix): $(mxx_file)
+	$$(call wondermake.mxx_command,$(scope))
+$(mxx_file).$(wondermake.tmp.obj_suffix): $(mxx_file)
+	$$(call wondermake.cxx_command,$(scope))
+) \
+$(foreach cxx_file, $(wondermake.tmp.cxx_files),
+$(cxx_file).$(wondermake.tmp.obj_suffix): $(cxx_file)
+	$$(call wondermake.cxx_command,$(scope))
+)
 endef
 
 $(foreach scope, $(wondermake), \
+	$(wondermake.template.tmp.begin) \
 	$(info $(wondermake.template)) \
 	$(eval $(wondermake.template)) \
+	$(wondermake.template.tmp.end) \
 )
 
 $(info )
