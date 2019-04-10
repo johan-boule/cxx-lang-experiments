@@ -1,3 +1,13 @@
+$(eval wondermake.tmp.cxx_files := $(shell find $($(scope).src) \( -name '' $($(call wondermake.inherit_unique,cxx_suffix):%=-o -name '*.%') \))) \
+$(eval wondermake.tmp.mxx_files := $(shell find $($(scope).src) \( -name '' $($(call wondermake.inherit_unique,mxx_suffix):%=-o -name '*.%') \))) \
+$(eval wondermake.tmp.obj_suffix := $(call wondermake.inherit_unique,$(scope),obj_suffix)) \
+$(wondermake.template.with_temporary_vars) \
+$(eval undefine wondermake.tmp.name) \
+$(eval undefine wondermake.tmp.target_file) \
+$(eval undefine wondermake.tmp.cxx_files) \
+$(eval undefine wondermake.tmp.mxx_files) \
+$(eval undefine wondermake.tmp.obj_suffix)
+
 #! /usr/bin/make -f
 
 MAKEFLAGS += --no-builtin-rules --no-builtin-variables
