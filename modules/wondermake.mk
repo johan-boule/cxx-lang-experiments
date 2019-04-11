@@ -37,7 +37,7 @@ ifneq '' '$(findstring $(origin LD), undefined default)'
   wondermake.ld := $(or $(CXX),$(wondermake.cxx))
 endif
 
-wondermake.cpp_flags := -o$$@ -E -MMD -MF$$(basename $$@).d -MT$$@ -MP # Note: possibly a bug in GNU Make: $$* expands to nothing, hence the $$(basename $$@).
+wondermake.cpp_flags := -o$$@ -E -MMD -MF$$*.d -MT$$@ -MP
 wondermake.cxx_flags := -o$$@ -c
 wondermake.mxx_flags := -o$$@ -precompile
 wondermake.ld_flags  := -o$$@
@@ -66,14 +66,16 @@ wondermake.obj_suffix := o
 
 wondermake.binary_file_pattern[exe]        := %
 wondermake.binary_file_pattern[shared_lib] := lib%.so
-wondermake.binary_file_pattern[import_lib] :=
-wondermake.binary_file_pattern(static_lib) := lib%.a
+wondermake.binary_file_pattern[dlopen_lib] := %.so
+wondermake.binary_file_pattern[static_lib] := lib%.a
 
-wondermake.mkdir_target = @echo mkdir -p $$(@D)
+define wondermake.mkdir_target
+  mkdir -p $$(@D)
+endef
 
 # Command to preprocess a c++ file
 define wondermake.template.recipee.cpp_command # $1 = scope
-  @echo $(or $(CPP),$(call wondermake.inherit_unique,$1,cpp)) \
+  $(or $(CPP),$(call wondermake.inherit_unique,$1,cpp)) \
   $(call wondermake.inherit_unique,$1,cpp_flags[$(call wondermake.inherit_unique,$1,lang)]) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_define_pattern),$(call wondermake.inherit_append,$1,define)) \
@@ -87,10 +89,9 @@ endef
 
 # Command to produce a binary module interface file
 define wondermake.template.recipee.mxx_command # $1 = scope
-  @echo $(or $(CXX),$(call wondermake.inherit_unique,$1,cxx)) \
+  $(or $(CXX),$(call wondermake.inherit_unique,$1,cxx)) \
   $(call wondermake.inherit_unique,$1,mxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
-  $(module_path:%=-fprebuilt-module-path=%) $(module_map:%=-fmodule-file=%) \
   $(call wondermake.inherit_append,$1,cxx_flags) \
   $(CXXFLAGS) \
   $$<
@@ -98,18 +99,17 @@ endef
 
 # Command to compile a module implementation or interface file to an object file
 define wondermake.template.recipee.cxx_command # $1 = scope
-  @echo $(or $(CXX),$(call wondermake.inherit_unique,$1,cxx)) \
+  $(or $(CXX),$(call wondermake.inherit_unique,$1,cxx)) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(call wondermake.inherit_append,$1,cxx_flags) \
-  $(module_path:%=-fprebuilt-module-path=%) $(module_map:%=-fmodule-file=%) \
   $(CXXFLAGS) \
   $$<
 endef
 
 # Command to link object files and produce an executable or shared library file
 define wondermake.template.recipee.ld_command # $1 = scope
-  @echo $(or $(LD),$(call wondermake.inherit_unique,$1,ld)) \
+  $(or $(LD),$(call wondermake.inherit_unique,$1,ld)) \
   $(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(call wondermake.inherit_append,$1,ld_flags) \
   $(LDFLAGS) \
@@ -134,15 +134,15 @@ endef
 #     import <header>
 
 define wondermake.template.recipee.parse_export_module_keyword # $1 = bmi_suffix
-  @echo sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.module_map[\1] := $$*.$1,p' $$< >> $$@
+  sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.module_map[\1] := $$*.$1,p' $$< >> $$@
 endef
 
 define wondermake.template.recipee.parse_module_keyword # $1 = obj_suffix
-  @echo sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$$*.$1: $$$$$$$$(module_map[\1])\n$$*.$1: private module_map = $$$$(module_map[\1]),p' $$< >> $$@
+  sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$$*.$1: $$$$$$$$(module_map[\1])\n$$*.$1: private module_map = $$$$(module_map[\1]),p' $$< >> $$@
 endef
 
 define wondermake.template.recipee.parse_import_keyword # $1 = obj_suffix
-  @echo sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$$*.$1: $$$$$$$$(module_map[\2])\n$$*.$1: private module_map += $$$$(module_map[\2]:%=\2=%),p' $$< >> $$@
+  sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$$*.$1: $$$$$$$$(module_map[\2])\n$$*.$1: private module_map += $$$$(module_map[\2]:%=\2=%),p' $$< >> $$@
 endef
 
 define wondermake.template
@@ -175,7 +175,9 @@ $(eval
 endef
 
 define wondermake.template.rules
+
 ############# $(scope) #############
+
 all: $(scope)
 ifneq '$(scope)' '$(wondermake.tmp.name)'
   .PHONY: $(scope)
@@ -189,59 +191,42 @@ endif
 # Rule to link object files and produce an executable or shared library file
 $(wondermake.tmp.target_file): $(patsubst %,%.$(wondermake.tmp.obj_suffix),$(wondermake.tmp.cxx_files) $(wondermake.tmp.mxx_files))
 	$(call wondermake.template.recipee.ld_command,$(scope))
-\
-$(foreach file, $(wondermake.tmp.cxx_files) $(wondermake.tmp.mxx_files),
-# Rule to preprocess a c++ file
-$(file).ii: $(file)
+
+# Rule to create an output directory
+$(sort $(dir $(wondermake.tmp.cxx_files) $(wondermake.tmp.mxx_files))):
 	$(wondermake.mkdir_target)
+
+# Rule to preprocess a c++ file
+$(patsubst %,%.ii,$(wondermake.tmp.cxx_files) $(wondermake.tmp.mxx_files)): %.ii: % | $(sort $(dir $(wondermake.tmp.cxx_files) $(wondermake.tmp.mxx_files)))
 	$(call wondermake.template.recipee.cpp_command,$(scope))
+
 # Rule to compile a module implementation or interface file to an object file
-$(file).$(wondermake.tmp.obj_suffix): $(file).ii
+$(patsubst %,%.$(wondermake.tmp.obj_suffix),$(wondermake.tmp.cxx_files) $(wondermake.tmp.mxx_files)): %.$(wondermake.tmp.obj_suffix): %.ii
 	$(call wondermake.template.recipee.cxx_command,$(scope))
-) \
-$(foreach mxx_file, $(wondermake.tmp.mxx_files),
+
 # Rule to produce a binary module interface file
-$(basename $(mxx_file)).$(wondermake.tmp.bmi_suffix): $(mxx_file).ii
+$(patsubst %,%.$(wondermake.tmp.bmi_suffix),$(basename $(wondermake.tmp.mxx_files))): %.$(wondermake.tmp.bmi_suffix): %.ii
 	$(call wondermake.template.recipee.mxx_command,$(scope))
+
 # Rule to append extra vars and rules after preprocessing a module interface file
-$(mxx_file).d: $(mxx_file).ii
+$(patsubst %,%.d,$(wondermake.tmp.mxx_files)): %.d: %.ii
 	$(call wondermake.template.recipee.parse_export_module_keyword,$(wondermake.tmp.bmi_suffix))
 	$(call wondermake.template.recipee.parse_import_keyword,$(wondermake.tmp.obj_suffix))
-) \
-$(foreach cxx_file, $(wondermake.tmp.cxx_files),
+
 # Rule to append extra vars and rules after preprocessing a module implementation file
-$(cxx_file).d: $(cxx_file).ii
+$(patsubst %,%.d,$(wondermake.tmp.cxx_files)): %.d: %.ii
 	$(call wondermake.template.recipee.parse_module_keyword,$(wondermake.tmp.obj_suffix))
 	$(call wondermake.template.recipee.parse_import_keyword,$(wondermake.tmp.obj_suffix))
-)
 endef
 
-define wondermake.inherit_unique # $1 = scope, $2 = var, $3 = default
-$(or
-	$($1.$2),
-	$(if $($1.inherit)
-		,$(call $0,$($1.inherit),$2,$3),$(or $(wondermake.$2),$3)))
-endef
+# $1 = scope
+wondermake.inherit_root = $(if $($1.inherit),$(call $0,$($1.inherit)),$1)
+# $1 = scope, $2 = var
+wondermake.inherit_unique = $(or $($1.$2),$(if $($1.inherit),$(call $0,$($1.inherit),$2)))
+wondermake.inherit_append = $($1.$2) $(if $($1.inherit),$(call $0,$($1.inherit),$2))
+wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($1.$2)
 
-define wondermake.inherit_append # $1 = scope, $2 = var, $3 = default
-$($1.$2) \
-$(if $($1.inherit)
-	,$(call $0,$($1.inherit),$2,$3),$(wondermake.$2) $3)
-endef
-
-define wondermake.inherit_prepend # $1 = scope, $2 = var, $3 = default
-$3 $(wondermake.$2) \
-$(if $($1.inherit)
-	,$(call $0_impl_detail,$($1.inherit),$2)) \
-$($1.$2)
-endef
-
-define wondermake.inherit_prepend_impl_detail # $1 = scope, $2 = var, $3 = default
-$(if $($1.inherit)
-	,$(call $0,$($1.inherit),$2)) \
-$($1.$2)
-endef
-
+$(foreach scope, $(wondermake), $(if $(findstring wondermake,$(call wondermake.inherit_root,$(scope))),,$(eval $(call wondermake.inherit_root,$(scope)).inherit := wondermake)))
 $(foreach scope, $(wondermake), $(wondermake.template))
 
 $(info )
