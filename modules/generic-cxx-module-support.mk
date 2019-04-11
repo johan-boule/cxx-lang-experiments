@@ -86,7 +86,7 @@ define parse_import_keyword # $1 = rule target
   sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$$$(module_map[\2])\n$1: private module_map += $$(module_map[\2]:%=\2=%),p' $< >> $@
 endef
 
-bin := $(addsuffix $(bin_suffix),$(bin))
+bin := $(bin)$(bin_suffix)
 obj := $(src:$(src_suffix)=$(obj_suffix)) $(srcm:$(srcm_suffix)=$(objm_suffix))
 bmi := $(srcm:$(srcm_suffix)=$(bmi_suffix))
 dep := $(addsuffix .d,$(src) $(srcm)) # see note below about .SECONDEXPANSION.
@@ -96,7 +96,7 @@ default: $(bin)
 
 all: $(bin) test
 
-# Linker rule
+# Rule to link object files and produce an executable or shared library file
 $(bin): $(obj)
 	@$(call echo,link $@ from objects $+)
 	$(link)
@@ -119,7 +119,7 @@ $(bin): $(obj)
 # Rule to append extra vars and rules after preprocessing a module interface file
 %$(srcm_suffix).d: %$(srcm_suffix).ii
 	$(parse_export_module_keyword)
-	$(call parse_import_keyword,$*$(objm_suffix) $*$(bmi_suffix))
+	$(call parse_import_keyword,$*$(objm_suffix))
 
 # Rule to append extra vars and rules after preprocessing a module implementation file
 %$(src_suffix).d: %$(src_suffix).ii
