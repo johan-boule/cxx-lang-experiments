@@ -146,9 +146,9 @@ define wondermake.template.recipee.parse_import_keyword # $1 = obj_suffix
 endef
 
 define wondermake.template
-$(eval wondermake.tmp.name := $(or $($(scope).name),$(scope))) \
 $(eval
-	wondermake.tmp.target_file := $(wondermake.tmp.name:%=$(call wondermake.inherit_unique,$(scope),binary_file_pattern[$(call wondermake.inherit_unique,$(scope),type)]))
+	wondermake.tmp.name := $(or $($(scope).name),$(scope))
+	wondermake.tmp.target_file := $$(wondermake.tmp.name:%=$(call wondermake.inherit_unique,$(scope),binary_file_pattern[$(call wondermake.inherit_unique,$(scope),type)]))
 	wondermake.tmp.cxx_files := $(shell find $($(scope).src) -name '' $(patsubst %,-o -name '*.%', \
 		$(or \
 			$(call wondermake.inherit_unique,$(scope),cxx_suffix) \
@@ -226,7 +226,7 @@ wondermake.inherit_unique = $(or $($1.$2),$(if $($1.inherit),$(call $0,$($1.inhe
 wondermake.inherit_append = $($1.$2) $(if $($1.inherit),$(call $0,$($1.inherit),$2))
 wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($1.$2)
 
-$(foreach scope, $(wondermake), $(if $(findstring wondermake,$(call wondermake.inherit_root,$(scope))),,$(eval $(call wondermake.inherit_root,$(scope)).inherit := wondermake)))
+$(foreach scope, $(wondermake), $(if $(findstring [wondermake],$(patsubst %,[%],$(call wondermake.inherit_root,$(scope)))),,$(eval $(call wondermake.inherit_root,$(scope)).inherit := wondermake)))
 $(foreach scope, $(wondermake), $(wondermake.template))
 
 $(info )
