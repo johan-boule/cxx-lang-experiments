@@ -119,7 +119,7 @@ $(bin): $(obj)
 # Rule to append extra vars and rules after preprocessing a module interface file
 %$(srcm_suffix).d: %$(srcm_suffix).ii
 	$(parse_export_module_keyword)
-	$(call parse_import_keyword,$*$(objm_suffix))
+	$(call parse_import_keyword,$*$(objm_suffix) $*$(bmi_suffix))
 
 # Rule to append extra vars and rules after preprocessing a module implementation file
 %$(src_suffix).d: %$(src_suffix).ii
