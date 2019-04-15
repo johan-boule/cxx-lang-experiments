@@ -61,6 +61,11 @@ wondermake.configure:: wondermake.env.checksum
 define wondermake.configure.check_toolchain_version # $1 = min_required_clang_major_version
   @set -e; \
   $(call wondermake.echo,check toolchain version); \
+  if ! command -v $(wondermake.cpp); \
+  then \
+    printf '%s\n' 'requires clang version >= $1.'; \
+    false; \
+  fi; \
   actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cpp) -E -xc++ - | tail -n1); \
   if ! test $$actual_clang_major_version -ge $1; \
   then \
