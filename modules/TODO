@@ -1,0 +1,6 @@
+*	Builtin rules: When we build in the source dir and we keep the ,
+	make drops some circular dependencies, and proceed and fail to build object files with plain cc.
+	make: Circular src/phrases/phrases.cppm.o <- src/phrases/phrases.cppm.ii dependency dropped.
+	cc   src/phrases/phrases.cppm.o   -o src/phrases/phrases.cppm
+
+*	Fail fast: When clang is not found, make will still try to build.
