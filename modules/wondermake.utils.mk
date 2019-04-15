@@ -9,7 +9,7 @@
 # $1 = the word to find
 # $2 = the list in which to search the word for
 # returns the word if found, or else the empty string
-wondermake.find_word = $(if $(findstring <$1>,$(patsubst %,<%>,$2)),$1)
+wondermake.find_word = $(if $(findstring <$1>,$(2:%=<%>)),$1)
 
 # This function checks whether the user has overriden a variable.
 # $1 = the variable for which you want to test the origin
