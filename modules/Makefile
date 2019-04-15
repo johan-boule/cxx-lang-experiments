@@ -1,8 +1,6 @@
 %.sig: %.val
-	md5sum $< > $@.new
-	if ! cmp $@.new $@; then mv $@.new $@; else rm $@.new; fi
-
-.PHONY: force
+        md5sum $< > $@.new
+        if ! cmp $@.new $@; then mv $@.new $@; else rm $@.new; fi
 
 scope.files = $(sort foo.o bar.o)
 scope.files.old = $(file <scope.files)
@@ -12,14 +10,15 @@ scope.files: force
 	$(if $(scope.files.rm),rm $(scope.files.rm))
 	$(if $(scope.files.add) $(scope.files.rm),$(file >$@,$(scope.files)))
 
-scope.cc = cc -flags
+.PHONY: force
+scope.cc = touch
 scope.cc.val: force
-	echo $(scope.co) > $@
+	$(file >$0,$(scope.cc))
 
 foo.o bar.o: %.o : %.c scope.cc.sig
 	$(scope.co) -o $@ $<
 
-scope.ld = ld -flags
+scope.ld = touch
 foobar: scope.files
-foobar: $(scope.files) 
+foobar: $(scope.files)
 	$(scope.ld) -o $@ $+
