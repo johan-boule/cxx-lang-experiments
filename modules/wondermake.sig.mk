@@ -20,8 +20,8 @@ $(info rm  $(scope.src.rm))
 scope.cc = cp
 scope.cc.sig: force
 	@$(call echo,$@: $+)
-	new=$$(printf '%s' $(scope.cc) | md5sum); \
-	if test "$$new" != "$$(cat $@)"; \
+	new=$$(printf '%s' '$(scope.cc)' | md5sum); \
+	if test "$$new" != "$$(cat $@ 2>/dev/null)"; \
 	then \
 	  printf '%s' "$$new" > $@; \
 	  $(call echox,$@ changed); \
