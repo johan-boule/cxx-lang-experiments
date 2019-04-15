@@ -9,7 +9,8 @@
 
 wondermake += hello_world
 hello_world.name := hello
-hello_world.type := executable
+#hello_world.type := executable
+hello_world.type := objects
 #hello_world.src := src/main.cpp src/main.cppm
 hello_world.src := src/
 #hello_world.libs := phrases

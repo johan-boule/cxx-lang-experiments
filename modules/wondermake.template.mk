@@ -81,9 +81,13 @@ define wondermake.template.rules
     .PHONY: $(wondermake.template.scope)
     $(wondermake.template.scope): $(wondermake.template.name)
   endif
-  ifneq '$(wondermake.template.name)' '$(wondermake.template.binary_file)'
-    .PHONY: $(wondermake.template.name)
-    $(wondermake.template.name): $(wondermake.template.binary_file)
+  ifneq '' '$(wondermake.template.binary_file)'
+    ifneq '$(wondermake.template.name)' '$(wondermake.template.binary_file)'
+      .PHONY: $(wondermake.template.name)
+      $(wondermake.template.name): $(wondermake.template.binary_file)
+    endif
+  else
+    $(wondermake.template.name): $(wondermake.template.obj_files)
   endif
 
   $(foreach s,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
@@ -116,9 +120,11 @@ define wondermake.template.rules
 	$$(call wondermake.template.recipee.cxx_command,$(wondermake.template.scope))
   wondermake.clean += $(wondermake.template.obj_files)
 
-  $(wondermake.template.binary_file): $(wondermake.template.obj_files); \
-	$$(call wondermake.template.recipee.ld_command,$(wondermake.template.scope))
-  wondermake.clean += $(wondermake.template.binary_file)
+  ifneq '' '$(wondermake.template.binary_file)'
+    $(wondermake.template.binary_file): $(wondermake.template.obj_files); \
+	  $$(call wondermake.template.recipee.ld_command,$(wondermake.template.scope))
+    wondermake.clean += $(wondermake.template.binary_file)
+  endif
 endef
 
 ###############################################################################
