@@ -28,7 +28,7 @@ endef
 # check whether the verbose var is set or make is not silent mode
 ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS))))'
   # if so, emit messages (both make phases have their own color)
-  wondermake.echo = echo $${MAKE_TERMOUT:+'\033[$(if $(MAKE_RESTARTS),33,36)m'}$1$${MAKE_TERMOUT:+'\033[m'}
+  wondermake.echo = echo -e $${MAKE_TERMOUT:+'\033[$(if $(MAKE_RESTARTS),33,36)m'}$1$${MAKE_TERMOUT:+'\033[m'}
 else
   # else, be quiet
   wondermake.echo := :
