@@ -216,7 +216,7 @@ endef
 # Clean rule
 
 wondermake.clean := # this is an immediate var
-
+.PHONY: wondermake.clean
 wondermake.clean::
 	@$(call wondermake.echo,clean)
 	rm -Rf $(wondermake.clean)
@@ -232,6 +232,7 @@ $(foreach wondermake.template.scope, $(wondermake), \
 		# Note: the same root may be visited multiple times so we must take care of not making the wondermake scope inherit from itself.
 
 wondermake.dynamically_generated_makefiles := # this is an immediate var
+.PHONY: wondermake.all
 
 # Execute the template for each user-declared scope
 $(foreach  wondermake.template.scope, $(wondermake), $(eval $(value wondermake.template)))
