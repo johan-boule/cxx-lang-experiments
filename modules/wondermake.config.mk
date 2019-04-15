@@ -72,4 +72,5 @@ wondermake.env: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this on the f
 	> $@
 
 wondermake.clean::
+	@$(call wondermake.echo,clean)
 	rm -f wondermake.env wondermake.env.checksum wondermake.env.checksum.new wondermake.configure
