@@ -90,10 +90,14 @@ define wondermake.template.rules
     $(wondermake.template.name): $(wondermake.template.obj_files)
   endif
 
+  $(foreach s,$(sort $(dir $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))), \
+    ${wondermake.newline} $s: ; mkdir -p $$@ \
+  )
+
   $(foreach s,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
-    ${wondermake.newline}  $s.ii: $(wondermake.template.src_dir)$s wondermake.configure ; \
-		$$(call wondermake.template.recipee.cpp_command,$(wondermake.template.scope)) \
-    ${wondermake.newline}  wondermake.clean += $s.ii \
+    ${wondermake.newline} $s.ii: $(wondermake.template.src_dir)$s wondermake.configure | $(dir $s) ; \
+      $$(call wondermake.template.recipee.cpp_command,$(wondermake.template.scope)) \
+    ${wondermake.newline} wondermake.clean += $s.ii \
     ${wondermake.newline} \
   )
 
@@ -110,9 +114,9 @@ define wondermake.template.rules
   wondermake.clean += $(wondermake.template.cxx_d_files)
 
   $(foreach s,$(wondermake.template.mxx_files), \
-    ${wondermake.newline}  $(basename $s).$(wondermake.template.bmi_suffix): $s.ii ; \
-		$$(call wondermake.template.recipee.mxx_command,$(wondermake.template.scope)) \
-    ${wondermake.newline}  wondermake.clean += $(basename $s).$(wondermake.template.bmi_suffix) \
+    ${wondermake.newline} $(basename $s).$(wondermake.template.bmi_suffix): $s.ii ; \
+      $$(call wondermake.template.recipee.mxx_command,$(wondermake.template.scope)) \
+    ${wondermake.newline} wondermake.clean += $(basename $s).$(wondermake.template.bmi_suffix) \
     ${wondermake.newline} \
   )
 
@@ -133,7 +137,7 @@ endef
 # Command to preprocess a c++ source file
 define wondermake.template.recipee.cpp_command # $1 = scope
 	@$(call wondermake.echo,preprocess $< to $@)
-	@mkdir -p $(@D)
+	@echo mkdir -p $(@D)
 	$(or $(call wondermake.user_override,CPP),$(call wondermake.inherit_unique,$1,cpp)) \
 	$(call wondermake.inherit_unique,$1,cpp_flags_out_mode) \
 	$(call wondermake.inherit_unique,$1,cpp_flags[$(call wondermake.inherit_unique,$1,lang)]) \
