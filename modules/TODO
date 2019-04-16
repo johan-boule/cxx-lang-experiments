@@ -4,3 +4,6 @@
 	cc   src/phrases/phrases.cppm.o   -o src/phrases/phrases.cppm
 
 *	Fail fast: When clang is not found, make will still try to build.
+
+*	read https://gmsl.sourceforge.io/
+*	https://blog.jgc.org/2013/02/updated-list-of-my-gnu-make-articles.html
