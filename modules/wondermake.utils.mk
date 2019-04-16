@@ -51,3 +51,8 @@ wondermake.inherit_append = $($1.$2) $(if $($1.inherit),$(call $0,$($1.inherit),
 
 # Concatenate, by prepending, the value of a list variable by traversing the hierarchy ($1 = scope, $2 = var)
 wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($1.$2)
+
+###############################################################################
+# Rules that need to be always executed use this phony target as prerequisite
+
+.PHONY: wondermake.force

@@ -52,11 +52,15 @@ wondermake.binary_file_pattern[static_lib] := lib%.a
 # Configuration
 
 # This rule is done only on first build or when changes in the env are detected.
-wondermake.configure:: min_required_clang_major_version := 6
-wondermake.configure:: wondermake.env.checksum
+wondermake.configure: min_required_clang_major_version := 6
+wondermake.configure: wondermake.env.checksum
 	@$(call wondermake.echo,configure)
 	$(call wondermake.configure.check_toolchain_version,$(min_required_clang_major_version))
 	@touch $@
+
+wondermake.clean::
+	@$(call wondermake.echo,clean)
+	rm -f wondermake.configure
 
 define wondermake.configure.check_toolchain_version # $1 = min_required_clang_major_version
   @set -e; \
