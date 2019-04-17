@@ -237,7 +237,7 @@ wondermake.clean::
 
 # Add a default inheritance on the wondermake scope for each user-declared scope
 $(foreach wondermake.template.scope, $(wondermake), \
-	$(if $(call wondermake.find_word,wondermake,$(call wondermake.inherit_root,$(wondermake.template.scope))) \
+	$(if $(filter wondermake,$(call wondermake.inherit_root,$(wondermake.template.scope))) \
 		,,$(eval $(call wondermake.inherit_root,$(wondermake.template.scope)).inherit := wondermake)))
 		# Note: the same root may be visited multiple times so we must take care of not making the wondermake scope inherit from itself.
 
