@@ -76,6 +76,7 @@ endef
 ###############################################################################
 
 define wondermake.template.rules
+  # Phony targets for this scope
   wondermake.all: $(wondermake.template.scope)
   ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
     .PHONY: $(wondermake.template.scope)
@@ -90,10 +91,12 @@ define wondermake.template.rules
     $(wondermake.template.name): $(wondermake.template.obj_files)
   endif
 
+  # Rule to create an output directory
   $(foreach s,$(sort $(dir $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))), \
     ${wondermake.newline} $s: ; mkdir -p $$@ \
   )
 
+  # Rule to preprocess a c++ source file
   $(foreach s,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
     ${wondermake.newline} $s.ii: $(wondermake.template.src_dir)$s wondermake.configure | $(dir $s) ; \
       $$(call wondermake.template.recipee.cpp_command,$(wondermake.template.scope)) \
@@ -101,18 +104,21 @@ define wondermake.template.rules
     ${wondermake.newline} \
   )
 
+  # Rule to parse ISO C++ module keywords in an interface file
   $(wondermake.template.mxx_d_files): %.d: %.ii
 	$$(call wondermake.template.recipee.parse_export_module_keyword,$$(basename $$*).$(wondermake.template.bmi_suffix))
 	$$(call wondermake.template.recipee.parse_import_keyword,$$*.$(wondermake.template.obj_suffix) $$(basename $$*).$(wondermake.template.bmi_suffix))
   wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files)
   wondermake.clean += $(wondermake.template.mxx_d_files)
 
+  # Rule to parse ISO C++ module keywords in an implementation file
   $(wondermake.template.cxx_d_files): %.d: %.ii
 	$$(call wondermake.template.recipee.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
 	$$(call wondermake.template.recipee.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
   wondermake.dynamically_generated_makefiles += $(wondermake.template.cxx_d_files)
   wondermake.clean += $(wondermake.template.cxx_d_files)
 
+  # Rule to precompile a c++ source file to a binary module interface file
   $(foreach s,$(wondermake.template.mxx_files), \
     ${wondermake.newline} $(basename $s).$(wondermake.template.bmi_suffix): $s.ii ; \
       $$(call wondermake.template.recipee.mxx_command,$(wondermake.template.scope)) \
@@ -120,13 +126,15 @@ define wondermake.template.rules
     ${wondermake.newline} \
   )
 
+  # Rule to compile a c++ source file to an object file
   $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii; \
-	$$(call wondermake.template.recipee.cxx_command,$(wondermake.template.scope))
+    $$(call wondermake.template.recipee.cxx_command,$(wondermake.template.scope))
   wondermake.clean += $(wondermake.template.obj_files)
 
   ifneq '' '$(wondermake.template.binary_file)'
+    # Command to link object files and produce an executable or shared library file
     $(wondermake.template.binary_file): $(wondermake.template.obj_files); \
-	  $$(call wondermake.template.recipee.ld_command,$(wondermake.template.scope))
+      $$(call wondermake.template.recipee.ld_command,$(wondermake.template.scope))
     wondermake.clean += $(wondermake.template.binary_file)
   endif
 endef
@@ -192,31 +200,19 @@ define wondermake.template.recipee.ld_command # $1 = scope
 	$(LDLIBS)
 endef
 
-# ISO C++ module parsers http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1103r3.pdf
-# TODO The following is not supported:
-# - partitions:
-#     export module foo:part;
-#     module foo:part;
-#     module foo;
-#     import :part; // imports foo:part
-# - global module fragment:
-#     module;
-#     #include "header"
-#     export module foo;
-# - header units:
-#     import "header"
-#     import <header>
-
+# Command to parse ISO C++ module "export module" keywords in an interface file
 define wondermake.template.recipee.parse_export_module_keyword # $1 = bmi file
 	@$(call wondermake.echo,parse export module keyword $< to $@)
 	sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.module_map[\1] := $1,p' $< >> $@
 endef
 
+# Command to parse ISO C++ module "module" keywords in an implementation file
 define wondermake.template.recipee.parse_module_keyword # $1 = obj file
 	@$(call wondermake.echo,parse module keyword $< to $@)
 	sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.module_map[\1])\n$1: private module_map = $$(wondermake.module_map[\1]),p' $< >> $@
 endef
 
+# Command to parse ISO C++ module "import" keywords in an interface or implementation file
 define wondermake.template.recipee.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
 	@$(call wondermake.echo,parse import keyword $< to $@)
 	sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$$$(wondermake.module_map[\2])\n$1: private module_map += $$(wondermake.module_map[\2]:%=\2=%),p' $< >> $@

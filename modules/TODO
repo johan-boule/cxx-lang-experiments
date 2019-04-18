@@ -5,4 +5,17 @@
 
 *	Fail fast: When clang is not found, make will still try to build.
 
-*	filter instead of findstring
+*	ISO C++ module keyword parsers http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1103r3.pdf
+	The following is not supported:
+		- partitions:
+			export module foo:part;
+			module foo:part;
+			module foo;
+			import :part; // imports foo:part
+		- global module fragment:
+			module;
+			#include "header"
+			export module foo;
+		- header units:
+			import "header"
+			import <header>
