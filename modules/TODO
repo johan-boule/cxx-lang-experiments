@@ -20,11 +20,7 @@
 			import "header"
 			import <header>
 
-*	replace @$(call wondermake.echo,source file list to $@) by $(info ...) with colors
-
-*	clean followed -s prints this:
-	/home/bohan/devel/llvm-project/++install/bin/clang++
-
-*	recipe aanounce with info instead of printf
+*	recipe anounce with info instead of printf
 	e := $(shell echo -ne '\033')
 	$(info $(e)[31mxxxxxxxxxxxxxxxxxxxx$(e)[m)
+*	replace @$(call wondermake.echo,source file list to $@) by $(info ...) with colors

@@ -45,7 +45,7 @@ wondermake.obj_suffix := o
 
 wondermake.binary_file_pattern[executable] := %
 wondermake.binary_file_pattern[shared_lib] := lib%.so
-wondermake.binary_file_pattern[dlopen_lib] := %.so
+wondermake.binary_file_pattern[loadable_module] := %.so
 wondermake.binary_file_pattern[static_lib] := lib%.a
 
 ###############################################################################
@@ -62,7 +62,7 @@ wondermake.clean += wondermake.configure
 define wondermake.configure.check_toolchain_version # $1 = min_required_clang_major_version
   @set -e; \
   $(call wondermake.echo,check toolchain version); \
-  if ! command -v $(wondermake.cpp); \
+  if ! command -v $(firstword $(wondermake.cpp)) 1>/dev/null; \
   then \
     printf '%s\n' 'requires clang version >= $1.' 1>&2; \
     false; \
