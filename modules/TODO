@@ -21,3 +21,23 @@
 			import <header>
 
 *	replace @$(call wondermake.echo,source file list to $@) by $(info ...) with colors
+
+*	clean followed -s prints this:
+	/home/bohan/devel/llvm-project/++install/bin/clang++
+	mkdir -p src/letters/consonants
+	mkdir -p src/letters/consonants
+	mkdir -p src/letters/consonants
+	mkdir -p src/letters/consonants
+	mkdir -p src/letters/consonants
+	mkdir -p src/letters/vowels
+	mkdir -p src/letters/vowels
+	mkdir -p src/phrases
+	mkdir -p src/words
+	mkdir -p src/words
+	mkdir -p src
+	mkdir -p src
+	mkdir -p src/letters/consonants
+	mkdir -p src/letters
+	mkdir -p src/letters/vowels
+	mkdir -p src/phrases
+	mkdir -p src/words

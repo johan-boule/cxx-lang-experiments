@@ -133,6 +133,7 @@ define wondermake.template.rules
     # Rule to trigger relinking when a source file (and hence its derived object file) is removed
     $(wondermake.template.scope).src_files: wondermake.force
 		$$(call wondermake.templace.recipe.src_files,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
+    wondermake.clean += $(wondermake.template.scope).src_files
 
     # Command to link object files and produce an executable or shared library file
     $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope).src_files
@@ -246,9 +247,8 @@ wondermake.default: wondermake.auto-clean $(wondermake)
 ###############################################################################
 # Clean rules
 
-wondermake.clean := # this is an immediate var
 .PHONY: wondermake.clean
-wondermake.clean::
+wondermake.clean:
 	@$(call wondermake.echo,clean)
 	rm -Rf $(wondermake.clean)
 	rmdir -p $(sort $(dir $(wondermake.clean))) 2>/dev/null || true
@@ -265,6 +265,7 @@ wondermake.auto-clean: wondermake.force
 	)
 	$(eval undefine $@.old)
 	$(eval undefine $@.new)
+wondermake.clean += wondermake.auto-clean
 
 ###############################################################################
 # Execute the template

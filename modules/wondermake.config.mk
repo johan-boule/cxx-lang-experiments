@@ -62,7 +62,4 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 	else \
 		$(call wondermake.echo,checksum $@: no change); \
 	fi
-
-wondermake.clean::
-	@$(call wondermake.echo,clean)
-	rm -f wondermake.env.checksum
+wondermake.clean += wondermake.env.checksum
