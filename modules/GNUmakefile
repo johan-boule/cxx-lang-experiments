@@ -2,7 +2,7 @@
 
 # Note that setting --no-builtin-variables via MAKEFLAGS in the makefile has no effect.
 # Also, undefining all variables that have a default origin removes useful ones too.
-MAKEFLAGS += --no-builtin-rules #--no-builtin-variables
+#MAKEFLAGS += --no-builtin-rules #--no-builtin-variables
 
 .PHONY: default all clean
 .DEFAULT_GOAL := default

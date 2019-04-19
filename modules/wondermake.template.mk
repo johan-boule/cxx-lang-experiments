@@ -238,10 +238,25 @@ define wondermake.template.recipe.parse_import_keyword # $1 = targets (obj file,
 endef
 
 ###############################################################################
-# Default target
+# Execute the template
 
-.PHONY: wondermake.default
-wondermake.default: wondermake.auto-clean $(wondermake)
+# Add a default inheritance on the wondermake scope for each user-declared scope
+$(foreach wondermake.template.scope, $(wondermake), \
+	$(if $(filter wondermake,$(call wondermake.inherit_root,$(wondermake.template.scope))) \
+		,,$(eval $(call wondermake.inherit_root,$(wondermake.template.scope)).inherit := wondermake)))
+		# Note: the same root may be visited multiple times so we must take care of not making the wondermake scope inherit from itself.
+
+wondermake.dynamically_generated_makefiles := # this is an immediate var
+.PHONY: wondermake.all
+
+# Execute the template for each user-declared scope
+$(foreach  wondermake.template.scope, $(wondermake), $(eval $(value wondermake.template)))
+
+ifneq '' '$(wondermake.verbose)'
+  $(info )
+  $(info ############### End of template execution ###############)
+  $(info )
+endif
 
 ###############################################################################
 # Clean rules
@@ -267,25 +282,10 @@ wondermake.auto-clean: wondermake.force
 wondermake.clean += wondermake.auto-clean
 
 ###############################################################################
-# Execute the template
+# Default target
 
-# Add a default inheritance on the wondermake scope for each user-declared scope
-$(foreach wondermake.template.scope, $(wondermake), \
-	$(if $(filter wondermake,$(call wondermake.inherit_root,$(wondermake.template.scope))) \
-		,,$(eval $(call wondermake.inherit_root,$(wondermake.template.scope)).inherit := wondermake)))
-		# Note: the same root may be visited multiple times so we must take care of not making the wondermake scope inherit from itself.
-
-wondermake.dynamically_generated_makefiles := # this is an immediate var
-.PHONY: wondermake.all
-
-# Execute the template for each user-declared scope
-$(foreach  wondermake.template.scope, $(wondermake), $(eval $(value wondermake.template)))
-
-ifneq '' '$(wondermake.verbose)'
-  $(info )
-  $(info ############### End of template execution ###############)
-  $(info )
-endif
+.PHONY: wondermake.default
+wondermake.default: wondermake.auto-clean $(wondermake)
 
 ###############################################################################
  # Include the dynamically generated makefiles
