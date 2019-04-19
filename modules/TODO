@@ -19,3 +19,5 @@
 		- header units:
 			import "header"
 			import <header>
+
+*	replace @$(call wondermake.echo,source file list to $@) by $(info ...) with colors

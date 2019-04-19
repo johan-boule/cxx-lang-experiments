@@ -22,7 +22,7 @@ define wondermake.template
     $(info $(wondermake.template.rules))
   endif
 
-  $(eval $(value wondermake.template.vars.undefine))
+  $(eval $(wondermake.template.vars.undefine))
 endef
 
 ###############################################################################
@@ -44,8 +44,6 @@ define wondermake.template.vars.define
 			$(or \
 				$(call wondermake.inherit_unique,$(wondermake.template.scope),cxx_suffix) \
 				$(call wondermake.inherit_unique,$(wondermake.template.scope),cxx_suffix[$(call wondermake.inherit_unique,$(wondermake.template.scope),lang)])))))
-
-  wondermake.template.src_files := $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)
 
   wondermake.template.mxx_d_files := $(addsuffix .d,$(wondermake.template.mxx_files))
   wondermake.template.cxx_d_files := $(addsuffix .d,$(wondermake.template.cxx_files))
@@ -93,57 +91,61 @@ define wondermake.template.rules
 
   # Rule to create an output directory
   $(foreach s,$(sort $(dir $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))), \
-    ${wondermake.newline} $s: ; mkdir -p $$@ \
+    ${wondermake.newline}  $s: ; mkdir -p $$@ \
   )
 
   # Rule to preprocess a c++ source file
   $(foreach s,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
-    ${wondermake.newline} $s.ii: $(wondermake.template.src_dir)$s wondermake.configure | $(dir $s) ; \
-      $$(call wondermake.template.recipee.cpp_command,$(wondermake.template.scope)) \
-    ${wondermake.newline} wondermake.clean += $s.ii \
+    ${wondermake.newline}  $s.ii: $(wondermake.template.src_dir)$s wondermake.configure | $(dir $s) \
+    ${wondermake.newline}	$$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)) \
+    ${wondermake.newline}  wondermake.clean += $s.ii \
     ${wondermake.newline} \
   )
 
   # Rule to parse ISO C++ module keywords in an interface file
   $(wondermake.template.mxx_d_files): %.d: %.ii
-	$$(call wondermake.template.recipee.parse_export_module_keyword,$$(basename $$*).$(wondermake.template.bmi_suffix))
-	$$(call wondermake.template.recipee.parse_import_keyword,$$*.$(wondermake.template.obj_suffix) $$(basename $$*).$(wondermake.template.bmi_suffix))
+	$$(call wondermake.template.recipe.parse_export_module_keyword,$$(basename $$*).$(wondermake.template.bmi_suffix))
+	$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix) $$(basename $$*).$(wondermake.template.bmi_suffix))
   wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files)
   wondermake.clean += $(wondermake.template.mxx_d_files)
 
   # Rule to parse ISO C++ module keywords in an implementation file
   $(wondermake.template.cxx_d_files): %.d: %.ii
-	$$(call wondermake.template.recipee.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
-	$$(call wondermake.template.recipee.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
+	$$(call wondermake.template.recipe.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
+	$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
   wondermake.dynamically_generated_makefiles += $(wondermake.template.cxx_d_files)
   wondermake.clean += $(wondermake.template.cxx_d_files)
 
   # Rule to precompile a c++ source file to a binary module interface file
   $(foreach s,$(wondermake.template.mxx_files), \
-    ${wondermake.newline} $(basename $s).$(wondermake.template.bmi_suffix): $s.ii ; \
-      $$(call wondermake.template.recipee.mxx_command,$(wondermake.template.scope)) \
-    ${wondermake.newline} wondermake.clean += $(basename $s).$(wondermake.template.bmi_suffix) \
+    ${wondermake.newline}  $(basename $s).$(wondermake.template.bmi_suffix): $s.ii \
+    ${wondermake.newline}	$$(call wondermake.template.recipe.mxx_command,$(wondermake.template.scope)) \
+    ${wondermake.newline}  wondermake.clean += $(basename $s).$(wondermake.template.bmi_suffix) \
     ${wondermake.newline} \
   )
 
   # Rule to compile a c++ source file to an object file
-  $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii; \
-    $$(call wondermake.template.recipee.cxx_command,$(wondermake.template.scope))
+  $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii
+	$$(call wondermake.template.recipe.cxx_command,$(wondermake.template.scope))
   wondermake.clean += $(wondermake.template.obj_files)
 
   ifneq '' '$(wondermake.template.binary_file)'
+    # Rule to trigger relinking when a source file (and hence its derived object file) is removed
+    $(wondermake.template.scope).src_files: wondermake.force
+		$$(call wondermake.templace.recipe.src_files,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
+
     # Command to link object files and produce an executable or shared library file
-    $(wondermake.template.binary_file): $(wondermake.template.obj_files); \
-      $$(call wondermake.template.recipee.ld_command,$(wondermake.template.scope))
+    $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope).src_files
+		$$(call wondermake.template.recipe.ld_command,$(wondermake.template.scope))
     wondermake.clean += $(wondermake.template.binary_file)
   endif
 endef
 
 ###############################################################################
-# Recipee commands
+# recipe commands
 
 # Command to preprocess a c++ source file
-define wondermake.template.recipee.cpp_command # $1 = scope
+define wondermake.template.recipe.cpp_command # $1 = scope
 	@$(call wondermake.echo,preprocess $< to $@)
 	@echo mkdir -p $(@D)
 	$(or $(call wondermake.user_override,CPP),$(call wondermake.inherit_unique,$1,cpp)) \
@@ -160,7 +162,7 @@ define wondermake.template.recipee.cpp_command # $1 = scope
 endef
 
 # Command to precompile a c++ source file to a binary module interface file
-define wondermake.template.recipee.mxx_command # $1 = scope, $(module_map) is a var private to the bmi file rule (see .d files)
+define wondermake.template.recipe.mxx_command # $1 = scope, $(module_map) is a var private to the bmi file rule (see .d files)
 	@$(call wondermake.echo,precompile module interface $< to $@)
 	$(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
 	$(call wondermake.inherit_unique,$1,mxx_flags_out_mode) \
@@ -174,7 +176,7 @@ define wondermake.template.recipee.mxx_command # $1 = scope, $(module_map) is a 
 endef
 
 # Command to compile a c++ source file to an object file
-define wondermake.template.recipee.cxx_command # $1 = scope, $(module_map) is a var private to the object file rule (see .d files)
+define wondermake.template.recipe.cxx_command # $1 = scope, $(module_map) is a var private to the object file rule (see .d files)
 	@$(call wondermake.echo,compile $< to $@)
 	$(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
 	$(call wondermake.inherit_unique,$1,cxx_flags_out_mode) \
@@ -187,39 +189,62 @@ define wondermake.template.recipee.cxx_command # $1 = scope, $(module_map) is a 
 	$<
 endef
 
+# Command to update a file with the list of source files when it has changed
+define wondermake.templace.recipe.src_files # $1 = list of source files
+	@$(call wondermake.echo,source file list to $@)
+	$(eval $@.old := $(file < $@))
+	$(eval $@.new := $(sort $1))
+	$(if $(call wondermake.equals,$($@.new),$($@.old)), \
+		$(info source file list to $@: no change), \
+		$(info source file list to $@: \
+			$(patsubst %,+%,$(filter-out $($@.old),$($@.new))) \
+			$(patsubst %,-%,$(filter-out $($@.new),$($@.old))) \
+		) \
+		$(file > $@,$($@.new)) \
+	)
+	$(eval undefine $@.old)
+	$(eval undefine $@.new)
+endef
+
 # Command to link object files and produce an executable or shared library file
-define wondermake.template.recipee.ld_command # $1 = scope
-	@$(call wondermake.echo,link $@ from objects $+)
+define wondermake.template.recipe.ld_command # $1 = scope
+	@$(call wondermake.echo,link $@ from objects $(filter-out $1.src_files,$+))
 	$(or $(call wondermake.user_override,LD),$(call wondermake.inherit_unique,$1,ld)) \
 	$(call wondermake.inherit_unique,$1,ld_flags_out_mode) \
 	$(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(call wondermake.inherit_append,$1,ld_flags) \
 	$(LDFLAGS) \
-	$+ \
+	$(filter-out $1.src_files,$+) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_libs_pattern),$(call wondermake.inherit_append,$1,libs)) \
 	$(LDLIBS)
 endef
 
 # Command to parse ISO C++ module "export module" keywords in an interface file
-define wondermake.template.recipee.parse_export_module_keyword # $1 = bmi file
+define wondermake.template.recipe.parse_export_module_keyword # $1 = bmi file
 	@$(call wondermake.echo,parse export module keyword $< to $@)
 	sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.module_map[\1] := $1,p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "module" keywords in an implementation file
-define wondermake.template.recipee.parse_module_keyword # $1 = obj file
+define wondermake.template.recipe.parse_module_keyword # $1 = obj file
 	@$(call wondermake.echo,parse module keyword $< to $@)
 	sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.module_map[\1])\n$1: private module_map = $$(wondermake.module_map[\1]),p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "import" keywords in an interface or implementation file
-define wondermake.template.recipee.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
+define wondermake.template.recipe.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
 	@$(call wondermake.echo,parse import keyword $< to $@)
 	sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$$$(wondermake.module_map[\2])\n$1: private module_map += $$(wondermake.module_map[\2]:%=\2=%),p' $< >> $@
 endef
 
 ###############################################################################
-# Clean rule
+# Default target
+
+.PHONY: wondermake.default
+wondermake.default: wondermake.auto-clean $(wondermake)
+
+###############################################################################
+# Clean rules
 
 wondermake.clean := # this is an immediate var
 .PHONY: wondermake.clean
@@ -227,6 +252,19 @@ wondermake.clean::
 	@$(call wondermake.echo,clean)
 	rm -Rf $(wondermake.clean)
 	rmdir -p $(sort $(dir $(wondermake.clean))) 2>/dev/null || true
+
+wondermake.auto-clean: wondermake.force
+	@$(call wondermake.echo,auto-clean)
+	$(eval $@.old := $(file < $@))
+	$(eval $@.new := $(sort $(wondermake.clean)))
+	$(if $(call wondermake.equals,$($@.old),$($@.new)),, \
+		$(file > $@,$($@.new)) \
+		$(eval $@.rm := $(filter-out $($@.new),$($@.old))) \
+		$(if $($@.rm),rm -Rf $($@.rm); rmdir -p $(sort $(dir $($@.rm))) 2>/dev/null || true) \
+		$(eval undefine $@.rm) \
+	)
+	$(eval undefine $@.old)
+	$(eval undefine $@.new)
 
 ###############################################################################
 # Execute the template

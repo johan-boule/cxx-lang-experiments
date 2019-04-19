@@ -2,15 +2,15 @@
 
 # Note that setting --no-builtin-variables via MAKEFLAGS in the makefile has no effect.
 # Also, undefining all variables that have a default origin removes useful ones too.
-#MAKEFLAGS += --no-builtin-rules #--no-builtin-variables
+MAKEFLAGS += --no-builtin-rules #--no-builtin-variables
 
 .PHONY: default all clean
 .DEFAULT_GOAL := default
 
 wondermake += hello_world
 hello_world.name := hello
-#hello_world.type := executable
-hello_world.type := objects
+hello_world.type := executable
+#hello_world.type := objects
 #hello_world.src := src/main.cpp src/main.cppm
 hello_world.src := src/
 #hello_world.libs := phrases
@@ -33,6 +33,6 @@ module_demo_common_conf.src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
 include $(module_demo_common_conf.src_dir)wondermake.mk
 
-default: $(wondermake)
+default: wondermake.default
 all: wondermake.all
 clean: wondermake.clean

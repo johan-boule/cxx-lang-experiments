@@ -9,6 +9,10 @@
 wondermake.user_override = $(if $(filter $(origin $1),undefined default),,$($1))
 
 ###############################################################################
+# This function tests whether both arguments are equals
+wondermake.equals = $(and $(findstring $1,$2),$(findstring $2,$1))
+
+###############################################################################
 # The newline character (useful in foreach statements)
 define wondermake.newline
 
