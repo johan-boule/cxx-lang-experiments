@@ -148,7 +148,6 @@ endef
 # Command to preprocess a c++ source file
 define wondermake.template.recipe.cpp_command # $1 = scope
 	@$(call wondermake.echo,preprocess $< to $@)
-	@echo mkdir -p $(@D)
 	$(or $(call wondermake.user_override,CPP),$(call wondermake.inherit_unique,$1,cpp)) \
 	$(call wondermake.inherit_unique,$1,cpp_flags_out_mode) \
 	$(call wondermake.inherit_unique,$1,cpp_flags[$(call wondermake.inherit_unique,$1,lang)]) \
