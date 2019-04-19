@@ -55,9 +55,9 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 			"min required version $(min_required_clang_major_version)" \
 		| md5sum \
 	); \
-	if test "$$new" != "$$(cat $@ 2>/dev/null)"; \
+	if test "$$new" != '$(file < $@)'; \
 	then \
-	  printf '%s' "$$new" > $@; \
+		printf '%s' "$$new" > $@; \
 		$(call wondermake.echo,checksum $@: changed); \
 	else \
 		$(call wondermake.echo,checksum $@: no change); \
