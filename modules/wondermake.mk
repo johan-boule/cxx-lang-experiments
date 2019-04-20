@@ -21,7 +21,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.template.mk
  # So, preprocessing occurs on the first make phase.
  # Secondary expansion is used to allow variables to be defined out of order.
  # (Without secondary expansion, we have to include $(srcm).d before $(src).d)
-ifneq '$(MAKECMDGOALS)' 'clean' # don't remake the .d files when cleaning
+ifeq '' '$(or $(wondermake.equals,clean,$(MAKECMDGOALS)),$(wondermake.equals,wondermake.clean,$(MAKECMDGOALS)))' # don't remake the .d files when cleaning
   .SECONDEXPANSION:
   -include $(wondermake.dynamically_generated_makefiles)
 endif
