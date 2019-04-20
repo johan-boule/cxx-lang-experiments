@@ -55,6 +55,11 @@ define wondermake.template.vars.define
 
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
   wondermake.template.binary_file := $(wondermake.template.name:%=$(call wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(call wondermake.inherit_unique,$(wondermake.template.scope),type)]))
+
+  wondermake.template.cpp_command := $(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope))
+  wondermake.template.cxx_command := $(call wondermake.template.recipe.cxx_command,$(wondermake.template.scope))
+  wondermake.template.mxx_command := $(call wondermake.template.recipe.mxx_command,$(wondermake.template.scope))
+  wondermake.template.ld_command  := $(call wondermake.template.recipe.ld_command,$(wondermake.template.scope))
 endef
 
 ###############################################################################
@@ -74,18 +79,21 @@ endef
 ###############################################################################
 
 define wondermake.template.rules
-  # Phony targets for this scope
+  # Phony or not phony targets for this scope
   wondermake.all: $(wondermake.template.scope)
+  # If scope has explicitely defined a name that is different from the scope name
   ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
     .PHONY: $(wondermake.template.scope)
     $(wondermake.template.scope): $(wondermake.template.name)
   endif
+  # If there is a link or archive step
   ifneq '' '$(wondermake.template.binary_file)'
+    # If the platform has any prefix or suffix added to the binary file name
     ifneq '$(wondermake.template.name)' '$(wondermake.template.binary_file)'
       .PHONY: $(wondermake.template.name)
       $(wondermake.template.name): $(wondermake.template.binary_file)
     endif
-  else
+  else # No link or archive step: target is just the list of object files
     $(wondermake.template.name): $(wondermake.template.obj_files)
   endif
 
@@ -94,7 +102,7 @@ define wondermake.template.rules
     ${wondermake.newline}  $s: ; mkdir -p $$@ \
   )
 
-  # Rule to preprocess a c++ source file
+  # Rule to preprocess a c++ source file (the output directory creation is triggered here)
   $(foreach s,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
     ${wondermake.newline}  $s.ii: $(wondermake.template.src_dir)$s wondermake.configure | $(dir $s) \
     ${wondermake.newline}	$$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)) \
