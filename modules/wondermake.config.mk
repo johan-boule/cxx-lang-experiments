@@ -38,9 +38,8 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 	@$(call wondermake.echo,dump program timestamps and variables to $@); \
 	new=$$( \
 		printf '%s\n' \
-			"stat makefile CPP CXX LD AR RANLIB" \
+			"stat CPP CXX LD AR RANLIB" \
 			"$$(stat -Lc%n\ %Y \
-				$(sort $(filter-out $(wondermake.dynamically_generated_makefiles),$(MAKEFILE_LIST))) \
 				$$(command -v $(firstword $(wondermake.cpp))) \
 				$$(command -v $(firstword $(wondermake.cxx))) \
 				$$(command -v $(firstword $(wondermake.ld))) \
