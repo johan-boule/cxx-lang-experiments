@@ -74,13 +74,17 @@ define wondermake.template.vars.undefine
   undefine wondermake.template.obj_files
   undefine wondermake.template.name
   undefine wondermake.template.binary_file
+  undefine wondermake.template.cpp_command
+  undefine wondermake.template.cxx_command
+  undefine wondermake.template.mxx_command
+  undefine wondermake.template.ld_command
 endef
 
 ###############################################################################
 
 define wondermake.template.rules
   # Phony or not phony targets for this scope
-  wondermake.all: $(wondermake.template.scope)
+  wondermake.default: $(wondermake.template.scope)
   # If scope has explicitely defined a name that is different from the scope name
   ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
     .PHONY: $(wondermake.template.scope)
@@ -93,7 +97,7 @@ define wondermake.template.rules
       .PHONY: $(wondermake.template.name)
       $(wondermake.template.name): $(wondermake.template.binary_file)
     endif
-  else # No link or archive step: target is just the list of object files
+  else # No link nor archive step: target is just the list of object files
     $(wondermake.template.name): $(wondermake.template.obj_files)
   endif
 

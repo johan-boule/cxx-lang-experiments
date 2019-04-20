@@ -51,3 +51,7 @@ wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($
 ###############################################################################
 # Rules that need to be always executed use this phony target as prerequisite
 .PHONY: wondermake.force
+
+###############################################################################
+# All rules producing a derived file appends it to this variable
+wondermake.clean := # this is an immediate var
