@@ -282,8 +282,8 @@ endif
 .PHONY: wondermake.clean
 wondermake.clean:
 	$(call wondermake.info,clean)
-	rm -Rf $(wondermake.clean)
-	rmdir -p $(sort $(dir $(wondermake.clean))) 2>/dev/null || true
+	printf '%s' '$(wondermake.clean)' | xargs rm -f; \
+	printf '%s' '$(sort $(dir $(wondermake.clean)))' | xargs rmdir -p 2>/dev/null || true
 
 wondermake.default: wondermake.auto-clean
 wondermake.auto-clean: wondermake.force
@@ -291,17 +291,18 @@ wondermake.auto-clean: wondermake.force
 	$(eval $@.old := $(file < $@))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
-		$(call wondermake.trace,nothing to remove) \
-	, # else \
+		$(call wondermake.trace,no change) \
+	, \
 		$(eval $@.rm := $(filter-out $($@.new),$($@.old))) \
 		$(if $($@.rm), \
 			$(call wondermake.trace,removing $($@.rm)) \
-			$(wondermake.newline) rm -Rf $($@.rm) \
-			$(wondermake.newline) rmdir -p $(sort $(dir $($@.rm))) 2>/dev/null || true \
+			printf '%s' '$($@.rm)' | xargs rm -f ; \
+			printf '%s' '$(sort $(dir $($@.rm)))' | xargs rmdir -p 2>/dev/null || true; \
+			printf '%s\n' '$($@.new)' > $@ \
+		, \
+			$(call wondermake.trace,nothing to remove) \
+			$(file > $@,$($@.new)) \
 		) \
-		# Do not use $$(file > $$@,$$($$@.new)) because it is executed before shell commands \
-		# and if another job fails between the two, make may not even start the shell \
-		$(wondermake.newline) printf '%s ' $($@.new) > $@ \
 		$(eval undefine $@.rm) \
 	)
 	$(eval undefine $@.old)
