@@ -20,20 +20,6 @@ define wondermake.newline
 endef
 
 ###############################################################################
-# Logging
-# check whether the verbose var is set or make is not silent mode
-ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS))))'
-  # if so, emit messages (both make phases have their own color)
-  wondermake.echo = \
-    printf "$${MAKE_TERMOUT:+\033[$(if $(MAKE_RESTARTS),33,36)m}"; \
-    printf '%s ' $1; \
-    printf "$${MAKE_TERMOUT:+\033[m}\n"
-else
-  # else, be quiet
-  wondermake.echo := :
-endif
-
-###############################################################################
 # Scope inheritance support functions
 
 # Find the root scope of the inheritance hierarchy ($1 = scope)
@@ -55,3 +41,66 @@ wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($
 ###############################################################################
 # All rules producing a derived file appends it to this variable
 wondermake.clean := # this is an immediate var
+
+###############################################################################
+# Logging
+
+ifneq '' '$(MAKE_TERMOUT)$(MAKE_TERMERR)'
+  wondermake.term.0 := $(shell tput sgr0)
+  wondermake.term := $(subst $(wondermake.term.0), , \
+	$(shell \
+		printf '%s\nsgr0\n' \
+			'setaf 0' 'setaf 1' 'setaf 2' 'setaf 3' 'setaf 4' 'setaf 5' 'setaf 6' 'setaf 7' \
+			bold dim \
+		| tput -S \
+	) \
+  )
+  wondermake.term.dark_grey  := $(word  1,$(wondermake.term))
+  wondermake.term.red        := $(word  2,$(wondermake.term))
+  wondermake.term.green      := $(word  3,$(wondermake.term))
+  wondermake.term.yellow     := $(word  4,$(wondermake.term))
+  wondermake.term.blue       := $(word  5,$(wondermake.term))
+  wondermake.term.magenta    := $(word  6,$(wondermake.term))
+  wondermake.term.cyan       := $(word  7,$(wondermake.term))
+  wondermake.term.light_grey := $(word  8,$(wondermake.term))
+  wondermake.term.bold       := $(word  9,$(wondermake.term))
+  wondermake.term.dim        := $(word 10,$(wondermake.term))
+  undefine wondermake.term
+endif
+
+ifdef MAKE_TERMOUT
+  wondermake.maybe_colored_out = $1$2$3 # $1 = set color, $2 = message, $3 = reset color
+else
+  wondermake.maybe_colored_out = $2
+endif
+
+ifdef MAKE_TERMERR
+  wondermake.maybe_colored_err = $1$2$3 # $1 = set color, $2 = message, $3 = reset color
+else
+  wondermake.maybe_colored_err = $2
+endif
+
+# If the wondermake.verbose var is set or make is not in silent mode
+ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS))))'
+  wondermake.trace_style = $(call wondermake.maybe_colored_out,$(wondermake.term.cyan)$(wondermake.term.dim),$1,$(wondermake.term.0))
+  wondermake.trace       = $(info         $(call wondermake.trace_style,$1))
+  wondermake.trace_shell = printf '%s\n' '$(call wondermake.trace_style,$1)'
+  
+  wondermake.info_style  = $(call wondermake.maybe_colored_out,$(wondermake.term.cyan),$1,$(wondermake.term.0))
+  wondermake.info        = $(info         $(call wondermake.info_style,$1))
+  wondermake.info_shell  = printf '%s\n' '$(call wondermake.info_style,$1)'
+else # Be quiet
+  wondermake.trace :=
+  wondermake.trace_shell := :
+
+  wondermake.info :=
+  wondermake.info_shell := :
+endif
+
+wondermake.warning_style = $(call wondermake.maybe_colored_err,$(wondermake.term.bold)$(wondermake.term.yellow),$1,$(wondermake.term.0))
+wondermake.warning       = $(info         $(call wondermake.warning_style,$1))
+wondermake.warning_shell = printf '%s\n' '$(call wondermake.warning_style,$1)' 1>&2
+
+wondermake.error_style   = $(call wondermake.maybe_colored_err,$(wondermake.term.bold)$(wondermake.term.red),$1,$(wondermake.term.0))
+wondermake.error         = $(error        $(call wondermake.error_style,$1))
+wondermake.error_shell   = printf '%s\n' '$(call wondermake.error_style,$1)' 1>&2; false

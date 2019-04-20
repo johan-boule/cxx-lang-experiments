@@ -19,8 +19,3 @@
 		- header units:
 			import "header"
 			import <header>
-
-*	recipe anounce with info instead of printf
-	e := $(shell echo -ne '\033')
-	$(info $(e)[31mxxxxxxxxxxxxxxxxxxxx$(e)[m)
-*	replace @$(call wondermake.echo,source file list to $@) by $(info ...) with colors

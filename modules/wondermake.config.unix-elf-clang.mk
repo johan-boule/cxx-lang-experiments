@@ -50,23 +50,30 @@ wondermake.binary_file_pattern[static_lib] := lib%.a
 wondermake.binary_file_pattern[objects] := # no link nor archive step
 wondermake.binary_file_pattern[headers] := # no link nor archive step
 
+# When using make -j>1 with -O, the compiler cannot know when we're actually on tty
+ifdef MAKE_TERMERR
+  wondermake.cpp_flags += -fcolor-diagnostics
+  wondermake.cxx_flags += -fcolor-diagnostics
+  wondermake.ld_flags  += -fcolor-diagnostics
+endif
+
 ###############################################################################
 # Configuration
 
 # This rule is done only on first build or when changes in the env are detected.
 wondermake.configure: min_required_clang_major_version := 6
 wondermake.configure: wondermake.env.checksum
-	@$(call wondermake.echo,configure)
+	$(call wondermake.info,configure)
 	$(call wondermake.configure.check_toolchain_version,$(min_required_clang_major_version))
 	@touch $@
 wondermake.clean += wondermake.configure
 
 define wondermake.configure.check_toolchain_version # $1 = min_required_clang_major_version
+  $(call wondermake.info,check toolchain version)
   @set -e; \
-  $(call wondermake.echo,check toolchain version); \
   if ! command -v $(firstword $(wondermake.cpp)) 1>/dev/null; \
   then \
-    printf '%s\n' 'requires clang version >= $1.' 1>&2; \
+    $(call wondermake.error_shell,requires clang version >= $1.); \
     false; \
   fi; \
   actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cpp) -E -xc++ - | tail -n1); \

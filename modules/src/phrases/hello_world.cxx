@@ -3,10 +3,12 @@
 module phrases;
 
 import words;
+import punctuations;
 
 namespace phrases {
 	std::string hello_world() {
 		using namespace words;
-		return hello() + std::string(", ") + world();
+		using namespace punctuations;
+		return hello() + comma() + space() + world() + exclamation_mark();
 	}
 }
