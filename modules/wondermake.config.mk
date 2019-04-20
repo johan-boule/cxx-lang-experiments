@@ -3,11 +3,6 @@
 # This source is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 ###############################################################################
-# Pick one
-
-include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.config.unix-elf-clang.mk
-
-###############################################################################
 # Source files suffixes
 
 wondermake.cpp_suffix[c]   := i

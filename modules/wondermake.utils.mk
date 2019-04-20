@@ -39,10 +39,6 @@ wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($
 .PHONY: wondermake.force
 
 ###############################################################################
-# All rules producing a derived file appends it to this variable
-wondermake.clean := # this is an immediate var
-
-###############################################################################
 # Logging
 
 ifneq '' '$(MAKE_TERMOUT)$(MAKE_TERMERR)'
