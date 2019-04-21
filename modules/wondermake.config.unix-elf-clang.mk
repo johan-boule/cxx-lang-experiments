@@ -99,7 +99,7 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
     actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cpp) -E -xc++ - | tail -n1); \
     if ! test $$actual_clang_major_version -ge $1; \
     then \
-      $(call wondermake.error_shell,requires clang version >= $1. $(firstword $(wondermake.cpp)) is version $$actual_clang_major_version."); \
+      $(call wondermake.error_shell,requires clang version >= $1. $(firstword $(wondermake.cpp)) is version $$actual_clang_major_version.); \
     fi
   endef
 endif

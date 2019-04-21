@@ -81,17 +81,17 @@ endif
 
 # If the wondermake.verbose var is set or make is not in silent mode
 ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS))))'
-  wondermake.trace_style = $(call wondermake.maybe_colored_out,$(wondermake.term.cyan)$(wondermake.term.dim),$1,$(wondermake.term.0))
-  wondermake.trace       = $(info         $(call wondermake.trace_style,$1))
-  wondermake.trace_shell = printf '%s\n' '$(call wondermake.trace_style,$1)'
+  wondermake.trace_style  := $(wondermake.term.cyan)$(wondermake.term.dim)
+  wondermake.trace         = $(info        $(call wondermake.maybe_colored_out,$(wondermake.trace_style),$1,$(wondermake.term.0)))
+  wondermake.trace_shell   = printf '%s\n' $(call wondermake.maybe_colored_out,'$(wondermake.trace_style)',"$1",'$(wondermake.term.0)')
   
-  wondermake.info_style  = $(call wondermake.maybe_colored_out,$(wondermake.term.cyan),$1,$(wondermake.term.0))
-  wondermake.info        = $(info         $(call wondermake.info_style,$1))
-  wondermake.info_shell  = printf '%s\n' '$(call wondermake.info_style,$1)'
+  wondermake.info_style   := $(wondermake.term.cyan)
+  wondermake.info          = $(info        $(call wondermake.maybe_colored_out,$(wondermake.info_style),$1,$(wondermake.term.0)))
+  wondermake.info_shell    = printf '%s\n' $(call wondermake.maybe_colored_out,'$(wondermake.info_style)',"$1",'$(wondermake.term.0)')
 
-  wondermake.notice_style = $(call wondermake.maybe_colored_out,$(wondermake.term.magenta)$(wondermake.term.bold),$1,$(wondermake.term.0))
-  wondermake.notice       = $(info         $(call wondermake.notice_style,$1))
-  wondermake.notice_shell = printf '%s\n' '$(call wondermake.notice_style,$1)'
+  wondermake.notice_style := $(wondermake.term.magenta)$(wondermake.term.bold)
+  wondermake.notice        = $(info        $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$1,$(wondermake.term.0)))
+  wondermake.notice_shell  = printf '%s\n' $(call wondermake.maybe_colored_out,'$(wondermake.notice_style)',"$1",'$(wondermake.term.0)')
 else # Be quiet
   wondermake.trace :=
   wondermake.trace_shell := :
@@ -103,13 +103,13 @@ else # Be quiet
   wondermake.notice_shell := :
 endif
 
-wondermake.warning_style = $(call wondermake.maybe_colored_err,$(wondermake.term.bold)$(wondermake.term.yellow),$1,$(wondermake.term.0))
-wondermake.warning       = $(info         $(call wondermake.warning_style,$1))
-wondermake.warning_shell = printf '%s\n' '$(call wondermake.warning_style,$1)' 1>&2
+wondermake.warning_style := $(wondermake.term.bold)$(wondermake.term.yellow)
+wondermake.warning        = $(warning     $(call wondermake.maybe_colored_out,$(wondermake.warning_style),$1,$(wondermake.term.0)))
+wondermake.warning_shell  = printf '%s\n' $(call wondermake.maybe_colored_out,'$(wondermake.warning_style)',"$1",'$(wondermake.term.0)') 1>&2
 
-wondermake.error_style   = $(call wondermake.maybe_colored_err,$(wondermake.term.bold)$(wondermake.term.red),$1,$(wondermake.term.0))
-wondermake.error         = $(error        $(call wondermake.error_style,$1))
-wondermake.error_shell   = printf '%s\n' '$(call wondermake.error_style,$1)' 1>&2; false
+wondermake.error_style   := $(wondermake.term.bold)$(wondermake.term.red)
+wondermake.error          = $(error       $(call wondermake.maybe_colored_out,$(wondermake.error_style),$1,$(wondermake.term.0)))
+wondermake.error_shell    = printf '%s\n' $(call wondermake.maybe_colored_out,'$(wondermake.error_style)',"$1",'$(wondermake.term.0)') 1>&2; false
 
 wondermake.announce = $(call wondermake.info \
 	,$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.bold),{$1},$(wondermake.term.bold_off))) \

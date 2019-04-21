@@ -30,10 +30,11 @@ wondermake.hxx_suffix[objective-c++] := $(wondermake.hxx_suffix[c++])
 # This rule is always executed.
 # This rule updates the target only when the checksum changes.
 ifndef MAKE_RESTARTS # only do this on the first make phase
-  wondermake.env.checksum: wondermake.force
+  wondermake.env.checksum: wondermake.cxx.env.checksum
 	$(call wondermake.info,checksum $@)
 	@new=$$( \
 		printf '%s\n' \
+			"$$(stat -Lc%n\ %Y wondermake.cxx.env.checksum)" \
 			"PATH $(PATH)" \
 			"linux/solaris/macosx LD_LIBRARY_PATH $(LD_LIBRARY_PATH)" \
 			"macosx DYLD_LIBRARY_PATH $(DYLD_LIBRARY_PATH)" \
@@ -53,7 +54,6 @@ endif
 wondermake.clean += wondermake.env.checksum
 
 ifndef MAKE_RESTARTS # only do this on the first make phase
-  wondermake.env.checksum: wondermake.cxx.env.checksum
   wondermake.cxx.env.checksum: wondermake.force
 	$(call wondermake.info,checksum $@)
 	@new=$$( \
