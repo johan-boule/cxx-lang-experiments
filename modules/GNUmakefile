@@ -31,7 +31,7 @@ module_demo_common_conf.ld_flags := #-pthreads
 module_demo_common_conf.libs := m dl
 module_demo_common_conf.src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
-include $(module_demo_common_conf.src_dir)wondermake.mk
+include $(module_demo_common_conf.src_dir)/wondermake/wondermake.mk
 
 default: wondermake.default
 all: wondermake.all

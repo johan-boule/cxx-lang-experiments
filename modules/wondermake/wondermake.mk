@@ -5,12 +5,10 @@
 .PHONY: wondermake.default wondermake.all
 wondermake.all: wondermake.default
 
-include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.check_make_version.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.utils.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.clean.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.config.unix-elf-clang.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.config.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.template.mk
+include $(dir $(lastword $(MAKEFILE_LIST)))check_make_version.mk
+include $(dir $(lastword $(MAKEFILE_LIST)))utils.mk
+include $(dir $(lastword $(MAKEFILE_LIST)))clean.mk
+include $(dir $(lastword $(MAKEFILE_LIST)))cbase/cbase.mk
 
 ###############################################################################
  # Include the dynamically generated makefiles
