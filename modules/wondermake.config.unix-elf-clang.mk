@@ -14,38 +14,58 @@ wondermake.ranlib := $(or $(call wondermake.user_override,RANLIB),$(wondermake.a
 ###############################################################################
 # Toolchain configuration variables
 
-wondermake.cpp_flags_out_mode = -o$@ -E -MMD -MF$(basename $@).d -MT$@ -MP # beware: $* not available if no stem
-wondermake.cxx_flags_out_mode = -o$@ -c
-wondermake.mxx_flags_out_mode = -o$@ --precompile
+# beware: $* not available if no stem
+wondermake.cpp_flags_out_mode = -o$@ -E -MD -MF$(basename $@).d -MT$@ -MP -MJ$(basename $@).compile_commands.json
+wondermake.pch_flags_out_mode = -o$@ -MD -MF$(basename $@).d -MT$@ -MP
+wondermake.cxx_flags_out_mode = -o$@ -c -MJ$(basename $@).ii.compile_commands.json
+wondermake.mxx_flags_out_mode = -o$@ --precompile -MJ$(dir $@)$(notdir $<).bmi.compile_commands.json
 wondermake.ld_flags_out_mode  = -o$@
 
+# some useful options: -Wmissing-include-dirs -Winvalid-pch -H -fpch-deps -Wp,-v
+# g++/clang++ -print-search-dirs ; ld --verbose | grep SEARCH_DIR | tr -s ' ;' \\012
+# to print the include search path: g++/clang++ -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed -e '/^[^ ]/d' -e 's,^ ,-I,'
+wondermake.cpp_flags := -Winvalid-pch
+wondermake.cxx_flags := -pipe
+
 wondermake.cpp_flags[c++]           := -xc++
+wondermake.pch_flags[c++]           := -xc++-header
 wondermake.cxx_flags[c++]           := -xc++-cpp-output -fmodules-ts
 wondermake.mxx_flags[c++]           := -xc++-module -fmodules-ts
 wondermake.cpp_flags[objective-c++] := -xobjective-c++
+wondermake.pch_flags[objective-c++] := -xobjective-c++-header
 wondermake.cxx_flags[objective-c++] := -xobjective-c++-cpp-output
 wondermake.cpp_flags[c]             := -xc
+wondermake.pch_flags[c]             := -xc-header
 wondermake.cxx_flags[c]             := -xc-cpp-output
 wondermake.cpp_flags[objective-c]   := -xobjective-c
+wondermake.pch_flags[objective-c]   := -xobjective-c-header
 wondermake.cxx_flags[objective-c]   := -xobjective-c-cpp-output
 
 wondermake.cpp_define_pattern := -D%
 wondermake.cpp_undefine_pattern := -U%
 wondermake.cpp_include_pattern := -include=%
 wondermake.cpp_include_path_pattern := -I%
+wondermake.cpp_framework_pattern := -F%
 wondermake.cxx_module_map_pattern := -fmodule-file=%
 wondermake.cxx_module_path_pattern := -fprebuilt-module-path=%
+wondermake.ld_lib_path_pattern := -L%
 wondermake.ld_lib_pattern := -l%
+wondermake.ld_framework_pattern := -framework % # or -Xlinker -f% or -Wl,-f%
 
-wondermake.cxx_flags[shared_lib] := -fPIC
-wondermake.ld_flags[shared_lib]  := -shared
+wondermake.cxx_pic_flag                := -fPIC
+wondermake.cxx_pie_flag                := -fPIE
+wondermake.cxx_flags[shared_lib]       := $(wondermake.cxx_pic_flag)
+wondermake.ld_flags[static_executable] := -static # we can have both -shared and -static but that's not very useful
+wondermake.ld_flags[shared_lib]        := -shared
 
+wondermake.pch_suffix := pch #gch
 wondermake.bmi_suffix := pcm
 wondermake.obj_suffix := o
 
 wondermake.binary_file_pattern[executable] := %
 wondermake.binary_file_pattern[shared_lib] := lib%.so
 wondermake.binary_file_pattern[loadable_module] := %.so
+wondermake.binary_file_pattern[import_lib] := # none
 wondermake.binary_file_pattern[static_lib] := lib%.a
 wondermake.binary_file_pattern[objects] := # no link nor archive step
 wondermake.binary_file_pattern[headers] := # no link nor archive step
@@ -61,7 +81,7 @@ endif
 # Configuration
 
 # This rule is done only on first build or when changes in the env are detected.
-wondermake.configure: min_required_clang_major_version := 6
+wondermake.configure: min_required_clang_major_version := 6 # First version with ISO C++ module TS support
 wondermake.configure: wondermake.env.checksum
 	$(call wondermake.info,configure)
 	$(call wondermake.configure.check_toolchain_version,$(min_required_clang_major_version))
@@ -74,14 +94,10 @@ define wondermake.configure.check_toolchain_version # $1 = min_required_clang_ma
   if ! command -v $(firstword $(wondermake.cpp)) 1>/dev/null; \
   then \
     $(call wondermake.error_shell,requires clang version >= $1.); \
-    false; \
   fi; \
   actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cpp) -E -xc++ - | tail -n1); \
   if ! test $$actual_clang_major_version -ge $1; \
   then \
-    printf '%s\n' \
-      "requires clang version >= $1. \
-      $(firstword $(wondermake.cpp)) is version $$actual_clang_major_version." 1>&2; \
-    false; \
+    $(call wondermake.error_shell,requires clang version >= $1. $(firstword $(wondermake.cpp)) is version $$actual_clang_major_version."); \
   fi
 endef

@@ -19,3 +19,175 @@
 		- header units:
 			import "header"
 			import <header>
+
+*	deps syntax
+	hello.deps := phrases
+	phrases.?
+
+*	pkg-config
+		use
+		auto-generate
+	env
+		'PKG_CONFIG_PATH', 'PKG_CONFIG_LIBDIR', 'PKG_CONFIG_DISABLE_UNINSTALLED'
+		# PKG_CONFIG_TOP_BUILD_DIR, PKG_CONFIG_ALLOW_SYSTEM_CFLAGS, PKG_CONFIG_ALLOW_SYSTEM_LIBS
+
+*	ar
+	-Wl,-Bstatic
+	-Wl,-Bdynamic
+
+*	ld
+	-Wl,-rpath=$ORIGIN/<bin-to-lib>
+	-Wl,-rpath-link=
+	-Wl,--as-needed
+	soname and symlinks
+		ln -s lib.%.so.<version> lib.%.so
+		-Wl,-h,lib.%.so.<version>
+
+*	detect compiler
+	c++/cc/g++/gcc/clang++/clang -dumpversion (note: clang => fake old gcc version)
+	cl -? => First line "XXX Version X.Y.Z for XXX"
+	In the end: 3 "kinds": gcc, msvc, posix (which prolly won't work)
+	See also g++/clang++ -print-prog-name=ld, g++/clang++ -Wl,--version
+
+*	cross-compilation
+	#if defined __ELF__
+		#define WONDERBUILD__BIN_FMT "elf"
+	#elif defined __APPLE__ && defined __MACH__
+		#define WONDERBUILD__BIN_FMT "mac-o"
+	#elif defined _WIN32 /* note: is also defined when _WIN64 is defined */ || defined __CYGWIN__ || defined __MSYS__ || defined _UWIN
+		#define WONDERBUILD__BIN_FMT "pe"
+	#else
+		#error unkown binary format
+	#endif
+
+	#if defined __linux__
+		#define WONDERBUILD__OS "linux"
+	#elif defined __GNU__
+		#define WONDERBUILD__OS "hurd"
+	#elif defined __OpenBSD__
+		#define WONDERBUILD__OS "openbsd"
+	#elif defined __FreeBSD__
+		#define WONDERBUILD__OS "freebsd"
+	#elif defined __NetBSD__
+		#define WONDERBUILD__OS "netbsd"
+	#elif defined __sun
+		#if defined __SVR4
+			#define WONDERBUILD__OS "solaris"
+		#else
+			#define WONDERBUILD__OS "sunos"
+		#endif
+	#elif defined __sgi
+		#define WONDERBUILD__OS "irix"
+	#elif defined __hpux
+		#define WONDERBUILD__OS "hpux"
+	#elif defined _AIX
+		#define WONDERBUILD__OS "aix"
+	#elif defined __APPLE__ && defined __MACH__
+		#define WONDERBUILD__OS "darwin"
+	#elif defined __CYGWIN__
+		#define WONDERBUILD__OS "cygwin"
+	#elif defined __MSYS__
+		#define WONDERBUILD__OS "msys"
+	#elif defined _UWIN__
+		#define WONDERBUILD__OS "uwin"
+	#elif defined _WIN32
+		#define WONDERBUILD__OS "win"
+	#elif defined __QNX__
+		#define WONDERBUILD__OS "qnx"
+	#elif defined __native_client__
+		#define WONDERBUILD__OS "nacl"
+	#elif defined __unix__ || defined unix
+		#define WONDERBUILD__OS "unix"
+	#else
+		#error unkown operating system
+	#endif
+
+	#if defined __x86_64__
+		#define WONDERBUILD__ARCH "x86_64"
+	#elif defined __i386__
+		#define WONDERBUILD__ARCH "x86"
+	#elif defined __ia64__
+		#define WONDERBUILD__ARCH "ia"
+	#elif defined __mips__
+		#define WONDERBUILD__ARCH "mips"
+	#elif defined __sparc__
+		#define WONDERBUILD__ARCH "sparc"
+	#elif defined __alpha__
+		#define WONDERBUILD__ARCH "alpha"
+	#elif defined __arm__
+		#define WONDERBUILD__ARCH "arm"
+	#elif defined __hppa__
+		#define WONDERBUILD__ARCH "hppa"
+	#elif defined __powerpc__
+		#define WONDERBUILD__ARCH "powerpc"
+	#else
+		#define WONDERBUILD__ARCH "unknown"
+	#endif
+
+	WONDERBUILD__BIN_FMT
+	WONDERBUILD__OS
+	WONDERBUILD__ARCH
+
+*	install
+	env: 'DESTDIR', 'PREFIX', 'EXECPREFIX'
+	options: prefix, exec-prefix
+	fhs:
+		exec_prefix ?= prefix
+		exec_prefix/bin
+		exec_prefix/lib
+		exec_prefix/libexec
+		prefix/include
+		prefix/share
+
+*	env sig
+	PATH
+	gcc
+		common_env_sig
+			'LD_LIBRARY_PATH', # linux/solaris/macosx
+			'DYLD_LIBRARY_PATH', 'DYLD_FALLBACK_LIBRARY_PATH', # macosx
+			'SHLIB_PATH', # hpux
+			'LIBPATH', # aix
+			'GCC_EXEC_PREFIX', 'COMPILER_PATH',
+			'LIBRARY_PATH' # used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO
+		cxx_env_sig
+			'CPATH', 'CPLUS_INCLUDE_PATH', 'C_INCLUDE_PATH'
+		ld_env_sig
+			'GNUTARGET', 'LDEMULATION', 'COLLECT_NO_DEMANGLE',
+			'LD_RUN_PATH', # for elf native linker
+			'LD_LIBRARY_PATH' # for native linker
+
+*	mac-o
+	either lib%.dylib (shared-lib) or %.bundle (loadable_module) instead of lib%.so and %.so
+	framework: cpp: -F %, ld -framework % (or -Xlinker -f% or -Wl,-f%)
+	no need for pic flag
+	ld: -dynamiclib instead of -shared
+	bundle: -flat_namespace -bundle -undefined suppress
+	-install_name lib%.dylib
+	-fno-common
+	loadable_module usage: -ldl / #include <dlfcn.h> is replaced with #import <mach-o/dyld.h>
+
+*	cygwin
+	use cyg prefix instead of lib
+
+*	mingw
+	lib%.dll instead of lib%.so
+	import lib: -Wl,--out-implib,lib%.dll.a # mingw doesn't need import libs
+	-Wl,--enable-auto-import # suppress informational messages
+
+*	msvc
+	Taken from Wonderbuild msvc_imply.py
+	for everything: -nologo
+	programs: cpp/cxx = cl, ld = link, ar/ranlib = lib
+	cpp -ShowIncludes -I -D -U -FI
+	build check: -EP = pipe preproc, -P = preproc, -c = compile, -linker = link
+	pch:
+		create: -c -Yc -Tp %.hxx -Fp %.pch (default) -Fo %.obj (default)
+		use: -Yu basename%.hpp -Fp %.pch -FI basename%.hpp (-FI is the equivalent of -include)
+	ld: link -dll -out:%.dll/%.exe -implib:%.lib -libpath:% lib%.lib %.lib
+	ar: lib -out:.lib%.lib -remove:%.obj
+	ranlib: none
+	env vars: cpp INCLUDE, ld LIB
+
+*	Handle commas in flags: ld_command var may contain comma (e.g. -Wl,xxxx)
+	This will cause the arguments to the call to write_iif_content_changed to be wrong.
+	Perhaps same for $ in -Wl,-rpath=$ORIGIN

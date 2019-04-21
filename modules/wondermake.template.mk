@@ -55,11 +55,6 @@ define wondermake.template.vars.define
 
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
   wondermake.template.binary_file := $(wondermake.template.name:%=$(call wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(call wondermake.inherit_unique,$(wondermake.template.scope),type)]))
-
-  wondermake.template.cpp_command := $(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope))
-  wondermake.template.mxx_command := $(call wondermake.template.recipe.mxx_command,$(wondermake.template.scope))
-  wondermake.template.cxx_command := $(call wondermake.template.recipe.cxx_command,$(wondermake.template.scope))
-  wondermake.template.ld_command  := $(call wondermake.template.recipe.ld_command,$(wondermake.template.scope))
 endef
 
 ###############################################################################
@@ -68,16 +63,13 @@ define wondermake.template.vars.undefine
   undefine wondermake.template.src_dir
   undefine wondermake.template.cxx_files
   undefine wondermake.template.mxx_files
-  undefine wondermake.template.src_files
+  undefine wondermake.template.mxx_d_files
+  undefine wondermake.template.cxx_d_files
   undefine wondermake.template.bmi_suffix
   undefine wondermake.template.obj_suffix
   undefine wondermake.template.obj_files
   undefine wondermake.template.name
   undefine wondermake.template.binary_file
-  undefine wondermake.template.cpp_command
-  undefine wondermake.template.cxx_command
-  undefine wondermake.template.mxx_command
-  undefine wondermake.template.ld_command
 endef
 
 ###############################################################################
@@ -108,53 +100,56 @@ define wondermake.template.rules
   )
 
   # Rule to preprocess a c++ source file (the output directory creation is triggered here)
-  $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).cpp-command,$(wondermake.template.cpp_command))
+  $(if $(MAKE_RESTARTS),, # only do this on the first make phase \
+    ${wondermake.newline} $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).cpp-command,$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope))) \
+  )
   $(foreach src,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
     ${wondermake.newline}  $(src).ii: $(wondermake.template.src_dir)$(src) $(wondermake.template.scope).cpp-command wondermake.configure | $(dir $(src)) \
     ${wondermake.newline}	$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
     ${wondermake.newline}	$$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)) \
-    ${wondermake.newline}  wondermake.clean += $(src).ii
     ${wondermake.newline} \
   )
+  wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+  wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+  wondermake.clean += $(addsuffix .ii,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
+  wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
 
   # Rule to parse ISO C++ module keywords in an interface file
   $(wondermake.template.mxx_d_files): %.d: %.ii
 	$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 	$$(call wondermake.template.recipe.parse_export_module_keyword,$$(basename $$*).$(wondermake.template.bmi_suffix))
 	$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix) $$(basename $$*).$(wondermake.template.bmi_suffix))
-  wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files)
-  wondermake.clean += $(wondermake.template.mxx_d_files)
 
   # Rule to parse ISO C++ module keywords in an implementation file
   $(wondermake.template.cxx_d_files): %.d: %.ii
 	$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 	$$(call wondermake.template.recipe.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
 	$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
-  wondermake.dynamically_generated_makefiles += $(wondermake.template.cxx_d_files)
-  wondermake.clean += $(wondermake.template.cxx_d_files)
 
   # Rule to precompile a c++ source file to a binary module interface file
-  $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).mxx-command,$(wondermake.template.mxx_command))
+  $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).mxx-command,$(call wondermake.template.recipe.mxx_command,$(wondermake.template.scope)))
   $(foreach mxx,$(wondermake.template.mxx_files), \
     ${wondermake.newline}  $(basename $(mxx)).$(wondermake.template.bmi_suffix): $(mxx).ii $(wondermake.template.scope).mxx-command \
     ${wondermake.newline}	$$(call wondermake.announce,$(wondermake.template.scope),precompile $$<,to $$@) \
     ${wondermake.newline}	$$(call wondermake.template.recipe.mxx_command,$(wondermake.template.scope)) \
     ${wondermake.newline}  wondermake.clean += $(basename $(mxx)).$(wondermake.template.bmi_suffix) \
+    ${wondermake.newline}  wondermake.clean += $(mxx).ii.bmi.compile_commands.json \
     ${wondermake.newline} \
   )
 
   # Rule to compile a c++ source file to an object file
-  $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).cxx-command,$(wondermake.template.cxx_command))
+  $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).cxx-command,$(call wondermake.template.recipe.cxx_command,$(wondermake.template.scope)))
   $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope).cxx-command
 	$$(call wondermake.announce,$(wondermake.template.scope),compile $$<,to $$@)
 	$$(call wondermake.template.recipe.cxx_command,$(wondermake.template.scope))
   wondermake.clean += $(wondermake.template.obj_files)
+  wondermake.clean += $(patsubst %.$(wondermake.template.obj_suffix),%.ii.compile_commands.json,$(wondermake.template.obj_files))
 
   ifneq '' '$(wondermake.template.binary_file)'
     # Rule to trigger relinking when a source file (and hence its derived object file) is removed
     $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).src-files,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files),sort)
     # Command to link object files and produce an executable or shared library file
-    $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).ld-command,$(wondermake.template.ld_command))
+    $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).ld-command,$(call wondermake.template.recipe.ld_command,$(wondermake.template.scope)))
     $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope).src-files $(wondermake.template.scope).ld-command
 		$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$(filter-out $(wondermake.template.scope).src-files $(wondermake.template.scope).ld-command,$$+))
 		$$(call wondermake.template.recipe.ld_command,$(wondermake.template.scope))
@@ -181,8 +176,8 @@ define wondermake.template.recipe.write_iif_content_changed # $1 = target, $2 = 
 		$(call wondermake.trace,no change) \
 	, \
 		$(call wondermake.info,$(call wondermake.maybe_colored_out,$(wondermake.term.magenta)$(wondermake.term.bold),changed: \
-			$(patsubst %,-%,$(filter-out $($1.new),$($1.old))) \
-			$(patsubst %,+%,$(filter-out $($1.old),$($1.new))) \
+			$(wondermake.newline)+ $(filter-out $($1.old),$($1.new)) \
+			$(wondermake.newline)- $(filter-out $($1.new),$($1.old)) \
 		)) \
 		$(file > $1,$($1.new)) \
 	)
@@ -200,6 +195,7 @@ define wondermake.template.recipe.cpp_command # $1 = scope
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_undefine_pattern),$(call wondermake.inherit_append,$1,undefine)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern),$(call wondermake.inherit_prepend,$1,include)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern),$(call wondermake.inherit_prepend,$1,include_path)) \
+	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern),$(call wondermake.inherit_prepend,$1,frameworks)) \
 	$(call wondermake.inherit_append,$1,cpp_flags) \
 	$(CPPFLAGS) \
 	$<
@@ -239,7 +235,9 @@ define wondermake.template.recipe.ld_command # $1 = scope
 	$(call wondermake.inherit_append,$1,ld_flags) \
 	$(LDFLAGS) \
 	$(filter-out $1.src-files $1.ld-command,$+) \
+	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_libs_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_libs_pattern),$(call wondermake.inherit_append,$1,libs)) \
+	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
 	$(LDLIBS)
 endef
 
