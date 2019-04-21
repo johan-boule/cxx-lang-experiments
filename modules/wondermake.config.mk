@@ -33,6 +33,28 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 	$(call wondermake.info,checksum $@)
 	@new=$$( \
 		printf '%s\n' \
+			"PATH $(PATH)" \
+			"linux/solaris/macosx LD_LIBRARY_PATH $(LD_LIBRARY_PATH)" \
+			"macosx DYLD_LIBRARY_PATH $(DYLD_LIBRARY_PATH)" \
+			"macosx DYLD_FALLBACK_LIBRARY_PATH $(DYLD_FALLBACK_LIBRARY_PATH)" \
+			"hpux SHLIB_PATH $(SHLIB_PATH)" \
+			"aix LIBPATH $(LIBPATH)" \
+		| md5sum \
+	); \
+	if test "$$new" != '$(file < $@)'; \
+	then \
+		printf '%s' "$$new" > $@; \
+		$(call wondermake.notice_shell,changed); \
+	else \
+		$(call wondermake.trace_shell,no change); \
+	fi
+wondermake.clean += wondermake.env.checksum
+
+wondermake.env.checksum: wondermake.cxx.env.checksum
+wondermake.cxx.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this on the first make phase
+	$(call wondermake.info,checksum $@)
+	@new=$$( \
+		printf '%s\n' \
 			"stat CPP CXX LD AR RANLIB" \
 			"$$(stat -Lc%n\ %Y \
 				$$(command -v $(firstword $(wondermake.cpp))) \
@@ -44,6 +66,9 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 			"AR  flags $(wondermake.ar) $(ARFLAGS)" \
 			"RANLIB $(wondermake.ranlib)" \
 			"min required version $(min_required_clang_major_version)" \
+			"GCC_EXEC_PREFIX $(GCC_EXEC_PREFIX)" \
+			"COMPILER_PATH $(COMPILER_PATH)" \
+			"used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO LIBRARY_PATH $(LIBRARY_PATH)" \
 		| md5sum \
 	); \
 	if test "$$new" != '$(file < $@)'; \
@@ -53,4 +78,4 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 	else \
 		$(call wondermake.trace_shell,no change); \
 	fi
-wondermake.clean += wondermake.env.checksum
+wondermake.clean += wondermake.cxx.env.checksum

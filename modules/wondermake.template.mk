@@ -100,7 +100,8 @@ define wondermake.template.rules
   )
 
   # Rule to preprocess a c++ source file (the output directory creation is triggered here)
-  $(if $(MAKE_RESTARTS),, # only do this on the first make phase \
+  $(if $(MAKE_RESTARTS), # only do this on the first make phase \
+    ${wondermake.newline} wondermake.clean += $(wondermake.template.scope).cpp-command, \
     ${wondermake.newline} $(call wondermake.template.rules.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).cpp-command,$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope))) \
   )
   $(foreach src,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
