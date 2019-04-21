@@ -49,7 +49,7 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 	if test "$$new" != '$(file < $@)'; \
 	then \
 		printf '%s' "$$new" > $@; \
-		$(call wondermake.info_shell,$(call wondermake.maybe_colored_out,$(wondermake.term.magenta)$(wondermake.term.bold),changed)); \
+		$(call wondermake.notice_shell,changed); \
 	else \
 		$(call wondermake.trace_shell,no change); \
 	fi

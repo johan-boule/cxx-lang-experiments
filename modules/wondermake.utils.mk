@@ -88,12 +88,19 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
   wondermake.info_style  = $(call wondermake.maybe_colored_out,$(wondermake.term.cyan),$1,$(wondermake.term.0))
   wondermake.info        = $(info         $(call wondermake.info_style,$1))
   wondermake.info_shell  = printf '%s\n' '$(call wondermake.info_style,$1)'
+
+  wondermake.notice_style = $(call wondermake.maybe_colored_out,$(wondermake.term.magenta)$(wondermake.term.bold),$1,$(wondermake.term.0))
+  wondermake.notice       = $(info         $(call wondermake.notice_style,$1))
+  wondermake.notice_shell = printf '%s\n' '$(call wondermake.notice_style,$1)'
 else # Be quiet
   wondermake.trace :=
   wondermake.trace_shell := :
 
   wondermake.info :=
   wondermake.info_shell := :
+
+  wondermake.notice :=
+  wondermake.notice_shell := :
 endif
 
 wondermake.warning_style = $(call wondermake.maybe_colored_err,$(wondermake.term.bold)$(wondermake.term.yellow),$1,$(wondermake.term.0))
@@ -104,7 +111,7 @@ wondermake.error_style   = $(call wondermake.maybe_colored_err,$(wondermake.term
 wondermake.error         = $(error        $(call wondermake.error_style,$1))
 wondermake.error_shell   = printf '%s\n' '$(call wondermake.error_style,$1)' 1>&2; false
 
-wondermake.announce = $(call wondermake.info\
+wondermake.announce = $(call wondermake.info \
 	,$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.bold),{$1},$(wondermake.term.bold_off))) \
 	$(strip $2) \
 	$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.dim),$3,$(wondermake.term.dim_off))))

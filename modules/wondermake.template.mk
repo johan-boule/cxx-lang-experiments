@@ -175,10 +175,10 @@ define wondermake.template.recipe.write_iif_content_changed # $1 = target, $2 = 
 	$(if $(call wondermake.equals,$($1.new),$($1.old)), \
 		$(call wondermake.trace,no change) \
 	, \
-		$(call wondermake.info,$(call wondermake.maybe_colored_out,$(wondermake.term.magenta)$(wondermake.term.bold),changed: \
+		$(call wondermake.notice,changed: \
 			$(wondermake.newline)+ $(filter-out $($1.old),$($1.new)) \
 			$(wondermake.newline)- $(filter-out $($1.new),$($1.old)) \
-		)) \
+		) \
 		$(file > $1,$($1.new)) \
 	)
 	$(eval undefine $1.old)
