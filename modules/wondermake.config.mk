@@ -41,9 +41,6 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 				$$(command -v $(firstword $(wondermake.ar))) \
 				$$(command -v $(firstword $(wondermake.ranlib))) \
 			)" \
-			"CPP flags $(wondermake.cpp) $(CPPFLAGS)" \
-			"CXX flags $(wondermake.cxx) $(CXXFLAGS)" \
-			"LD  flags $(wondermake.ld) $(LDFLAGS) $(LDLIBS)" \
 			"AR  flags $(wondermake.ar) $(ARFLAGS)" \
 			"RANLIB $(wondermake.ranlib)" \
 			"min required version $(min_required_clang_major_version)" \
@@ -52,7 +49,7 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 	if test "$$new" != '$(file < $@)'; \
 	then \
 		printf '%s' "$$new" > $@; \
-		$(call wondermake.trace_shell,changed); \
+		$(call wondermake.info_shell,$(call wondermake.maybe_colored_out,$(wondermake.term.magenta)$(wondermake.term.bold),changed)); \
 	else \
 		$(call wondermake.trace_shell,no change); \
 	fi
