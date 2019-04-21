@@ -5,6 +5,7 @@
 .PHONY: wondermake.default wondermake.all
 wondermake.all: wondermake.default
 
+include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.check_make_version.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.utils.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.clean.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.config.unix-elf-clang.mk
