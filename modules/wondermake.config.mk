@@ -29,7 +29,8 @@ wondermake.hxx_suffix[objective-c++] := $(wondermake.hxx_suffix[c++])
 # - after a different compiler has been selected.
 # This rule is always executed.
 # This rule updates the target only when the checksum changes.
-wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this on the first make phase
+ifndef MAKE_RESTARTS # only do this on the first make phase
+  wondermake.env.checksum: wondermake.force
 	$(call wondermake.info,checksum $@)
 	@new=$$( \
 		printf '%s\n' \
@@ -48,10 +49,12 @@ wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this
 	else \
 		$(call wondermake.trace_shell,no change); \
 	fi
+endif
 wondermake.clean += wondermake.env.checksum
 
-wondermake.env.checksum: wondermake.cxx.env.checksum
-wondermake.cxx.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this on the first make phase
+ifndef MAKE_RESTARTS # only do this on the first make phase
+  wondermake.env.checksum: wondermake.cxx.env.checksum
+  wondermake.cxx.env.checksum: wondermake.force
 	$(call wondermake.info,checksum $@)
 	@new=$$( \
 		printf '%s\n' \
@@ -78,4 +81,5 @@ wondermake.cxx.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do 
 	else \
 		$(call wondermake.trace_shell,no change); \
 	fi
+endif
 wondermake.clean += wondermake.cxx.env.checksum

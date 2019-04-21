@@ -26,6 +26,7 @@ wondermake.ld_flags_out_mode  = -o$@
 # to print the include search path: g++/clang++ -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed -e '/^[^ ]/d' -e 's,^ ,-I,'
 wondermake.cpp_flags := -Winvalid-pch
 wondermake.cxx_flags := -pipe
+wondermake.ld_flags  :=
 
 wondermake.cpp_flags[c++]           := -xc++
 wondermake.pch_flags[c++]           := -xc++-header
@@ -81,23 +82,25 @@ endif
 # Configuration
 
 # This rule is done only on first build or when changes in the env are detected.
-wondermake.configure: min_required_clang_major_version := 6 # First version with ISO C++ module TS support
-wondermake.configure: wondermake.env.checksum
+ifndef MAKE_RESTARTS # only do this on the first make phase
+  wondermake.configure: min_required_clang_major_version := 6 # First version with ISO C++ module TS support
+  wondermake.configure: wondermake.env.checksum
 	$(call wondermake.info,configure)
 	$(call wondermake.configure.check_toolchain_version,$(min_required_clang_major_version))
 	@touch $@
-wondermake.clean += wondermake.configure
 
-define wondermake.configure.check_toolchain_version # $1 = min_required_clang_major_version
-  $(call wondermake.info,check toolchain version)
-  @set -e; \
-  if ! command -v $(firstword $(wondermake.cpp)) 1>/dev/null; \
-  then \
-    $(call wondermake.error_shell,requires clang version >= $1.); \
-  fi; \
-  actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cpp) -E -xc++ - | tail -n1); \
-  if ! test $$actual_clang_major_version -ge $1; \
-  then \
-    $(call wondermake.error_shell,requires clang version >= $1. $(firstword $(wondermake.cpp)) is version $$actual_clang_major_version."); \
-  fi
-endef
+  define wondermake.configure.check_toolchain_version # $1 = min_required_clang_major_version
+    $(call wondermake.info,check toolchain version)
+    @set -e; \
+    if ! command -v $(firstword $(wondermake.cpp)) 1>/dev/null; \
+    then \
+      $(call wondermake.error_shell,requires clang version >= $1.); \
+    fi; \
+    actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cpp) -E -xc++ - | tail -n1); \
+    if ! test $$actual_clang_major_version -ge $1; \
+    then \
+      $(call wondermake.error_shell,requires clang version >= $1. $(firstword $(wondermake.cpp)) is version $$actual_clang_major_version."); \
+    fi
+  endef
+endif
+wondermake.clean += wondermake.configure
