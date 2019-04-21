@@ -48,7 +48,8 @@ ifneq '' '$(MAKE_TERMOUT)$(MAKE_TERMERR)'
 		printf '%s\nsgr0\n' \
 			'setaf 0' 'setaf 1' 'setaf 2' 'setaf 3' 'setaf 4' 'setaf 5' 'setaf 6' 'setaf 7' \
 			bold dim \
-		| tput -S \
+		| tput -S; \
+		printf '\033[21m \033[22m' \
 	) \
   )
   wondermake.term.dark_grey  := $(word  1,$(wondermake.term))
@@ -61,6 +62,8 @@ ifneq '' '$(MAKE_TERMOUT)$(MAKE_TERMERR)'
   wondermake.term.light_grey := $(word  8,$(wondermake.term))
   wondermake.term.bold       := $(word  9,$(wondermake.term))
   wondermake.term.dim        := $(word 10,$(wondermake.term))
+  wondermake.term.bold_off   := $(word 11,$(wondermake.term))
+  wondermake.term.dim_off    := $(word 12,$(wondermake.term))
   undefine wondermake.term
 endif
 
@@ -100,3 +103,8 @@ wondermake.warning_shell = printf '%s\n' '$(call wondermake.warning_style,$1)' 1
 wondermake.error_style   = $(call wondermake.maybe_colored_err,$(wondermake.term.bold)$(wondermake.term.red),$1,$(wondermake.term.0))
 wondermake.error         = $(error        $(call wondermake.error_style,$1))
 wondermake.error_shell   = printf '%s\n' '$(call wondermake.error_style,$1)' 1>&2; false
+
+wondermake.announce = $(call wondermake.info\
+	,$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.bold),{$1},$(wondermake.term.bold_off))) \
+	$(strip $2) \
+	$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.dim),$3,$(wondermake.term.dim_off))))

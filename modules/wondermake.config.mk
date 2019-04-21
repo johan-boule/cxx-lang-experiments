@@ -30,7 +30,7 @@ wondermake.hxx_suffix[objective-c++] := $(wondermake.hxx_suffix[c++])
 # This rule is always executed.
 # This rule updates the target only when the checksum changes.
 wondermake.env.checksum: $(if $(MAKE_RESTARTS),,wondermake.force) # only do this on the first make phase
-	$(call wondermake.info,checksum program timestamps and variables to $@)
+	$(call wondermake.info,checksum $@)
 	@new=$$( \
 		printf '%s\n' \
 			"stat CPP CXX LD AR RANLIB" \
