@@ -29,6 +29,7 @@ module_demo_common_conf.cpp_flags := -std=c++2a
 module_demo_common_conf.cxx_flags := -std=c++2a #-pthreads
 module_demo_common_conf.ld_flags := #-pthreads
 module_demo_common_conf.libs := m dl
+module_demo_common_conf.pkg_config := zlib
 module_demo_common_conf.src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
 include $(module_demo_common_conf.src_dir)/wondermake/wondermake.mk

@@ -39,6 +39,33 @@ wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($
 .PHONY: wondermake.force
 
 ###############################################################################
+# Write a given content to a file only when that content differs from that of the existing file,
+# thereby preserving timestamp if content has not changed.
+
+define wondermake.write_iif_content_changed # $1 = scope, $2 = target, $3 = content, $4 = sort
+  $2: wondermake.force
+	$$(call wondermake.announce,$1,comparing $2)
+	$$(call wondermake.write_iif_content_changed.recipe,$2,$3,$4)
+  wondermake.clean += $2
+endef
+
+define wondermake.write_iif_content_changed.recipe # $1 = target, $2 = content, $3 = sort
+	$(eval $1.old := $(file < $1))
+	$(eval $1.new := $(if $3,$(call $3,$2),$2))
+	$(if $(call wondermake.equals,$($1.new),$($1.old)), \
+		$(call wondermake.trace,no change) \
+	, \
+		$(call wondermake.notice,changed: \
+			$(wondermake.newline)+ $(filter-out $($1.old),$($1.new)) \
+			$(wondermake.newline)- $(filter-out $($1.new),$($1.old)) \
+		) \
+		$(file > $1,$($1.new)) \
+	)
+	$(eval undefine $1.old)
+	$(eval undefine $1.new)
+endef
+
+###############################################################################
 # Logging
 
 ifneq '' '$(MAKE_TERMOUT)$(MAKE_TERMERR)'
