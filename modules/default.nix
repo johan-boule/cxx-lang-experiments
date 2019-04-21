@@ -9,8 +9,8 @@ derivation {
 	args = [ "-c" ''
 		set -eux &&
 		export PATH="$gnumake/bin:$coreutils/bin:$findutils/bin:$gnused/bin:$clang/bin:$patchelf/bin:$binutils/bin"
-		make -f $src/Makefile -j$NIX_BUILD_CORES -O
-		mv main $out
+		make -f $src/GNUmakefile -j$NIX_BUILD_CORES -O
+		mv hello $out
 		patchelf --shrink-rpath $out
 		strip -s $out
 	'' ];

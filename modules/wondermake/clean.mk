@@ -28,7 +28,7 @@ wondermake.auto-clean: wondermake.force
 	, \
 		$(eval $@.rm := $(filter-out $($@.new),$($@.old))) \
 		$(if $($@.rm), \
-			$(call wondermake.notice,removing $($@.rm))) \
+			$(call wondermake.notice,removing $($@.rm)) \
 			printf '%s' '$($@.rm)' | xargs rm -f ; \
 			printf '%s' '$(sort $(dir $($@.rm)))' | xargs rmdir -p 2>/dev/null || true; \
 			printf '%s\n' '$($@.new)' > $@ \
