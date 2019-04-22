@@ -14,12 +14,11 @@ wondermake.ranlib := $(or $(call wondermake.user_override,RANLIB),$(wondermake.a
 ###############################################################################
 # Toolchain configuration variables
 
-# beware: $* not available if no stem
-wondermake.cpp_flags_out_mode = -o$@ -E -MD -MF$(basename $@).d -MT$@ -MP -MJ$(basename $@).compile_commands.json
-wondermake.pch_flags_out_mode = -o$@ -MD -MF$(basename $@).d -MT$@ -MP
-wondermake.cxx_flags_out_mode = -o$@ -c -MJ$(basename $@).ii.compile_commands.json
-wondermake.mxx_flags_out_mode = -o$@ --precompile -MJ$(dir $@)$(notdir $<).bmi.compile_commands.json
-wondermake.ld_flags_out_mode  = -o$@
+wondermake.cpp_flags_out_mode = -o@target -E -MD -MF@(target).d -MT@(target) -MP -MJ@(target).compile_commands.json
+wondermake.pch_flags_out_mode = -o@target    -MD -MF@(target).d -MT@(target) -MP -MJ@(target).compile_commands.json
+wondermake.cxx_flags_out_mode = -o@target -c -MJ@(target).compile_commands.json
+wondermake.mxx_flags_out_mode = -o@target --precompile -MJ@(target).compile_commands.json
+wondermake.ld_flags_out_mode  = -o@target
 
 # some useful options: -Wmissing-include-dirs -Winvalid-pch -H -fpch-deps -Wp,-v
 # g++/clang++ -print-search-dirs ; ld --verbose | grep SEARCH_DIR | tr -s ' ;' \\012

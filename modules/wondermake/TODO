@@ -183,7 +183,8 @@
 	pch:
 		create: -c -Yc -Tp %.hxx -Fp %.pch (default) -Fo %.obj (default)
 		use: -Yu basename%.hpp -Fp %.pch -FI basename%.hpp (-FI is the equivalent of -include)
-	ld: link -dll -out:%.dll/%.exe -implib:%.lib -libpath:% lib%.lib %.lib
+	ld: either cl xxx -link xxx
+		or link -dll -out:%.dll/%.exe -implib:%.lib -libpath:% lib%.lib %.lib
 	ar: lib -out:.lib%.lib -remove:%.obj
 	ranlib: none
 	env vars: cpp INCLUDE, ld LIB
@@ -191,3 +192,6 @@
 *	Handle commas in flags: ld_command var may contain comma (e.g. -Wl,xxxx)
 	This will cause the arguments to the call to write_iif_content_changed to be wrong.
 	Perhaps same for $ in -Wl,-rpath=$ORIGIN
+
+*	large build system: allow parsing only the scopes that are in command requested goals
+	=> requires auto-clean per scope
