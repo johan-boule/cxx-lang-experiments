@@ -9,9 +9,12 @@ include $(dir $(lastword $(MAKEFILE_LIST)))check_make_version.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))utils.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))clean.mk
 
-#ifneq '' '$(foreach scope,$(wondermake),$(if $(call wondermake.inherit,$($(scope).toolchain)'
+###############################################################################
+# Include only the toolchains used by the scopes
+wondermake.toolchains := $(foreach scope,$(wondermake),$(call wondermake.inherit_unique,$(scope),toolchain))
+ifneq '' '$(filter cbase,$(wondermake.toolchains))'
   include $(dir $(lastword $(MAKEFILE_LIST)))cbase/cbase.mk
-#endif
+endif
 
 ###############################################################################
  # Include the dynamically generated makefiles
