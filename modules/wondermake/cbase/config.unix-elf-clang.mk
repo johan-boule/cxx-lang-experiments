@@ -85,22 +85,23 @@ endif
 ifndef MAKE_RESTARTS # only do this on the first make phase
   wondermake.configure: min_required_clang_major_version := 6 # First version with ISO C++ module TS support
   wondermake.configure: wondermake.env.checksum
-	$(call wondermake.info,configure)
+	$(call wondermake.announce,configure)
 	$(call wondermake.configure.check_toolchain_version,$(min_required_clang_major_version))
 	@touch $@
 
   define wondermake.configure.check_toolchain_version # $1 = min_required_clang_major_version
-    $(call wondermake.info,check toolchain version)
+    $(call wondermake.announce,check toolchain version,requires clang version >= $1)
     @set -e; \
     if ! command -v $(firstword $(wondermake.cpp)) 1>/dev/null; \
     then \
-      $(call wondermake.error_shell,requires clang version >= $1.); \
+      $(call wondermake.error_shell,requires clang version >= $1. compiler is '$(firstword $(wondermake.cpp))' and cannot be found.); \
     fi; \
     actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cpp) -E -xc++ - | tail -n1); \
     if ! test $$actual_clang_major_version -ge $1; \
     then \
       $(call wondermake.error_shell,requires clang version >= $1. $(firstword $(wondermake.cpp)) is version $$actual_clang_major_version.); \
-    fi
+    fi; \
+    $(call wondermake.trace_shell,$(firstword $(wondermake.cpp)) is version $$actual_clang_major_version.)
   endef
 endif
 wondermake.clean += wondermake.configure

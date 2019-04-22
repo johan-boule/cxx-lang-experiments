@@ -8,7 +8,10 @@ wondermake.all: wondermake.default
 include $(dir $(lastword $(MAKEFILE_LIST)))check_make_version.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))utils.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))clean.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))cbase/cbase.mk
+
+#ifneq '' '$(foreach scope,$(wondermake),$(if $(call wondermake.inherit,$($(scope).toolchain)'
+  include $(dir $(lastword $(MAKEFILE_LIST)))cbase/cbase.mk
+#endif
 
 ###############################################################################
  # Include the dynamically generated makefiles

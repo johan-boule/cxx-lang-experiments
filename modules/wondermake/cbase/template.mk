@@ -188,7 +188,7 @@ define wondermake.template.recipe.mxx_command # $1 = scope, $(module_map) is a v
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $(module_map)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
-  $(shell pkg-config --cflags-only-other $(call wondermake.inherit_prepend,$1,pkg_config)) \
+  $(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(CXXFLAGS) \
 	$<
 endef
@@ -202,7 +202,7 @@ define wondermake.template.recipe.cxx_command # $1 = scope, $(module_map) is a v
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $(module_map)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
-  $(shell pkg-config --cflags-only-other $(call wondermake.inherit_prepend,$1,pkg_config)) \
+  $(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(CXXFLAGS) \
 	$<
 endef

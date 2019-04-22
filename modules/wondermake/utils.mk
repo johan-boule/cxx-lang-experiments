@@ -20,6 +20,13 @@ define wondermake.newline
 endef
 
 ###############################################################################
+# Query the value of a variable from the make command line: make wondermake.print:some-var
+# It's equivalent to: echo '$(info $(some-var))' | make -f makefile -f -
+# Note that make's --eval option seems to be processed before any -f option, so that's not an alternative.
+
+wondermake.print\:%: ; @echo $* = $($*)
+
+###############################################################################
 # Scope inheritance support functions
 
 # Find the root scope of the inheritance hierarchy ($1 = scope)
@@ -44,25 +51,25 @@ wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($
 
 define wondermake.write_iif_content_changed # $1 = scope, $2 = target, $3 = content, $4 = sort
   $2: wondermake.force
-	$$(call wondermake.announce,$1,comparing $2)
-	$$(call wondermake.write_iif_content_changed.recipe,$2,$3,$4)
+	$$(call wondermake.write_iif_content_changed.recipe,$1,$2,$3,$4)
   wondermake.clean += $2
 endef
 
-define wondermake.write_iif_content_changed.recipe # $1 = target, $2 = content, $3 = sort
-	$(eval $1.old := $(file < $1))
-	$(eval $1.new := $(if $3,$(call $3,$2),$2))
-	$(if $(call wondermake.equals,$($1.new),$($1.old)), \
-		$(call wondermake.trace,no change) \
+define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = target, $3 = content, $4 = sort
+	$(eval $2.old := $(file < $2))
+	$(eval $2.new := $(if $4,$(call $4,$3),$3))
+	$(if $(call wondermake.equals,$($2.new),$($2.old)), \
+		$(call wondermake.announce,$1,comparing $2,no change) \
 	, \
+		$(call wondermake.announce,$1,comparing $2) \
 		$(call wondermake.notice,changed: \
-			$(wondermake.newline)+ $(filter-out $($1.old),$($1.new)) \
-			$(wondermake.newline)- $(filter-out $($1.new),$($1.old)) \
+			$(wondermake.newline)+ $(filter-out $($2.old),$($2.new)) \
+			$(wondermake.newline)- $(filter-out $($2.new),$($2.old)) \
 		) \
-		$(file > $1,$($1.new)) \
+		$(file > $2,$($2.new)) \
 	)
-	$(eval undefine $1.old)
-	$(eval undefine $1.new)
+	$(eval undefine $2.old)
+	$(eval undefine $2.new)
 endef
 
 ###############################################################################
@@ -138,7 +145,13 @@ wondermake.error_style   := $(wondermake.term.bold)$(wondermake.term.red)
 wondermake.error          = $(error       $(call wondermake.maybe_colored_out,$(wondermake.error_style),$1,$(wondermake.term.0)))
 wondermake.error_shell    = printf '%s\n' $(call wondermake.maybe_colored_out,'$(wondermake.error_style)',"$1",'$(wondermake.term.0)') 1>&2; false
 
-wondermake.announce = $(call wondermake.info \
-	,$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.bold),{$1},$(wondermake.term.bold_off))) \
-	$(strip $2) \
-	$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.dim),$3,$(wondermake.term.dim_off))))
+wondermake.announce = \
+  $(eval wondermake.progress += x) \
+  $(call wondermake.info \
+		,$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.bold),[$(or $(MAKE_RESTARTS),0):$(words $(wondermake.progress))] {$1},$(wondermake.term.bold_off))) \
+		$(strip $2) \
+		$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.dim),$3,$(wondermake.term.dim_off))))
+
+ifdef MAKE_RESTARTS
+  $(call wondermake.announce,make restarts)
+endif

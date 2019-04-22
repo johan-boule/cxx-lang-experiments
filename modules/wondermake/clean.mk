@@ -3,7 +3,8 @@
 # This source is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 ###############################################################################
-# All rules producing a derived file appends it to this variable
+# All derived files are appended it to this variable
+
 wondermake.clean := # this is an immediate var
 
 ###############################################################################
@@ -20,20 +21,20 @@ wondermake.clean:
 
 wondermake.default: wondermake.auto-clean
 wondermake.auto-clean: wondermake.force
-	$(call wondermake.info,auto-clean)
 	$(eval $@.old := $(file < $@))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
-		$(call wondermake.trace,no change) \
+		$(call wondermake.announce,auto-clean,,no change) \
 	, \
 		$(eval $@.rm := $(filter-out $($@.new),$($@.old))) \
 		$(if $($@.rm), \
+			$(call wondermake.announce,auto-clean) \
 			$(call wondermake.notice,removing $($@.rm)) \
 			printf '%s' '$($@.rm)' | xargs rm -f ; \
 			printf '%s' '$(sort $(dir $($@.rm)))' | xargs rmdir -p 2>/dev/null || true; \
 			printf '%s\n' '$($@.new)' > $@ \
 		, \
-			$(call wondermake.trace,nothing to remove) \
+			$(call wondermake.announce,auto-clean,new files - nothing to remove) \
 			$(file > $@,$($@.new)) \
 		) \
 		$(eval undefine $@.rm) \

@@ -21,6 +21,7 @@ phrases.type := shared_lib
 phrases.src := src/phrases src/words src/letters
 phrases.inherit := module_demo_common_conf
 
+module_demo_common_conf.toolchain := cbase
 module_demo_common_conf.lang := c++
 module_demo_common_conf.include_path := src
 module_demo_common_conf.define := DUMMY_DEFINE=demo
