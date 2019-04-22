@@ -7,6 +7,7 @@ wondermake.all: wondermake.default
 
 include $(dir $(lastword $(MAKEFILE_LIST)))check_make_version.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))utils.mk
+include $(dir $(lastword $(MAKEFILE_LIST)))log.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))clean.mk
 
 ###############################################################################
