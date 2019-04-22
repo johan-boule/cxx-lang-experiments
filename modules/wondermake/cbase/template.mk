@@ -94,39 +94,38 @@ define wondermake.template.rules
     $(wondermake.template.name): $(wondermake.template.obj_files)
   endif
 
-  # Rule to create an output directory
-  $(foreach directory,$(sort $(dir $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))), \
-    ${wondermake.newline}  $(directory): ; mkdir -p $$@ \
-  )
-
-  # Rule to preprocess a c++ source file (the output directory creation is triggered here)
-  ifndef MAKE_RESTARTS # only do this on the first make phase
-    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).cpp-command,$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)))
-  else
+  # Rules to preprocess c++ source files
+  ifdef MAKE_RESTARTS # .ii and .d files are up-to-date
     wondermake.clean += $(wondermake.template.scope).cpp-command
+  else # only do this on the first make phase
+    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).cpp-command,$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)))
+    # Rule to create an output directory
+    $(foreach directory,$(sort $(dir $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))), \
+      ${wondermake.newline} $(directory): ; mkdir -p $$@ \
+    )
+    # Rule to preprocess a c++ source file (the output directory creation is triggered here)
+    $(foreach src,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
+      ${wondermake.newline} $(src).ii: $(wondermake.template.src_dir)$(src) $(wondermake.template.scope).cpp-command wondermake.configure | $(dir $(src)) \
+      ${wondermake.newline}		$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
+      ${wondermake.newline}		$$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)) \
+      ${wondermake.newline} \
+    )
+    # Rule to parse ISO C++ module keywords in an interface file
+    $(wondermake.template.mxx_d_files): %.d: %.ii
+		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
+		$$(call wondermake.template.recipe.parse_export_module_keyword,$$(basename $$*).$(wondermake.template.bmi_suffix))
+		$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix) $$(basename $$*).$(wondermake.template.bmi_suffix))
+  
+    # Rule to parse ISO C++ module keywords in an implementation file
+    $(wondermake.template.cxx_d_files): %.d: %.ii
+		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
+		$$(call wondermake.template.recipe.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
+		$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
   endif
-  $(foreach src,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
-    ${wondermake.newline}  $(src).ii: $(wondermake.template.src_dir)$(src) $(wondermake.template.scope).cpp-command wondermake.configure | $(dir $(src)) \
-    ${wondermake.newline}	$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
-    ${wondermake.newline}	$$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)) \
-    ${wondermake.newline} \
-  )
   wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
   wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
   wondermake.clean += $(addsuffix .ii,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
   wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
-
-  # Rule to parse ISO C++ module keywords in an interface file
-  $(wondermake.template.mxx_d_files): %.d: %.ii
-	$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
-	$$(call wondermake.template.recipe.parse_export_module_keyword,$$(basename $$*).$(wondermake.template.bmi_suffix))
-	$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix) $$(basename $$*).$(wondermake.template.bmi_suffix))
-
-  # Rule to parse ISO C++ module keywords in an implementation file
-  $(wondermake.template.cxx_d_files): %.d: %.ii
-	$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
-	$$(call wondermake.template.recipe.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
-	$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
 
   # Rule to precompile a c++ source file to a binary module interface file
   $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),$(wondermake.template.scope).mxx-command,$(call wondermake.template.recipe.mxx_command,$(wondermake.template.scope)))

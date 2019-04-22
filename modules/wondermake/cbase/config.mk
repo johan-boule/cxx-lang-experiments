@@ -13,7 +13,6 @@
 # This rule updates the target only when the checksum changes.
 ifndef MAKE_RESTARTS # only do this on the first make phase
   wondermake.env.checksum: wondermake.force wondermake.cxx.env.checksum
-	$(call wondermake.announce,checksum,$@)
 	@new=$$( \
 		printf '%s\n' \
 			"$$(stat -Lc%n\ %Y wondermake.cxx.env.checksum)" \
@@ -25,19 +24,19 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 			"aix LIBPATH $(LIBPATH)" \
 		| md5sum \
 	); \
-	if test "$$new" != '$(file < $@)'; \
+	if test "$$new" != '$(file < $@)'; $(eval wondermake.progress += x) \
 	then \
 		printf '%s' "$$new" > $@; \
+		$(call wondermake.announce_shell,checksum,$@); \
 		$(call wondermake.notice_shell,changed); \
 	else \
-		$(call wondermake.trace_shell,no change); \
+		$(call wondermake.announce_shell,checksum,$@,no change); \
 	fi
 endif
 wondermake.clean += wondermake.env.checksum
 
 ifndef MAKE_RESTARTS # only do this on the first make phase
   wondermake.cxx.env.checksum: wondermake.force
-	$(call wondermake.announce,checksum,$@)
 	@new=$$( \
 		printf '%s\n' \
 			"stat CPP CXX LD AR RANLIB" \
@@ -56,12 +55,13 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 			"used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO LIBRARY_PATH $(LIBRARY_PATH)" \
 		| md5sum \
 	); \
-	if test "$$new" != '$(file < $@)'; \
+	if test "$$new" != '$(file < $@)'; $(eval wondermake.progress += x) \
 	then \
 		printf '%s' "$$new" > $@; \
+		$(call wondermake.announce_shell,checksum,$@); \
 		$(call wondermake.notice_shell,changed); \
 	else \
-		$(call wondermake.trace_shell,no change); \
+		$(call wondermake.announce_shell,checksum,$@,no change); \
 	fi
 endif
 wondermake.clean += wondermake.cxx.env.checksum

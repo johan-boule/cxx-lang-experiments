@@ -151,6 +151,13 @@ wondermake.announce = \
 		,$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.bold),[$(or $(MAKE_RESTARTS),0):$(words $(wondermake.progress))] {$1},$(wondermake.term.bold_off))) \
 		$(strip $2) \
 		$(strip $(call wondermake.maybe_colored_out,$(wondermake.term.dim),$3,$(wondermake.term.dim_off))))
+wondermake.announce_shell = \
+  printf '%s' \
+		$(call wondermake.maybe_colored_out,'$(wondermake.info_style)$(wondermake.term.bold)') \
+		"[$(or $(MAKE_RESTARTS),0):$(words $(wondermake.progress))] {$1}" \
+		$(call wondermake.maybe_colored_out,'$(wondermake.term.bold_off)'); \
+  printf ' %s' "$2"; \
+  printf ' %s\n' $(call wondermake.maybe_colored_out,'$(wondermake.term.dim)',"$3",'$(wondermake.term.0)')
 
 ifdef MAKE_RESTARTS
   $(call wondermake.announce,make restarts)
