@@ -109,7 +109,8 @@ define wondermake.template.rules
     $(foreach src,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
       ${wondermake.newline} $(src).ii: $(wondermake.template.src_dir)$(src) $(wondermake.template.scope).cpp_command wondermake.configure | $(dir $(src)) \
       ${wondermake.newline}		$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
-      ${wondermake.newline}		$$(subst @(target),$$@,$$(subst @(prereq),$$<,$$($(wondermake.template.scope).cpp_command))) \
+      ${wondermake.newline}		$$(eval $$@.eval_cmd := $$($(wondermake.template.scope).cpp_command)) \
+      ${wondermake.newline}		$$($$@.eval_cmd) \
       ${wondermake.newline} \
     )
 
@@ -136,8 +137,9 @@ define wondermake.template.rules
   $(foreach mxx,$(wondermake.template.mxx_files), \
     ${wondermake.newline}  $(basename $(mxx)).$(wondermake.template.bmi_suffix): $(mxx).ii $(wondermake.template.scope).mxx_command | $(mxx).ii.d # if .d failed to build, don't continue \
     ${wondermake.newline}	$$(call wondermake.announce,$(wondermake.template.scope),precompile $$<,to $$@) \
-    ${wondermake.newline}	$$(info ************ module_map **************** $$(module_map))
-    ${wondermake.newline}	$$(subst @(target),$$@,$$(subst @(prereq),$$<,$$($(wondermake.template.scope).mxx_command)))
+    ${wondermake.newline}	$$(eval $$@.eval_cmd := $$($(wondermake.template.scope).mxx_command)) \
+    ${wondermake.newline}	$$($$@.eval_cmd) \
+    ${wondermake.newline}	$$(eval undefine $$@.eval_cmd) \
     ${wondermake.newline}  wondermake.clean += $(basename $(mxx)).$(wondermake.template.bmi_suffix) \
     ${wondermake.newline}  wondermake.clean += $(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json \
     ${wondermake.newline}  wondermake.compile_commands.json += $(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json \
@@ -148,8 +150,9 @@ define wondermake.template.rules
   $(call wondermake.write_iif_content_changed.rule,$(wondermake.template.scope),cxx_command,$$(call wondermake.template.recipe.cxx_command,$(wondermake.template.scope)))
   $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope).cxx_command | %.ii.d # if .d failed to build, don't continue
 	$$(call wondermake.announce,$(wondermake.template.scope),compile $$<,to $$@)
-	$$(info ************ module_map **************** $$(module_map))
-	$$(subst @(target),$$@,$$(subst @(prereq),$$<,$$($(wondermake.template.scope).cxx_command)))
+	$$(eval $$@.eval_cmd := $$($(wondermake.template.scope).cxx_command))
+	$$($$@.eval_cmd)
+	$$(eval undefine $$@.eval_cmd)
   wondermake.clean += $(wondermake.template.obj_files)
   wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
   wondermake.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
@@ -161,7 +164,9 @@ define wondermake.template.rules
     $(call wondermake.write_iif_content_changed.rule,$(wondermake.template.scope),ld_command,$$(call wondermake.template.recipe.ld_command,$(wondermake.template.scope)))
     $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope).src_files $(wondermake.template.scope).ld_command
 		$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$(filter-out $(wondermake.template.scope).src_files $(wondermake.template.scope).ld_command,$$+))
-		$$(subst @(target),$$@,$$(subst @(prereqs),$$(filter-out $(wondermake.template.scope).src_files $(wondermake.template.scope).ld_command,$$+),$$($(wondermake.template.scope).ld_command)))
+		$$(eval $$@.eval_cmd := $$($(wondermake.template.scope).ld_command))
+		$$($$@.eval_cmd)
+		$$(eval undefine $$@.eval_cmd)
     wondermake.clean += $(wondermake.template.binary_file)
   endif
 endef
@@ -183,7 +188,7 @@ define wondermake.template.recipe.cpp_command # $1 = scope
 	$(call wondermake.inherit_append,$1,cpp_flags) \
 	$(shell pkg-config --cflags $(call wondermake.inherit_prepend,$1,pkg_config)) \
 	$(CPPFLAGS) \
-	@(prereq)
+	$$<
 endef
 
 # Command to precompile a c++ source file to a binary module interface file
@@ -193,11 +198,11 @@ define wondermake.template.recipe.mxx_command # $1 = scope, $(module_map) is a v
 	$(call wondermake.inherit_unique,$1,mxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
-	$$$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$$$(module_map)) \
+	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(CXXFLAGS) \
-	@(prereq)
+	$$<
 endef
 
 # Command to compile a c++ source file to an object file
@@ -207,11 +212,11 @@ define wondermake.template.recipe.cxx_command # $1 = scope, $(module_map) is a v
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
-	$$$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$$$(module_map)) \
+	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(CXXFLAGS) \
-	@(prereq)
+	$$<
 endef
 
 # Command to link object files and produce an executable or shared library file
@@ -221,7 +226,7 @@ define wondermake.template.recipe.ld_command # $1 = scope
 	$(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(call wondermake.inherit_append,$1,ld_flags) \
 	$(LDFLAGS) \
-	@(prereqs) \
+	$$(filter-out $1.src_files $1.ld_command,$$+) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_libs_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_libs_pattern),$(call wondermake.inherit_append,$1,libs)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \

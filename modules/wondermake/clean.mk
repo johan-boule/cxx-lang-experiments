@@ -21,7 +21,7 @@ wondermake.clean:
 
 wondermake.default: wondermake.auto-clean
 wondermake.auto-clean: wondermake.force
-	$(eval $@.old := $(file < $@))
+	$(eval $@.old := $(subst $$,$$$$,$(file < $@)))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
 		$(call wondermake.announce,auto-clean,,no change) \
