@@ -190,9 +190,5 @@
 	ranlib: none
 	env vars: cpp INCLUDE, ld LIB
 
-*	Handle commas in flags: ld_command var may contain comma (e.g. -Wl,xxxx)
-	This will cause the arguments to the call to write_iif_content_changed to be wrong.
-	Perhaps same for $ in -Wl,-rpath=$ORIGIN
-
 *	large build system: allow parsing only the scopes that are in command requested goals
 	=> requires auto-clean per scope
