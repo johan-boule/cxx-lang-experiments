@@ -2,6 +2,7 @@
 	make drops some circular dependencies, and proceed and fail to build object files with plain cc.
 	make: Circular src/phrases/phrases.cppm.o <- src/phrases/phrases.cppm.ii dependency dropped.
 	cc   src/phrases/phrases.cppm.o   -o src/phrases/phrases.cppm
+	Prolly can locally deactivate pattern rule %.o for a specific list of targets
 
 *	Fail fast: When clang is not found, make will still try to build.
 

@@ -22,7 +22,7 @@ define wondermake.template
     $(info $(wondermake.template.rules))
   endif
 
-  $(eval $(wondermake.template.vars.undefine))
+  $(eval $(value wondermake.template.vars.undefine))
 endef
 
 ###############################################################################
@@ -91,6 +91,7 @@ define wondermake.template.rules
       $(wondermake.template.name): $(wondermake.template.binary_file)
     endif
   else # No link nor archive step: target is just the list of object files
+    .PHONY: $(wondermake.template.name)
     $(wondermake.template.name): $(wondermake.template.obj_files)
   endif
 
@@ -102,22 +103,24 @@ define wondermake.template.rules
     $(foreach directory,$(sort $(dir $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))), \
       ${wondermake.newline} $(directory): ; mkdir -p $$@ \
     )
+
     # Rule to preprocess a c++ source file (the output directory creation is triggered here)
-	$(call wondermake.write_iif_content_changed.rule,$(wondermake.template.scope),cpp_command,$$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)))
+    $(call wondermake.write_iif_content_changed.rule,$(wondermake.template.scope),cpp_command,$$(call wondermake.template.recipe.cpp_command,$(wondermake.template.scope)))
     $(foreach src,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
       ${wondermake.newline} $(src).ii: $(wondermake.template.src_dir)$(src) $(wondermake.template.scope).cpp_command wondermake.configure | $(dir $(src)) \
       ${wondermake.newline}		$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
       ${wondermake.newline}		$$(subst @(target),$$@,$$(subst @(prereq),$$<,$$($(wondermake.template.scope).cpp_command))) \
       ${wondermake.newline} \
     )
+
     # Rule to parse ISO C++ module keywords in an interface file
-    $(wondermake.template.mxx_d_files): %.ii.d: %
+    $(wondermake.template.mxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.template.recipe.parse_export_module_keyword,$$(basename $$*).$(wondermake.template.bmi_suffix))
 		$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix) $$(basename $$*).$(wondermake.template.bmi_suffix))
-  
+
     # Rule to parse ISO C++ module keywords in an implementation file
-    $(wondermake.template.cxx_d_files): %.ii.d: %
+    $(wondermake.template.cxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.template.recipe.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
 		$$(call wondermake.template.recipe.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
@@ -126,25 +129,30 @@ define wondermake.template.rules
   wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
   wondermake.clean += $(addsuffix .ii,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
   wondermake.clean += $(addsuffix .ii.compile_commands.json,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
+  wondermake.compile_commands.json += $(addsuffix .ii.compile_commands.json,$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
 
   # Rule to precompile a c++ source file to a binary module interface file
   $(call wondermake.write_iif_content_changed.rule,$(wondermake.template.scope),mxx_command,$$(call wondermake.template.recipe.mxx_command,$(wondermake.template.scope)))
   $(foreach mxx,$(wondermake.template.mxx_files), \
-    ${wondermake.newline}  $(basename $(mxx)).$(wondermake.template.bmi_suffix): $(mxx).ii $(wondermake.template.scope).mxx_command \
+    ${wondermake.newline}  $(basename $(mxx)).$(wondermake.template.bmi_suffix): $(mxx).ii $(wondermake.template.scope).mxx_command | $(mxx).ii.d # if .d failed to build, don't continue \
     ${wondermake.newline}	$$(call wondermake.announce,$(wondermake.template.scope),precompile $$<,to $$@) \
+    ${wondermake.newline}	$$(info ************ module_map **************** $$(module_map))
     ${wondermake.newline}	$$(subst @(target),$$@,$$(subst @(prereq),$$<,$$($(wondermake.template.scope).mxx_command)))
     ${wondermake.newline}  wondermake.clean += $(basename $(mxx)).$(wondermake.template.bmi_suffix) \
     ${wondermake.newline}  wondermake.clean += $(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json \
+    ${wondermake.newline}  wondermake.compile_commands.json += $(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json \
     ${wondermake.newline} \
   )
 
   # Rule to compile a c++ source file to an object file
   $(call wondermake.write_iif_content_changed.rule,$(wondermake.template.scope),cxx_command,$$(call wondermake.template.recipe.cxx_command,$(wondermake.template.scope)))
-  $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope).cxx_command
+  $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope).cxx_command | %.ii.d # if .d failed to build, don't continue
 	$$(call wondermake.announce,$(wondermake.template.scope),compile $$<,to $$@)
+	$$(info ************ module_map **************** $$(module_map))
 	$$(subst @(target),$$@,$$(subst @(prereq),$$<,$$($(wondermake.template.scope).cxx_command)))
   wondermake.clean += $(wondermake.template.obj_files)
   wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
+  wondermake.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
 
   ifneq '' '$(wondermake.template.binary_file)'
     # Rule to trigger relinking when a source file (and hence its derived object file) is removed
@@ -185,7 +193,7 @@ define wondermake.template.recipe.mxx_command # $1 = scope, $(module_map) is a v
 	$(call wondermake.inherit_unique,$1,mxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $(module_map)) \
+	$$$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$$$(module_map)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(CXXFLAGS) \
@@ -199,7 +207,7 @@ define wondermake.template.recipe.cxx_command # $1 = scope, $(module_map) is a v
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $(module_map)) \
+	$$$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$$$(module_map)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(CXXFLAGS) \
@@ -245,7 +253,7 @@ $(foreach wondermake.template.scope,$(wondermake), \
 		,,$(eval $(call wondermake.inherit_root,$(wondermake.template.scope)).inherit := wondermake)))
 		# Note: the same root may be visited multiple times so we must take care of not making the wondermake scope inherit from itself.
 
-wondermake.dynamically_generated_makefiles := # this is an immediate var
+compile_commands.json := # this is an immediate var
 
 # Execute the template for each user-declared scope
 $(foreach wondermake.template.scope,$(wondermake),$(eval $(value wondermake.template)))
@@ -255,3 +263,13 @@ ifneq '' '$(filter template,$(wondermake.verbose))'
   $(info ############### End of template execution ###############)
   $(info )
 endif
+
+###############################################################################
+# compilation database (compile_commands.json)
+
+compile_commands.json: $(wondermake.compile_commands.json)
+	$(call wondermake.announce,$@)
+	printf '[\n' > $@; \
+	cat >> $@; \
+	printf ']\n' >> $@
+#TODO wondermake.default: compile_commands.json
