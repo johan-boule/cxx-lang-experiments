@@ -24,7 +24,7 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 			"aix LIBPATH $(LIBPATH)" \
 		| md5sum \
 	); \
-	if test "$$new" != '$(shell cat $@)'; $(eval wondermake.progress += x) \
+	if test "$$new" != '$(shell cat $@ 2>/dev/null)'; $(eval wondermake.progress += x) \
 	then \
 		printf '%s' "$$new" > $@; \
 		$(call wondermake.announce_shell,checksum,$@); \
@@ -55,7 +55,7 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 			"used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO LIBRARY_PATH $(LIBRARY_PATH)" \
 		| md5sum \
 	); \
-	if test "$$new" != '$(shell cat $@)'; $(eval wondermake.progress += x) \
+	if test "$$new" != '$(shell cat $@ 2>/dev/null)'; $(eval wondermake.progress += x) \
 	then \
 		printf '%s' "$$new" > $@; \
 		$(call wondermake.announce_shell,checksum,$@); \

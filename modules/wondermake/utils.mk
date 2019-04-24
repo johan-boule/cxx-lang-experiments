@@ -57,7 +57,7 @@ endef
 
 define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = expression to evaluate
 	$(eval $1.$2 := $(subst $$,$$$$,$3))
-	$(eval $1.$2.old := $(subst $$,$$$$,$(shell cat $@)))
+	$(eval $1.$2.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null)))
 	$(if $(call wondermake.equals,$($1.$2),$($1.$2.old)), \
 		$(call wondermake.announce,$1,comparing $2,no change) \
 	, \

@@ -21,7 +21,7 @@ wondermake.clean:
 
 wondermake.default: $(wondermake.bld_dir)wondermake.auto-clean
 $(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_dir)
-	$(eval $@.old := $(subst $$,$$$$,$(shell cat $@)))
+	$(eval $@.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null)))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
 		$(call wondermake.announce,auto-clean,,no change) \
