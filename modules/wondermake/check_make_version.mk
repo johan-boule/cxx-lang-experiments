@@ -5,19 +5,19 @@
 ###############################################################################
 # Check make version
 
-wondermake.min_required_make_version := 4.2.1
+wondermake.min_required_make_version := 4.1.0
 ifndef MAKE_RESTARTS # only do this on the first make phase
   ifeq '' '$(filter-out 0 1 2 3,$(word 1,$(subst ., ,$(MAKE_VERSION))))'
     $(error make version too old. have $(MAKE_VERSION). wants $(wondermake.min_required_make_version))
   endif
   ifeq '4' '$(word 1,$(subst ., ,$(MAKE_VERSION)))'
-    ifeq '' '$(filter-out 0 1,$(word 2,$(subst ., ,$(MAKE_VERSION))))'
+    ifeq '' '$(filter-out 0,$(word 2,$(subst ., ,$(MAKE_VERSION))))'
       $(error make version too old. have $(MAKE_VERSION). wants $(wondermake.min_required_make_version))
     endif
-    ifeq '2' '$(word 2,$(subst ., ,$(MAKE_VERSION)))'
-      ifeq '' '$(filter-out 0,$(word 3,$(subst ., ,$(MAKE_VERSION))))'
-        $(error make version too old. have $(MAKE_VERSION). wants $(wondermake.min_required_make_version))
-      endif
+    ifeq '1' '$(word 2,$(subst ., ,$(MAKE_VERSION)))'
+      #ifeq '' '$(filter-out 2,$(word 3,$(subst ., ,$(MAKE_VERSION))))'
+      #  $(error make version too old. have $(MAKE_VERSION). wants $(wondermake.min_required_make_version))
+      #endif
     endif
   endif
 endif
