@@ -12,15 +12,15 @@ wondermake.clean := # this is an immediate var
 
 .PHONY: wondermake.clean
 wondermake.clean:
-	$(call wondermake.info,clean)
+	$(call wondermake.announce,clean)
 	printf '%s' '$(wondermake.clean)' | xargs rm -f; \
 	printf '%s' '$(sort $(dir $(wondermake.clean)))' | xargs rmdir -p 2>/dev/null || true
 
 ###############################################################################
 # Auto-clean rule
 
-wondermake.default: wondermake.auto-clean
-wondermake.auto-clean: wondermake.force
+wondermake.default: $(wondermake.bld_dir)wondermake.auto-clean
+$(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_dir)
 	$(eval $@.old := $(subst $$,$$$$,$(shell cat $@)))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
@@ -41,4 +41,4 @@ wondermake.auto-clean: wondermake.force
 	)
 	$(eval undefine $@.old)
 	$(eval undefine $@.new)
-wondermake.clean += wondermake.auto-clean
+wondermake.clean += $(wondermake.bld_dir)wondermake.auto-clean
