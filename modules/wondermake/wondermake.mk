@@ -5,11 +5,8 @@
 include $(dir $(lastword $(MAKEFILE_LIST)))check_make_version.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))utils.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))log.mk
+include $(dir $(lastword $(MAKEFILE_LIST)))init.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))clean.mk
-
-.PHONY: wondermake.default wondermake.all
-wondermake.all: wondermake.default
-wondermake.dynamically_generated_makefiles := # this is an immediate var
 
 ###############################################################################
 # Include only the toolchains used by the scopes
@@ -28,7 +25,7 @@ endif
  # So, preprocessing occurs on the first make phase.
  # Secondary expansion is used to allow variables to be defined out of order.
  # (Without secondary expansion, we have to include $(srcm).d before $(src).d)
-ifeq '' '$(or $(wondermake.equals,clean,$(MAKECMDGOALS)),$(wondermake.equals,wondermake.clean,$(MAKECMDGOALS)))' # don't remake the .d files when cleaning
+ifeq '' '$(or $(call wondermake.equals,clean,$(MAKECMDGOALS)),$(call wondermake.equals,wondermake.clean,$(MAKECMDGOALS)))' # don't remake the .d files when cleaning
   .SECONDEXPANSION:
   -include $(wondermake.dynamically_generated_makefiles)
 endif

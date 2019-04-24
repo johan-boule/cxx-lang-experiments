@@ -12,10 +12,10 @@
 # This rule is always executed.
 # This rule updates the target only when the checksum changes.
 ifndef MAKE_RESTARTS # only do this on the first make phase
-  wondermake.env.checksum: wondermake.force wondermake.cxx.env.checksum
+  $(wondermake.bld_dir)wondermake.env.checksum: wondermake.force $(wondermake.bld_dir)wondermake.cxx.env.checksum
 	@new=$$( \
 		printf '%s\n' \
-			"$$(stat -Lc%n\ %Y wondermake.cxx.env.checksum)" \
+			"$$(stat -Lc%n\ %Y $(wondermake.bld_dir)wondermake.cxx.env.checksum)" \
 			"PATH $(PATH)" \
 			"linux/solaris/macosx LD_LIBRARY_PATH $(LD_LIBRARY_PATH)" \
 			"macosx DYLD_LIBRARY_PATH $(DYLD_LIBRARY_PATH)" \
@@ -33,10 +33,10 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		$(call wondermake.announce_shell,checksum,$@,no change); \
 	fi
 endif
-wondermake.clean += wondermake.env.checksum
+wondermake.clean += $(wondermake.bld_dir)wondermake.env.checksum
 
 ifndef MAKE_RESTARTS # only do this on the first make phase
-  wondermake.cxx.env.checksum: wondermake.force
+  $(wondermake.bld_dir)wondermake.cxx.env.checksum: wondermake.force | $(wondermake.bld_dir)
 	@new=$$( \
 		printf '%s\n' \
 			"stat CPP CXX LD AR RANLIB" \
@@ -64,4 +64,4 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		$(call wondermake.announce_shell,checksum,$@,no change); \
 	fi
 endif
-wondermake.clean += wondermake.cxx.env.checksum
+wondermake.clean += $(wondermake.bld_dir)wondermake.cxx.env.checksum

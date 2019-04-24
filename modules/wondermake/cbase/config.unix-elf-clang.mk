@@ -82,8 +82,8 @@ endif
 
 # This rule is done only on first build or when changes in the env are detected.
 ifndef MAKE_RESTARTS # only do this on the first make phase
-  wondermake.configure: min_required_clang_major_version := 6 # First version with ISO C++ module TS support
-  wondermake.configure: wondermake.env.checksum
+  $(wondermake.bld_dir)wondermake.configure: min_required_clang_major_version := 6 # First version with ISO C++ module TS support
+  $(wondermake.bld_dir)wondermake.configure: $(wondermake.bld_dir)wondermake.env.checksum
 	$(call wondermake.announce,configure)
 	$(call wondermake.configure.check_toolchain_version,$(min_required_clang_major_version))
 	@touch $@
@@ -103,4 +103,4 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
     $(call wondermake.trace_shell,$(firstword $(wondermake.cpp)) is version $$actual_clang_major_version.)
   endef
 endif
-wondermake.clean += wondermake.configure
+wondermake.clean += $(wondermake.bld_dir)wondermake.configure

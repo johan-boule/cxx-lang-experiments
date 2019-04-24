@@ -50,23 +50,23 @@ wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($
 # thereby preserving file timestamp if value has not changed.
 
 define wondermake.write_iif_content_changed.rule # $1 = scope, $2 = var, $3 = expression to evaluate
-  $1.$2: wondermake.force
+  $(wondermake.bld_dir)$1.$2: wondermake.force | $(wondermake.bld_dir)
 	$$(call wondermake.write_iif_content_changed.recipe,$1,$2,$3)
-  wondermake.clean += $1.$2
+  wondermake.clean += $(wondermake.bld_dir)$1.$2
 endef
 
 define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = expression to evaluate
-	$(eval $@ := $(subst $$,$$$$,$3))
-	$(eval $@.old := $(subst $$,$$$$,$(file < $@)))
-	$(if $(call wondermake.equals,$($@),$($@.old)), \
+	$(eval $1.$2 := $(subst $$,$$$$,$3))
+	$(eval $1.$2.old := $(subst $$,$$$$,$(file < $@)))
+	$(if $(call wondermake.equals,$($1.$2),$($1.$2.old)), \
 		$(call wondermake.announce,$1,comparing $2,no change) \
 	, \
 		$(call wondermake.announce,$1,comparing $2) \
 		$(call wondermake.notice,changed: \
-			$(wondermake.newline)- $(filter-out $($@),$($@.old)) \
-			$(wondermake.newline)+ $(filter-out $($@.old),$($@)) \
+			$(wondermake.newline)- $(filter-out $($1.$2),$($1.$2.old)) \
+			$(wondermake.newline)+ $(filter-out $($1.$2.old),$($1.$2)) \
 		) \
-		$(file > $@,$($@)) \
+		$(file > $@,$($1.$2)) \
 	)
-	$(eval undefine $@.old)
+	$(eval undefine $1.$2.old)
 endef
