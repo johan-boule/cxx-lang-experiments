@@ -62,16 +62,15 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
   wondermake.notice_shell  = printf '%s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.notice_style),$1)
 
   wondermake.announce = \
-    $(eval wondermake.progress += x) \
     $(if $(MAKE_TERMOUT),,$(info ===============================================================================)) \
     $(info \
-  		$(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.bold),[$(or $(MAKE_RESTARTS),0):$(words $(wondermake.progress))] {$1})) \
+  		$(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.bold),{$1})) \
   		$(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style),$2)) \
   		$(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.dim),$3)) \
     )
   wondermake.announce_shell = \
     $(if $(MAKE_TERMOUT),,printf '===============================================================================\n';) \
-    printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.bold),[$(or $(MAKE_RESTARTS),0):$(words $(wondermake.progress))] {$1}); \
+    printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.bold),{$1}); \
     printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style),$2); \
     printf ' %s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.dim),$3)
 

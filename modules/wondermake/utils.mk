@@ -59,9 +59,9 @@ define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = 
 	$(eval $1.$2 := $(subst $$,$$$$,$3))
 	$(eval $1.$2.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null)))
 	$(if $(call wondermake.equals,$($1.$2),$($1.$2.old)), \
-		$(call wondermake.announce,$1,comparing $2,no change) \
+		$(call wondermake.announce,$1,compare $2,no change) \
 	, \
-		$(call wondermake.announce,$1,comparing $2) \
+		$(call wondermake.announce,$1,compare $2) \
 		$(call wondermake.notice,changed: \
 			$(wondermake.newline)- $(filter-out $($1.$2),$($1.$2.old)) \
 			$(wondermake.newline)+ $(filter-out $($1.$2.old),$($1.$2)) \
