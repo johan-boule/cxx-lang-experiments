@@ -62,11 +62,11 @@ wondermake.pch_suffix := pch #gch
 wondermake.bmi_suffix := pcm
 wondermake.obj_suffix := o
 
-wondermake.binary_file_pattern[executable] := %
-wondermake.binary_file_pattern[shared_lib] := lib%.so
-wondermake.binary_file_pattern[loadable_module] := %.so
+wondermake.binary_file_pattern[executable] := bin/%
+wondermake.binary_file_pattern[shared_lib] := lib/lib%.so
+wondermake.binary_file_pattern[loadable_module] := lib/%.so
 wondermake.binary_file_pattern[import_lib] := # none
-wondermake.binary_file_pattern[static_lib] := lib%.a
+wondermake.binary_file_pattern[static_lib] := lib/lib%.a
 wondermake.binary_file_pattern[objects] := # no link nor archive step
 wondermake.binary_file_pattern[headers] := # no link nor archive step
 

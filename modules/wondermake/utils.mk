@@ -50,9 +50,9 @@ wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($
 # thereby preserving file timestamp if value has not changed.
 
 define wondermake.write_iif_content_changed.rule # $1 = scope, $2 = var, $3 = expression to evaluate
-  $(wondermake.bld_dir)$1.$2: wondermake.force | $(wondermake.bld_dir)
+  $(wondermake.bld_dir)$1/$2: wondermake.force | $(wondermake.bld_dir)$1/
 	$$(call wondermake.write_iif_content_changed.recipe,$1,$2,$3)
-  wondermake.clean += $(wondermake.bld_dir)$1.$2
+  wondermake.clean += $(wondermake.bld_dir)$1/$2
 endef
 
 define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = expression to evaluate

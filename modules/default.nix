@@ -11,7 +11,7 @@ derivation {
 		set -eux &&
 		export PATH="$gnumake/bin:$coreutils/bin:$findutils/bin:$gnused/bin:$clang/bin:$patchelf/bin:$binutils/bin:$pkg_config/bin"
 		make -f $src/GNUmakefile -j$NIX_BUILD_CORES -O
-		mv hello $out
+		mv hello_world/bin/hello $out
 		patchelf --shrink-rpath $out
 		strip -s $out
 	'' ];
