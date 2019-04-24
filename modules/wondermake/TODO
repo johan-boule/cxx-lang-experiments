@@ -32,6 +32,10 @@
 		'PKG_CONFIG_PATH', 'PKG_CONFIG_LIBDIR', 'PKG_CONFIG_DISABLE_UNINSTALLED'
 		# PKG_CONFIG_TOP_BUILD_DIR, PKG_CONFIG_ALLOW_SYSTEM_CFLAGS, PKG_CONFIG_ALLOW_SYSTEM_LIBS
 
+*	Think about dllexport vs dllimport in a module interface.
+	Do we need to precompile a first time with dllexport for use by all sources of the shlib,
+	and then a second time for use by clients of of that shlib?
+
 *	ar
 	-Wl,-Bstatic
 	-Wl,-Bdynamic
