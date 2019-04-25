@@ -17,6 +17,9 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		printf '%s\n' \
 			"$$(stat -Lc%n\ %Y $(wondermake.bld_dir)wondermake.cxx.env.checksum)" \
 			"PATH $(PATH)" \
+			"native-elf:linux/solaris LD_RUN_PATH $(LD_RUN_PATH)" \
+			"native-elf:linux/solaris DT_RUNPATH $(DT_RUNPATH)" \
+			"native-elf:linux/solaris DT_RPATH $(DT_RPATH)" \
 			"linux/solaris/macosx LD_LIBRARY_PATH $(LD_LIBRARY_PATH)" \
 			"macosx DYLD_LIBRARY_PATH $(DYLD_LIBRARY_PATH)" \
 			"macosx DYLD_FALLBACK_LIBRARY_PATH $(DYLD_FALLBACK_LIBRARY_PATH)" \

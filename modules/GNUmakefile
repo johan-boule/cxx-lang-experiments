@@ -10,16 +10,35 @@
 wondermake += hello_world
 hello_world.name := hello
 hello_world.type := executable
-#hello_world.type := objects
-#hello_world.src := src/main.cpp src/main.cppm
-hello_world.src := src/
-#hello_world.libs := phrases
+hello_world.src := src/main.cxx src/main.mxx
 hello_world.inherit := module_demo_common_conf
 
-#wondermake += phrases
+hello_world/bin/hello: | phrases
+hello_world.libs := phrases
+hello_world.libs_path := phrases/lib
+hello_world.ld_flags := -Wl,-rpath-link=words/lib
+
+wondermake += phrases
 phrases.type := shared_lib
-phrases.src := src/phrases src/words src/letters
+phrases.src := src/phrases
 phrases.inherit := module_demo_common_conf
+
+phrases/lib/libphrases.so: | words
+phrases.libs := words
+phrases.libs_path := words/lib
+
+wondermake += words
+words.type := shared_lib
+words.src := src/words src/letters src/punctuations
+words.inherit := module_demo_common_conf
+
+default: staged-install
+staged-install: hello_world/bin/hello
+	mkdir -p staged-install/bin
+	ln -f hello_world/bin/hello staged-install/bin/
+	mkdir -p staged-install/lib
+	ln -f phrases/lib/libphrases.so staged-install/lib/
+	ln -f words/lib/libwords.so staged-install/lib/
 
 module_demo_common_conf.toolchain := cbase
 module_demo_common_conf.lang := c++

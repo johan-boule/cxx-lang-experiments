@@ -241,8 +241,8 @@ define wondermake.template.recipe.ld_command # $1 = scope
 	$(call wondermake.inherit_append,$1,ld_flags) \
 	$(LDFLAGS) \
 	$$(filter-out $$(wondermake.bld_dir)$1/src_files $$(wondermake.bld_dir)$1/ld_command,$$+) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_libs_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_libs_pattern),$(call wondermake.inherit_append,$1,libs)) \
+	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
+	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
 	$(shell pkg-config --libs $(call wondermake.inherit_prepend,$1,pkg_config)) \
 	$(LDLIBS)
