@@ -13,19 +13,21 @@ hello_world.type := executable
 hello_world.src := src/main.cxx src/main.mxx
 hello_world.inherit := module_demo_common_conf
 
-hello_world/bin/hello: | phrases
+hello_world.include_path := /tmp/foo
+
+scopes/hello_world/bin/hello: | phrases
 hello_world.libs := phrases
-hello_world.libs_path := phrases/lib
-hello_world.ld_flags := -Wl,-rpath-link=words/lib
+hello_world.libs_path := scopes/phrases/lib
+hello_world.ld_flags := -Wl,-rpath-link=scopes/words/lib
 
 wondermake += phrases
 phrases.type := shared_lib
 phrases.src := src/phrases
 phrases.inherit := module_demo_common_conf
 
-phrases/lib/libphrases.so: | words
+scopes/phrases/lib/libphrases.so: | words
 phrases.libs := words
-phrases.libs_path := words/lib
+phrases.libs_path := scopes/words/lib
 
 wondermake += words
 words.type := shared_lib
@@ -33,12 +35,12 @@ words.src := src/words src/letters src/punctuations
 words.inherit := module_demo_common_conf
 
 default: staged-install
-staged-install: hello_world/bin/hello
+staged-install: scopes/hello_world/bin/hello
 	mkdir -p staged-install/bin
-	ln -f hello_world/bin/hello staged-install/bin/
+	ln -f scopes/hello_world/bin/hello staged-install/bin/
 	mkdir -p staged-install/lib
-	ln -f phrases/lib/libphrases.so staged-install/lib/
-	ln -f words/lib/libwords.so staged-install/lib/
+	ln -f scopes/phrases/lib/libphrases.so staged-install/lib/
+	ln -f scopes/words/lib/libwords.so staged-install/lib/
 
 module_demo_common_conf.toolchain := cbase
 module_demo_common_conf.lang := c++
