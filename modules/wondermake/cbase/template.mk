@@ -199,8 +199,8 @@ define wondermake.template.recipe.cpp_command # $1 = scope
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern),$(call wondermake.inherit_prepend,$1,include)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern),$(call wondermake.inherit_prepend,$1,include_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern),$(call wondermake.inherit_prepend,$1,frameworks)) \
-	$(call wondermake.inherit_append,$1,cpp_flags) \
 	$(shell pkg-config --cflags $(call wondermake.inherit_prepend,$1,pkg_config)) \
+	$(call wondermake.inherit_append,$1,cpp_flags) \
 	$(CPPFLAGS) \
 	$$(abspath $$<)
 endef
@@ -213,8 +213,8 @@ define wondermake.template.recipe.mxx_command # $1 = scope, $(module_map) is a v
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
 	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
+	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(CXXFLAGS) \
 	$$(abspath $$<)
 endef
@@ -227,8 +227,8 @@ define wondermake.template.recipe.cxx_command # $1 = scope, $(module_map) is a v
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
 	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
+	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(CXXFLAGS) \
 	$$(abspath $$<)
 endef
