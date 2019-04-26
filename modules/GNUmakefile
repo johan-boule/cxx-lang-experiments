@@ -13,8 +13,6 @@ hello_world.type := executable
 hello_world.src := src/main.cxx src/main.mxx
 hello_world.inherit := module_demo_common_conf
 
-hello_world.include_path := /tmp/foo
-
 scopes/hello_world/bin/hello: | phrases
 hello_world.libs := phrases
 hello_world.libs_path := scopes/phrases/lib
@@ -41,6 +39,9 @@ staged-install: scopes/hello_world/bin/hello
 	mkdir -p staged-install/lib
 	ln -f scopes/phrases/lib/libphrases.so staged-install/lib/
 	ln -f scopes/words/lib/libwords.so staged-install/lib/
+
+$(shell mkdir -p /tmp/foo)
+module_demo_common_conf.external_modules_path := external-include /tmp/foo
 
 module_demo_common_conf.toolchain := cbase
 module_demo_common_conf.lang := c++
