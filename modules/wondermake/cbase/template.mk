@@ -202,7 +202,7 @@ define wondermake.template.recipe.cpp_command # $1 = scope
 	$(call wondermake.inherit_append,$1,cpp_flags) \
 	$(shell pkg-config --cflags $(call wondermake.inherit_prepend,$1,pkg_config)) \
 	$(CPPFLAGS) \
-	$$<
+	$$(abspath $$<)
 endef
 
 # Command to precompile a c++ source file to a binary module interface file
@@ -216,7 +216,7 @@ define wondermake.template.recipe.mxx_command # $1 = scope, $(module_map) is a v
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(CXXFLAGS) \
-	$$<
+	$$(abspath $$<)
 endef
 
 # Command to compile a c++ source file to an object file
@@ -230,7 +230,7 @@ define wondermake.template.recipe.cxx_command # $1 = scope, $(module_map) is a v
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(CXXFLAGS) \
-	$$<
+	$$(abspath $$<)
 endef
 
 # Command to link object files and produce an executable or shared library file
