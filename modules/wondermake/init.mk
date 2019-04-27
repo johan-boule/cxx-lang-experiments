@@ -25,7 +25,8 @@ endif
 ###############################################################################
 # Staged install
 
-$(wondermake.bld_dir)staged-install/bin/ $(wondermake.bld_dir)staged-install/lib/: ; mkdir -p $(@D)
+wondermake.staged_install := $(wondermake.bld_dir)staged-install/
+$(wondermake.staged_install)bin/ $(wondermake.staged_install)lib/: ; mkdir -p $(@D)
 
 ###############################################################################
 endif # ifndef wondermake.init.included

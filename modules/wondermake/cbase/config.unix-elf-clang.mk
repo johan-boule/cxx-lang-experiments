@@ -27,7 +27,6 @@ wondermake.cbase.config[unix_elf_clang].ld_flags_out_mode  = -o$$@
 # to print the include search path: g++/clang++ -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed -e '/^[^ ]/d' -e 's,^ ,-I,'
 wondermake.cbase.config[unix_elf_clang].cpp_flags := -Winvalid-pch
 wondermake.cbase.config[unix_elf_clang].cxx_flags := -pipe
-wondermake.cbase.config[unix_elf_clang].libs_path := staged-install/lib
 
 wondermake.cbase.config[unix_elf_clang].cpp_flags[c++]           := -xc++
 wondermake.cbase.config[unix_elf_clang].pch_flags[c++]           := -xc++-header
@@ -58,7 +57,7 @@ wondermake.cbase.config[unix_elf_clang].cxx_pic_flag                := -fPIC
 wondermake.cbase.config[unix_elf_clang].cxx_pie_flag                := -fPIE
 wondermake.cbase.config[unix_elf_clang].cxx_flags[shared_lib]       := $(wondermake.cbase.config[unix_elf_clang].cxx_pic_flag)
 wondermake.cbase.config[unix_elf_clang].ld_flags[shared_lib]        := -shared -Wl,-rpath=\$$$$ORIGIN
-wondermake.cbase.config[unix_elf_clang].ld_flags[executable]        := -Wl,-rpath-link=staged-install/lib -Wl,-rpath=\$$$$ORIGIN/../lib
+wondermake.cbase.config[unix_elf_clang].ld_flags[executable]        := -Wl,-rpath-link=$(wondermake.staged_install)lib -Wl,-rpath=\$$$$ORIGIN/../lib
 wondermake.cbase.config[unix_elf_clang].ld_flags[static_executable] := -static # we can have both -shared and -static but that's not very useful
 
 wondermake.cbase.config[unix_elf_clang].pch_suffix := pch #gch

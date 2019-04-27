@@ -5,6 +5,11 @@
 ifndef wondermake.cbase.config.included
 
 ###############################################################################
+# Staged install
+
+wondermake.cbase.libs_path := $(wondermake.staged_install)lib
+
+###############################################################################
 # Configuration support
 
 ###############################################################################

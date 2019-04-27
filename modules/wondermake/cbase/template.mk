@@ -67,7 +67,7 @@ define wondermake.template.define_vars
   wondermake.template.obj_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.obj_suffix),$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
 
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
-  wondermake.template.binary_file := $(patsubst %,$(wondermake.bld_dir)staged-install/$(call \
+  wondermake.template.binary_file := $(patsubst %,$(wondermake.staged_install)$(call \
 	wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(call \
 	wondermake.inherit_unique,$(wondermake.template.scope),type)]),$(wondermake.template.name))
 endef
@@ -105,14 +105,16 @@ define wondermake.template.rules
   endif
   # If there is a link or archive step
   ifneq '' '$(wondermake.template.binary_file)'
+    $(wondermake.template.scope).out := $(wondermake.template.binary_file)
     # If the platform has any prefix or suffix added to the binary file name
     ifneq '$(wondermake.template.name)' '$(wondermake.template.binary_file)'
       .PHONY: $(wondermake.template.name)
-      $(wondermake.template.name): $(wondermake.template.binary_file)
+      $(wondermake.template.name): $$($(wondermake.template.scope).out)
     endif
   else # No link nor archive step: target is just the list of object files
+    $(wondermake.template.scope).out := $(wondermake.template.obj_files)
     .PHONY: $(wondermake.template.name)
-    $(wondermake.template.name): $(wondermake.template.obj_files)
+    $(wondermake.template.name): $$($(wondermake.template.scope).out)
   endif
 
   # Rules to preprocess c++ source files
@@ -120,10 +122,7 @@ define wondermake.template.rules
     wondermake.clean += $(wondermake.template.scope_dir)cpp_command # explicitly prevent auto-cleaning since we don't call wondermake.write_iif_content_changed.rule
   else # only do this on the first make phase
     # Rule to create an output directory
-    $(wondermake.template.scope_dir): ; mkdir -p $$(@D)
-    $(foreach directory,$(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))), \
-      ${wondermake.newline} $(wondermake.template.intermediate_dir)$(directory): ; mkdir -p $$@ \
-    )
+    $(wondermake.template.scope_dir) $(patsubst %,$(wondermake.template.intermediate_dir)%,$(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))): ; mkdir -p $$@
 
     # Rule to preprocess a c++ source file (the output directory creation is triggered here)
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
@@ -134,8 +133,9 @@ define wondermake.template.rules
 		$(wondermake.bld_dir)wondermake.cbase.configure \
 		| $(dir $(wondermake.template.intermediate_dir)$(src)) \
       ${wondermake.newline}		$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
-      ${wondermake.newline}		$$(eval $$@.eval_cmd := $$($(wondermake.template.scope).cpp_command)) \
-      ${wondermake.newline}		$$($$@.eval_cmd) \
+      ${wondermake.newline}		$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).cpp_command)) \
+      ${wondermake.newline}		$$($$@.evaluated_command) \
+      ${wondermake.newline}		$$(eval undefine $$@.evaluated_command) \
       ${wondermake.newline} \
     )
 
@@ -165,9 +165,9 @@ define wondermake.template.rules
 		$(wondermake.template.scope_dir)mxx_command \
 		| $(wondermake.template.intermediate_dir)$(mxx).ii.d # if .d failed to build, don't continue \
     ${wondermake.newline}	$$(call wondermake.announce,$(wondermake.template.scope),precompile $$<,to $$@) \
-    ${wondermake.newline}	$$(eval $$@.eval_cmd := $$($(wondermake.template.scope).mxx_command)) \
-    ${wondermake.newline}	$$($$@.eval_cmd) \
-    ${wondermake.newline}	$$(eval undefine $$@.eval_cmd) \
+    ${wondermake.newline}	$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).mxx_command)) \
+    ${wondermake.newline}	$$($$@.evaluated_command) \
+    ${wondermake.newline}	$$(eval undefine $$@.evaluated_command) \
     ${wondermake.newline}  wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix) \
     ${wondermake.newline}  wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json \
     ${wondermake.newline}  wondermake.compile_commands.json += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json \
@@ -178,24 +178,30 @@ define wondermake.template.rules
   $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
   $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope_dir)cxx_command | %.ii.d # if .d failed to build, don't continue
 	$$(call wondermake.announce,$(wondermake.template.scope),compile $$<,to $$@)
-	$$(eval $$@.eval_cmd := $$($(wondermake.template.scope).cxx_command))
-	$$($$@.eval_cmd)
-	$$(eval undefine $$@.eval_cmd)
+	$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).cxx_command))
+	$$($$@.evaluated_command)
+	$$(eval undefine $$@.evaluated_command)
   wondermake.clean += $(wondermake.template.obj_files)
   wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
   wondermake.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
 
   ifneq '' '$(wondermake.template.binary_file)'
-    # Rule to trigger relinking when a source file (and hence its derived object file) is removed
-    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),src_files,$$(sort $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))
     # Rule to link object files and produce an executable or shared library file
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
-    $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)src_files $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.binary_file))
+    $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.binary_file))
 		$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$(filter-out $(wondermake.template.scope_dir)src_files $(wondermake.template.scope_dir)ld_command,$$+))
-		$$(eval $$@.eval_cmd := $$($(wondermake.template.scope).ld_command))
-		$$($$@.eval_cmd)
-		$$(eval undefine $$@.eval_cmd)
+		$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).ld_command))
+		$$($$@.evaluated_command)
+		$$(eval undefine $$@.evaluated_command)
     wondermake.clean += $(wondermake.template.binary_file)
+
+    # Rule to trigger relinking when a source file (and hence its derived object file) is removed
+    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),src_files,$$(sort $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))
+    $(wondermake.template.binary_file): $(wondermake.template.scope_dir)src_files
+
+    # Library dependencies
+    $(wondermake.template.binary_file): | $(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) $(call wondermake.inherit_append,$(wondermake.template.scope),public_deps)
+    $(wondermake.template.scope).libs += $(foreach l,$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps),$(or $($(l).name),$(l)))
   endif
 endef
 
