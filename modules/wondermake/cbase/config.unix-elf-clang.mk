@@ -25,6 +25,7 @@ wondermake.ld_flags_out_mode  = -o$$@
 # to print the include search path: g++/clang++ -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed -e '/^[^ ]/d' -e 's,^ ,-I,'
 wondermake.cpp_flags := -Winvalid-pch
 wondermake.cxx_flags := -pipe
+wondermake.libs_path := staged-install/lib
 
 wondermake.cpp_flags[c++]           := -xc++
 wondermake.pch_flags[c++]           := -xc++-header
@@ -55,7 +56,7 @@ wondermake.cxx_pic_flag                := -fPIC
 wondermake.cxx_pie_flag                := -fPIE
 wondermake.cxx_flags[shared_lib]       := $(wondermake.cxx_pic_flag)
 wondermake.ld_flags[shared_lib]        := -shared -Wl,-rpath=\$$$$ORIGIN
-wondermake.ld_flags[executable]        := -Wl,-rpath=\$$$$ORIGIN/../lib
+wondermake.ld_flags[executable]        := -Wl,-rpath-link=staged-install/lib -Wl,-rpath=\$$$$ORIGIN/../lib
 wondermake.ld_flags[static_executable] := -static # we can have both -shared and -static but that's not very useful
 
 wondermake.pch_suffix := pch #gch

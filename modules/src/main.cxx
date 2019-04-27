@@ -3,8 +3,8 @@
 module main;
 
 import phrases;
-import foo;
+import new_line;
 
 int main() {
-	std::cout << phrases::hello_world() << '\n';
+	std::cout << phrases::hello_world() << new_line::new_line();
 }

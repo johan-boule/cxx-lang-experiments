@@ -64,7 +64,7 @@ define wondermake.template.vars.define
   wondermake.template.obj_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.obj_suffix),$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
 
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
-  wondermake.template.binary_file := $(patsubst %,$(wondermake.template.scope_dir)$(call \
+  wondermake.template.binary_file := $(patsubst %,$(wondermake.bld_dir)staged-install/$(call \
 	wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(call \
 	wondermake.inherit_unique,$(wondermake.template.scope),type)]),$(wondermake.template.name))
 endef
@@ -226,7 +226,7 @@ define wondermake.template.recipe.mxx_command # $1 = scope, $(module_map) is a v
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(CXXFLAGS) \
-	$$(abspath $$<)
+	$$<
 endef
 
 # Command to compile a c++ source file to an object file
@@ -240,7 +240,7 @@ define wondermake.template.recipe.cxx_command # $1 = scope, $(module_map) is a v
 	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(CXXFLAGS) \
-	$$(abspath $$<)
+	$$<
 endef
 
 # Command to link object files and produce an executable or shared library file

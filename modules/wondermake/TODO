@@ -44,6 +44,9 @@
 	In the end: 3 "kinds": gcc, msvc, posix (which prolly won't work)
 	See also g++/clang++ -print-prog-name=ld, g++/clang++ -Wl,--version
 
+*	std version
+	note: to list clang's supported names, use clang++ -xc++ -std= -
+
 *	cross-compilation
 	#if defined __ELF__
 		#define WONDERBUILD__BIN_FMT "elf"
