@@ -2,6 +2,8 @@
 # Copyright 2019 Johan Boule
 # This source is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
+ifndef wondermake.clean.included
+
 ###############################################################################
 # All derived files are appended it to this variable
 
@@ -42,3 +44,6 @@ $(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_
 	$(eval undefine $@.old)
 	$(eval undefine $@.new)
 wondermake.clean += $(wondermake.bld_dir)wondermake.auto-clean
+
+###############################################################################
+endif # ifndef wondermake.clean.included

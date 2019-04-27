@@ -2,6 +2,8 @@
 # Copyright 2019 Johan Boule
 # This source is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
+ifndef wondermake.included
+
 include $(dir $(lastword $(MAKEFILE_LIST)))check_make_version.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))utils.mk
 include $(dir $(lastword $(MAKEFILE_LIST)))log.mk
@@ -10,7 +12,7 @@ include $(dir $(lastword $(MAKEFILE_LIST)))clean.mk
 
 ###############################################################################
 # Include only the toolchains used by the scopes
-wondermake.toolchains := $(foreach scope,$(wondermake),$(call wondermake.inherit_unique,$(scope),toolchain))
+wondermake.toolchains := $(foreach s,$(wondermake),$(call wondermake.inherit_unique,$s,toolchain))
 ifneq '' '$(filter cbase,$(wondermake.toolchains))'
   include $(dir $(lastword $(MAKEFILE_LIST)))cbase/cbase.mk
 endif
@@ -24,9 +26,11 @@ endif
  # this will in turn trigger the building of the .ii files, on which the .d files depend.
  # So, preprocessing occurs on the first make phase.
  # Secondary expansion is used to allow variables to be defined out of order.
- # (Without secondary expansion, we have to include $(srcm).d before $(src).d)
+ # (Without secondary expansion, we have to include $(mxx).d before $(cxx).d)
 ifeq '' '$(or $(call wondermake.equals,clean,$(MAKECMDGOALS)),$(call wondermake.equals,wondermake.clean,$(MAKECMDGOALS)))' # don't remake the .d files when cleaning
   .SECONDEXPANSION:
   -include $(wondermake.dynamically_generated_makefiles)
 endif
+
 ###############################################################################
+endif # ifndef wondermake.included

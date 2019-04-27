@@ -13,6 +13,7 @@ hello_world.type := executable
 hello_world.src := src/main.cxx src/main.mxx
 hello_world.inherit := module_demo_common_conf
 
+hello_world.private_deps := phrases
 staged-install/bin/hello: | phrases
 hello_world.libs := phrases
 hello_world.external_modules_path := external-include/new_line.mxx
@@ -22,6 +23,7 @@ phrases.type := shared_lib
 phrases.src := src/phrases
 phrases.inherit := module_demo_common_conf
 
+phrases.private_deps := words
 staged-install/lib/libphrases.so: | words
 phrases.libs := words
 
@@ -50,3 +52,10 @@ include $(module_demo_common_conf.src_dir)/wondermake/wondermake.mk
 default: wondermake.default
 all: wondermake.all
 clean: wondermake.clean
+
+define wondermake.template
+  $(info $(wondermake.template.scope))
+endef
+
+# Execute the template for each user-declared scope
+$(foreach wondermake.template.scope,$(wondermake),$(eval $(value wondermake.template)))

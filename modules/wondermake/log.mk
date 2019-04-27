@@ -2,6 +2,8 @@
 # Copyright 2019 Johan Boule
 # This source is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
+ifndef wondermake.log_included
+
 ###############################################################################
 # Logging
 
@@ -99,3 +101,6 @@ wondermake.error_shell    = printf '%s\n' $(call wondermake.maybe_colored_err_sh
 ifdef MAKE_RESTARTS
   $(call wondermake.announce,make restarts)
 endif
+
+###############################################################################
+endif # ifndef wondermake.log_included

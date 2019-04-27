@@ -2,6 +2,8 @@
 # Copyright 2019 Johan Boule
 # This source is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
+ifndef wondermake.utils_included
+
 ###############################################################################
 # This function checks whether the user has overriden a variable.
 # $1 = the variable for which you want to test the origin
@@ -29,9 +31,6 @@ wondermake.print\:%: ; @echo $* = $($*)
 ###############################################################################
 # Scope inheritance support functions
 
-# Find the root scope of the inheritance hierarchy ($1 = scope)
-wondermake.inherit_root = $(if $($1.inherit),$(call $0,$($1.inherit)),$1)
-
 # Find the value of a variable by traversing the hierarchy ($1 = scope, $2 = var)
 wondermake.inherit_unique = $(or $($1.$2),$(if $($1.inherit),$(call $0,$($1.inherit),$2)))
 
@@ -42,6 +41,19 @@ wondermake.inherit_append = $($1.$2) $(if $($1.inherit),$(call $0,$($1.inherit),
 wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($1.$2)
 
 ###############################################################################
+# Add a default inheritance on the wondermake.<toolchain> scope for each user-declared scope
+
+# Find the root scope of the inheritance hierarchy ($1 = scope)
+wondermake.inherit_root = $(if $($1.inherit),$(call $0,$($1.inherit)),$1)
+
+$(foreach s,$(wondermake), \
+	$(if $(filter wondermake.$(call wondermake.inherit_unique,$s,toolchain),$(call wondermake.inherit_root,$s)) \
+		,,$(eval $(call wondermake.inherit_root,$s).inherit := wondermake.$(call wondermake.inherit_unique,$s,toolchain))))
+		# Note: the same root may be visited multiple times so we must take care of not making the wondermake.<toolchain> scope inherit from itself.
+
+undefine wondermake.inherit_root
+
+###############################################################################
 # Rules that need to be always executed use this phony target as prerequisite
 .PHONY: wondermake.force
 
@@ -49,7 +61,7 @@ wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($
 # Write a given scope variable to a file only when the var value differs from the content of the existing file,
 # thereby preserving file timestamp if value has not changed.
 
-define wondermake.write_iif_content_changed.rule # $1 = scope, $2 = var, $3 = expression to evaluate
+define wondermake.write_iif_content_changed # $1 = scope, $2 = var, $3 = expression to evaluate
   $(wondermake.bld_dir)scopes/$1/$2: wondermake.force | $(wondermake.bld_dir)scopes/$1/
 	$$(call wondermake.write_iif_content_changed.recipe,$1,$2,$3)
   wondermake.clean += $(wondermake.bld_dir)scopes/$1/$2
@@ -70,3 +82,6 @@ define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = 
 	)
 	$(eval undefine $1.$2.old)
 endef
+
+###############################################################################
+endif # ifndef wondermake.utils_included
