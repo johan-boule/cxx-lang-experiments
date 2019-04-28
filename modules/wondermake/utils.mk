@@ -22,11 +22,18 @@ define wondermake.newline
 endef
 
 ###############################################################################
+# The comma character (useful in call statements when you want to pass a message literal that contains a comma)
+wondermake.comma := ,
+
+###############################################################################
 # Query the value of a variable from the make command line: make wondermake.print:some-var
 # It's equivalent to: echo '$(info $(some-var))' | make -f makefile -f -
 # Note that make's --eval option seems to be processed before any -f option, so that's not an alternative.
-
 wondermake.print\:%: ; @echo $* = $($*)
+
+###############################################################################
+# Rules that need to be always executed use this phony target as prerequisite
+.PHONY: wondermake.force
 
 ###############################################################################
 # Scope inheritance support functions
@@ -54,12 +61,8 @@ $(foreach s,$(wondermake), \
 undefine wondermake.inherit_root
 
 ###############################################################################
-# Rules that need to be always executed use this phony target as prerequisite
-.PHONY: wondermake.force
-
-###############################################################################
 # Write a given scope variable to a file only when the var value differs from the content of the existing file,
-# thereby preserving file timestamp if value has not changed.
+# thereby preserving file timestamp if value has not changed. The file can then be used as a rule prerequisite.
 
 define wondermake.write_iif_content_changed # $1 = scope, $2 = var, $3 = expression to evaluate
   $(wondermake.bld_dir)scopes/$1/$2: wondermake.force | $(wondermake.bld_dir)scopes/$1/

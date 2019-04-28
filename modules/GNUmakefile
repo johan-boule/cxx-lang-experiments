@@ -27,7 +27,7 @@ hello_world.inherit := module_demo_common_conf
 hello_world.name := hello
 hello_world.type := executable
 hello_world.src := src/main.cxx src/main.mxx
-hello_world.private_deps := phrases
+hello_world.public_deps := phrases
 hello_world.external_modules_path := external-include/new_line.mxx
 
 wondermake += phrases
@@ -55,7 +55,9 @@ all: wondermake.all
 clean: wondermake.clean
 
 define wondermake.template
-$(info $(wondermake.template.scope))
+$(info {$(wondermake.template.scope)})
+libs := $(foreach l,$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) $(call wondermake.inherit_append,$(wondermake.template.scope),public_deps),$(or $($(l).name),$(l)))
+$(info libs -> $(libs))
 endef
 
 # Execute the template for each user-declared scope

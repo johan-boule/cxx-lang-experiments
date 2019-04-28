@@ -40,12 +40,18 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 				$$(command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].ar))) \
 				$$(command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].ranlib))) \
 			)" \
-			"AR flags $(wondermake.cbase.config[unix_elf_clang].ar) $(ARFLAGS)" \
-			"RANLIB $(wondermake.cbase.config[unix_elf_clang].ranlib)" \
-			"min required version $(min_required_clang_major_version)" \
-			"GCC_EXEC_PREFIX $(GCC_EXEC_PREFIX)" \
-			"COMPILER_PATH $(COMPILER_PATH)" \
-			"used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO LIBRARY_PATH $(LIBRARY_PATH)" \
+			"min required clang version $(min_required_clang_major_version)" \
+			"cxx env" \
+				"CPATH $(CPATH)" \
+				"CPLUS_INCLUDE_PATH $(CPLUS_INCLUDE_PATH)" \
+				"C_INCLUDE_PATH $(C_INCLUDE_PATH)" \
+			"ld env" \
+				"GNUTARGET $(GNUTARGET)" \
+				"LDEMULATION $(LDEMULATION)" \
+				"COLLECT_NO_DEMANGLE $(COLLECT_NO_DEMANGLE)" \
+				"native-elf:linux/solaris LD_RUN_PATH $(LD_RUN_PATH)" \
+				"native-elf:linux/solaris DT_RUNPATH $(DT_RUNPATH)" \
+				"native-elf:linux/solaris DT_RPATH $(DT_RPATH)" \
 		| md5sum \
 	); \
 	if test "$$new" != '$(shell cat $@ 2>/dev/null)'; \
@@ -70,14 +76,14 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 	@new=$$( \
 		printf '%s\n' \
 			"PATH $(PATH)" \
-			"native-elf:linux/solaris LD_RUN_PATH $(LD_RUN_PATH)" \
-			"native-elf:linux/solaris DT_RUNPATH $(DT_RUNPATH)" \
-			"native-elf:linux/solaris DT_RPATH $(DT_RPATH)" \
 			"linux/solaris/macosx LD_LIBRARY_PATH $(LD_LIBRARY_PATH)" \
 			"macosx DYLD_LIBRARY_PATH $(DYLD_LIBRARY_PATH)" \
 			"macosx DYLD_FALLBACK_LIBRARY_PATH $(DYLD_FALLBACK_LIBRARY_PATH)" \
 			"hpux SHLIB_PATH $(SHLIB_PATH)" \
 			"aix LIBPATH $(LIBPATH)" \
+			"used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO LIBRARY_PATH $(LIBRARY_PATH)" \
+			"GCC_EXEC_PREFIX $(GCC_EXEC_PREFIX)" \
+			"COMPILER_PATH $(COMPILER_PATH)" \
 		| md5sum \
 	); \
 	if test "$$new" != '$(shell cat $@ 2>/dev/null)'; \

@@ -201,7 +201,7 @@ define wondermake.template.rules
 
     # Library dependencies
     $(wondermake.template.binary_file): | $(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) $(call wondermake.inherit_append,$(wondermake.template.scope),public_deps)
-    $(wondermake.template.scope).libs += $(foreach l,$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps),$(or $($(l).name),$(l)))
+    $(wondermake.template.scope).libs += $(foreach l,$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) $(call wondermake.inherit_append,$(wondermake.template.scope),public_deps),$(or $($(l).name),$(l)))
   endif
 endef
 

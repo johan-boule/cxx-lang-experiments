@@ -4,7 +4,7 @@ set -eux &&
 
 cd "$(dirname "$0")"
 
-bld_dir=++build
+bld_dir=++wondermake-build
 
 mkdir -p $bld_dir
 

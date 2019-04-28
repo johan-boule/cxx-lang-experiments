@@ -14,19 +14,19 @@ wondermake.dynamically_generated_makefiles := # this is an immediate var
 
 ifndef wondermake.bld_dir
   ifneq '' '$(call wondermake.equals,$(realpath $(dir $(firstword $(MAKEFILE_LIST)))),$(realpath $(CURDIR)))'
-    wondermake.bld_dir := ++build/
+    wondermake.bld_dir := ++wondermake-build/
   endif
 endif
 
 ifneq '' '$(wondermake.bld_dir)'
-  $(wondermake.bld_dir): ; mkdir -p $(@D)
+  $(wondermake.bld_dir): ; mkdir -p $@
 endif
 
 ###############################################################################
 # Staged install
 
 wondermake.staged_install := $(wondermake.bld_dir)staged-install/
-$(wondermake.staged_install)bin/ $(wondermake.staged_install)lib/: ; mkdir -p $(@D)
+$(wondermake.staged_install)bin/ $(wondermake.staged_install)lib/: ; mkdir -p $@
 
 ###############################################################################
 endif # ifndef wondermake.init.included
