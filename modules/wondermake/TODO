@@ -13,6 +13,8 @@
 			import "header"
 			import <header>
 
+*	auto-link by using module import information
+
 *	pkg-config
 		use
 		auto-generate
@@ -155,7 +157,9 @@
 	import lib: -Wl,--out-implib,lib%.dll.a # mingw doesn't need import libs
 	-Wl,--enable-auto-import # suppress informational messages
 
-*	msvc
+*	-Wl,-no-undefined
+
+*	msvc? really, do we care anymore?
 	Taken from Wonderbuild msvc_imply.py
 	for everything: -nologo
 	programs: cpp/cxx = cl, ld = link, ar/ranlib = lib
@@ -172,3 +176,7 @@
 
 *	large build system: allow parsing only the scopes that are in command requested goals
 	=> requires auto-clean per scope
+
+*	find source files only on first make phase and read a file that contains the list on second phase
+
+*	move phony and .out computation from wondermake.template.rules up to wondermake.template.define_vars

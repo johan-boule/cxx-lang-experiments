@@ -42,10 +42,10 @@ wondermake.print\:%: ; @echo $* = $($*)
 wondermake.inherit_unique = $(or $($1.$2),$(if $($1.inherit),$(call $0,$($1.inherit),$2)))
 
 # Concatenate, by appending, the value of a list variable by traversing the hierarchy ($1 = scope, $2 = var)
-wondermake.inherit_append = $($1.$2) $(if $($1.inherit),$(call $0,$($1.inherit),$2))
+wondermake.inherit_append = $(strip $($1.$2) $(if $($1.inherit),$(call $0,$($1.inherit),$2)))
 
 # Concatenate, by prepending, the value of a list variable by traversing the hierarchy ($1 = scope, $2 = var)
-wondermake.inherit_prepend = $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($1.$2)
+wondermake.inherit_prepend = $(strip $(if $($1.inherit),$(call $0,$($1.inherit),$2)) $($1.$2))
 
 ###############################################################################
 # Add a default inheritance on the wondermake.<toolchain> scope for each user-declared scope

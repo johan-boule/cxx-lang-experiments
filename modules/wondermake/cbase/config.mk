@@ -19,6 +19,14 @@ wondermake.cbase.libs_path := $(wondermake.staged_install)lib
 include $(dir $(lastword $(MAKEFILE_LIST)))config.unix-elf-clang.mk
 wondermake.cbase.inherit := wondermake.cbase.config[unix_elf_clang]
 
+# By default, make shared libs and dynamic executables rather than static
+wondermake.cbase.cxx_flags[executable]           := $(call wondermake.inherit_append,wondermake.cbase,cxx_flags[dynamic_executable])
+wondermake.cbase.cxx_flags[lib]                  := $(call wondermake.inherit_append,wondermake.cbase,cxx_flags[shared_lib])
+wondermake.cbase.ld_flags[executable]            := $(call wondermake.inherit_append,wondermake.cbase,ld_flags[dynamic_executable])
+wondermake.cbase.ld_flags[lib]                   := $(call wondermake.inherit_append,wondermake.cbase,ld_flags[shared_lib])
+wondermake.cbase.binary_file_pattern[executable] := $(call wondermake.inherit_unique,wondermake.cbase,binary_file_pattern[dynamic_executable])
+wondermake.cbase.binary_file_pattern[lib]        := $(call wondermake.inherit_unique,wondermake.cbase,binary_file_pattern[shared_lib])
+
 # This rule is done only on first build or when changes in the env are detected.
 $(wondermake.bld_dir)wondermake.cbase.configure: min_required_clang_major_version := 6 # First version with ISO C++ module TS support
 $(wondermake.bld_dir)wondermake.cbase.configure: $(wondermake.bld_dir)wondermake.cbase.env.unix_elf_clang.checksum
@@ -34,11 +42,11 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 			"stat env CPP CXX LD AR RANLIB" \
 			"$$(stat -Lc%n\ %Y \
 				$(wondermake.bld_dir)wondermake.cbase.env.checksum \
-				$$(command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].cpp))) \
-				$$(command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].cxx))) \
-				$$(command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].ld))) \
-				$$(command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].ar))) \
-				$$(command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].ranlib))) \
+				$$(command -v $(firstword $(call wondermake.inherit_unique,wondermake.cbase,cpp))) \
+				$$(command -v $(firstword $(call wondermake.inherit_unique,wondermake.cbase,cxx))) \
+				$$(command -v $(firstword $(call wondermake.inherit_unique,wondermake.cbase,ld))) \
+				$$(command -v $(firstword $(call wondermake.inherit_unique,wondermake.cbase,ar))) \
+				$$(command -v $(firstword $(call wondermake.inherit_unique,wondermake.cbase,ranlib))) \
 			)" \
 			"min required clang version $(min_required_clang_major_version)" \
 			"cxx env" \

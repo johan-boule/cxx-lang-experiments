@@ -10,7 +10,10 @@ ifndef wondermake.cbase.template.included
 define wondermake.template
   ifneq '' '$(filter template,$(wondermake.verbose))'
     $(info )
-    $(info ############### Template execution for scope $(wondermake.template.scope) ###############)
+    $(info ###############################################################################)
+    $(info ###############################################################################)
+    $(info ###############################################################################)
+    $(info # Template execution for scope $(wondermake.template.scope))
     $(info )
   endif
 
@@ -33,13 +36,17 @@ endef
 define wondermake.template.define_vars
   wondermake.template.src_dir := $(call wondermake.inherit_unique,$(wondermake.template.scope),src_dir)
 
-  wondermake.template.external_mxx_files += \
-	$(shell cd $(wondermake.template.src_dir) && find $(call wondermake.inherit_prepend,$(wondermake.template.scope),external_modules_path) \
-		-name '' \
-		$(patsubst %,-o -name '*.%', \
-			$(or \
-				$(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix) \
-				$(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix[$(call wondermake.inherit_unique,$(wondermake.template.scope),lang)]))))
+  wondermake.template.external_mxx_files := $(call wondermake.inherit_prepend,$(wondermake.template.scope),external_modules_path)
+  ifneq '' '$(wondermake.template.external_mxx_files)'
+    wondermake.template.external_mxx_files := \
+		$(shell cd $(wondermake.template.src_dir) && find $(wondermake.template.external_mxx_files) \
+			-name '' \
+			$(patsubst %,-o -name '*.%', \
+				$(or \
+					$(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix) \
+					$(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix[$(call wondermake.inherit_unique,$(wondermake.template.scope),lang)]))))
+  endif
+
   wondermake.template.mxx_files := $(patsubst $(wondermake.template.src_dir)%,%, \
 	$(shell find $(addprefix $(wondermake.template.src_dir),$($(wondermake.template.scope).src)) \
 		-name '' \
@@ -67,9 +74,9 @@ define wondermake.template.define_vars
   wondermake.template.obj_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.obj_suffix),$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
 
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
-  wondermake.template.binary_file := $(patsubst %,$(wondermake.staged_install)$(call \
-	wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(call \
-	wondermake.inherit_unique,$(wondermake.template.scope),type)]),$(wondermake.template.name))
+  wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
+  wondermake.template.binary_file := $(addprefix $(wondermake.staged_install), \
+  	$(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name)))
 endef
 
 ###############################################################################
@@ -88,6 +95,7 @@ define wondermake.template.undefine_vars
   undefine wondermake.template.obj_suffix
   undefine wondermake.template.obj_files
   undefine wondermake.template.name
+  undefine wondermake.template.type
   undefine wondermake.template.binary_file
 endef
 
@@ -174,35 +182,68 @@ define wondermake.template.rules
     ${wondermake.newline} \
   )
 
-  # Rule to compile a c++ source file to an object file
-  $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
-  $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope_dir)cxx_command | %.ii.d # if .d failed to build, don't continue
-	$$(call wondermake.announce,$(wondermake.template.scope),compile $$<,to $$@)
-	$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).cxx_command))
-	$$($$@.evaluated_command)
-	$$(eval undefine $$@.evaluated_command)
-  wondermake.clean += $(wondermake.template.obj_files)
-  wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
-  wondermake.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
+  ifneq 'headers' '$(wondermake.template.type)'
+    # Rule to compile a c++ source file to an object file
+    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
+    $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope_dir)cxx_command | %.ii.d # if .d failed to build, don't continue
+		$$(call wondermake.announce,$(wondermake.template.scope),compile $$<,to $$@)
+		$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).cxx_command))
+		$$($$@.evaluated_command)
+		$$(eval undefine $$@.evaluated_command)
+    wondermake.clean += $(wondermake.template.obj_files)
+    wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
+    wondermake.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
+  endif
 
   ifneq '' '$(wondermake.template.binary_file)'
     # Rule to link object files and produce an executable or shared library file
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
     $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.binary_file))
-		$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$(filter-out $(wondermake.template.scope_dir)src_files $(wondermake.template.scope_dir)ld_command,$$+))
+		$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $(wondermake.template.scope_dir)ld_command $$(filter-out $(wondermake.template.scope_dir)obj_files,$$+))
 		$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).ld_command))
 		$$($$@.evaluated_command)
 		$$(eval undefine $$@.evaluated_command)
     wondermake.clean += $(wondermake.template.binary_file)
 
     # Rule to trigger relinking when a source file (and hence its derived object file) is removed
-    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),src_files,$$(sort $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))
-    $(wondermake.template.binary_file): $(wondermake.template.scope_dir)src_files
+    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),obj_files,$(wondermake.template.obj_files))
+    $(wondermake.template.binary_file): $(wondermake.template.scope_dir)obj_files
 
     # Library dependencies
-    $(wondermake.template.binary_file): | $(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) $(call wondermake.inherit_append,$(wondermake.template.scope),public_deps)
-    $(wondermake.template.scope).libs += $(foreach l,$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) $(call wondermake.inherit_append,$(wondermake.template.scope),public_deps),$(or $($(l).name),$(l)))
+    $(wondermake.template.binary_file): | \
+		$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) \
+		$(call wondermake.inherit_append,$(wondermake.template.scope),public_deps)
+    $(wondermake.template.scope).libs += \
+		$(foreach dep, \
+			$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) \
+			$(call wondermake.inherit_append,$(wondermake.template.scope),public_deps) \
+		,	$(if $(call wondermake.equals,headers,$(call wondermake.inherit_unique,$(dep),type)) \
+				,,$(or $($(dep).name),$(dep))) \
+		)
+    $(foreach dep, \
+		$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) \
+		$(call wondermake.inherit_append,$(wondermake.template.scope),public_deps) \
+    ,	$(info xxxxxxxxxxxxxxxx $(wondermake.template.scope) -> $(dep)) $(eval $(value recurse_libs)) \
+	)
   endif
+endef
+
+define recurse_libs
+seen :=
+$(call recurse_libs_,$(dep))
+undefine seen
+endef
+define recurse_libs_ # $1 = scope
+$(eval
+seen += 1
+$$(info $1 $$(seen))
+)
+endef
+define recurse_libs_0
+$(if $(filter $(dep),$(seen)) \
+,,$(if $(call wondermake.equals,headers,$(call wondermake.inherit_unique,$(dep),type)) \
+,,$(or $($(dep).name),$(dep))) \
+$(foreach rec,$(call wondermake.inherit_append,$(dep),public_deps),$(call $0,$(rec)) $(info zzzzzzzzzzzzzz $(wondermake.template.scope) -> $(rec))))
 endef
 
 ###############################################################################
@@ -219,7 +260,7 @@ define wondermake.cbase.cpp_command # $1 = scope
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern),$(call wondermake.inherit_prepend,$1,include)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern),$(call wondermake.inherit_prepend,$1,include_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern),$(call wondermake.inherit_prepend,$1,frameworks)) \
-	$(shell pkg-config --cflags $(call wondermake.inherit_prepend,$1,pkg_config)) \
+	$(shell pkg-config --cflags $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(call wondermake.inherit_append,$1,cpp_flags) \
 	$(CPPFLAGS) \
 	$$(abspath $$<)
@@ -260,11 +301,11 @@ define wondermake.cbase.ld_command # $1 = scope
 	$(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(call wondermake.inherit_append,$1,ld_flags) \
 	$(LDFLAGS) \
-	$$(filter-out $$(wondermake.bld_dir)scopes/$1/src_files $$(wondermake.bld_dir)scopes/$1/ld_command,$$+) \
+	$$(filter-out $$(wondermake.bld_dir)scopes/$1/ld_command $$(wondermake.bld_dir)scopes/$1/obj_files,$$+) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
-	$(shell pkg-config --libs $(call wondermake.inherit_prepend,$1,pkg_config)) \
+	$(shell pkg-config --libs $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(LDLIBS)
 endef
 
@@ -295,7 +336,10 @@ $(foreach wondermake.template.scope,$(wondermake),\
 
 ifneq '' '$(filter template,$(wondermake.verbose))'
   $(info )
-  $(info ############### End of template execution ###############)
+  $(info ######################### End of template execution ###########################)
+  $(info ###############################################################################)
+  $(info ###############################################################################)
+  $(info ###############################################################################)
   $(info )
 endif
 
