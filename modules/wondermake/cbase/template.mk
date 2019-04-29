@@ -229,7 +229,6 @@ endef
 
 define wondermake.template.topologically_sorted_unique_deep_deps.recurse # $1 = scope, $2 = dep, $3 = is_not_root, $4 = do_not_expose_private_deps
   $(if $(filter $2,$(wondermake.template.seen)),,
-	$(eval wondermake.template.seen += $2)
 	$(if $3,wondermake.template.deps += $(if $(call wondermake.equals,headers,$(call wondermake.inherit_unique,$2,type)),,$(or $($2.name),$2)))
     $(if $4,,
       $(foreach rec,$(call wondermake.inherit_append,$2,private_deps), \
@@ -238,6 +237,7 @@ define wondermake.template.topologically_sorted_unique_deep_deps.recurse # $1 = 
     $(foreach rec,$(call wondermake.inherit_append,$2,public_deps), \
       $(call $0,$1,$(rec),x,x))
   )
+  $(eval wondermake.template.seen := $2 $(wondermake.template.seen))
 endef
 
 ###############################################################################

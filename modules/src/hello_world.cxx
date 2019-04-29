@@ -1,7 +1,5 @@
 #include <iostream>
 
-module main;
-
 import phrases;
 import new_line;
 
