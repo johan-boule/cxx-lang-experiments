@@ -178,3 +178,5 @@
 	=> requires auto-clean per scope
 
 *	find source files only on first make phase and read a file that contains the list on second phase
+
+*	dont sign -fcolor-diagnostics
