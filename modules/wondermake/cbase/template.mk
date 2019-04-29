@@ -22,9 +22,9 @@ define wondermake.template
     $(info $(wondermake.template.define_vars))
   endif
 
-  $(eval $(wondermake.template.rules))
+  $(eval $(wondermake.template.rules_with_evaluated_recipes))
   ifneq '' '$(filter template,$(wondermake.verbose))'
-    $(info $(wondermake.template.rules))
+    $(info $(wondermake.template.rules_with_evaluated_recipes))
   endif
 
   $(eval $(value wondermake.template.undefine_vars))
@@ -77,6 +77,27 @@ define wondermake.template.define_vars
   wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
   wondermake.template.binary_file := $(addprefix $(wondermake.staged_install), \
   	$(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name)))
+
+  # Phony or not phony targets for this scope
+  wondermake.default: $(wondermake.template.scope)
+  # If scope has explicitely defined a name that is different from the scope name
+  ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
+    .PHONY: $(wondermake.template.scope)
+    $(wondermake.template.scope): $(wondermake.template.name)
+  endif
+  # If there is a link or archive step
+  ifneq '' '$(wondermake.template.binary_file)'
+    $(wondermake.template.scope).out := $(wondermake.template.binary_file)
+    # If the platform has any prefix or suffix added to the binary file name
+    ifneq '$(wondermake.template.name)' '$(wondermake.template.binary_file)'
+      .PHONY: $(wondermake.template.name)
+      $(wondermake.template.name): $($(wondermake.template.scope).out)
+    endif
+  else # No link nor archive step: target is just the list of object files
+    $(wondermake.template.scope).out := $(wondermake.template.obj_files)
+    .PHONY: $(wondermake.template.name)
+    $(wondermake.template.name): $($(wondermake.template.scope).out)
+  endif
 endef
 
 ###############################################################################
@@ -100,30 +121,9 @@ define wondermake.template.undefine_vars
 endef
 
 ###############################################################################
-# Define the template rules
+# Define the template rules with recipes that have the temporary loop variables evaluated
 
-define wondermake.template.rules
-
-  # Phony or not phony targets for this scope
-  wondermake.default: $(wondermake.template.scope)
-  # If scope has explicitely defined a name that is different from the scope name
-  ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
-    .PHONY: $(wondermake.template.scope)
-    $(wondermake.template.scope): $(wondermake.template.name)
-  endif
-  # If there is a link or archive step
-  ifneq '' '$(wondermake.template.binary_file)'
-    $(wondermake.template.scope).out := $(wondermake.template.binary_file)
-    # If the platform has any prefix or suffix added to the binary file name
-    ifneq '$(wondermake.template.name)' '$(wondermake.template.binary_file)'
-      .PHONY: $(wondermake.template.name)
-      $(wondermake.template.name): $$($(wondermake.template.scope).out)
-    endif
-  else # No link nor archive step: target is just the list of object files
-    $(wondermake.template.scope).out := $(wondermake.template.obj_files)
-    .PHONY: $(wondermake.template.name)
-    $(wondermake.template.name): $$($(wondermake.template.scope).out)
-  endif
+define wondermake.template.rules_with_evaluated_recipes
 
   # Rules to preprocess c++ source files
   ifdef MAKE_RESTARTS # cpp_command has been executed to bring .ii and .d files up-to-date
@@ -213,37 +213,31 @@ define wondermake.template.rules
     $(wondermake.template.binary_file): | \
 		$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) \
 		$(call wondermake.inherit_append,$(wondermake.template.scope),public_deps)
-    $(wondermake.template.scope).libs += \
-		$(foreach dep, \
-			$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) \
-			$(call wondermake.inherit_append,$(wondermake.template.scope),public_deps) \
-		,	$(if $(call wondermake.equals,headers,$(call wondermake.inherit_unique,$(dep),type)) \
-				,,$(or $($(dep).name),$(dep))) \
-		)
-    $(foreach dep, \
-		$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) \
-		$(call wondermake.inherit_append,$(wondermake.template.scope),public_deps) \
-    ,	$(info xxxxxxxxxxxxxxxx $(wondermake.template.scope) -> $(dep)) $(eval $(value recurse_libs)) \
-	)
+
+    $(eval $(value wondermake.template.topologically_sorted_unique_deep_deps))
   endif
 endef
 
-define recurse_libs
-seen :=
-$(call recurse_libs_,$(dep))
-undefine seen
+define wondermake.template.topologically_sorted_unique_deep_deps
+  wondermake.template.deps :=
+  wondermake.template.seen :=
+  $(eval $(call wondermake.template.topologically_sorted_unique_deep_deps.recurse,$(wondermake.template.scope),$(wondermake.template.scope)))
+  $(eval $(wondermake.template.scope).libs += $(wondermake.template.deps))
+  undefine wondermake.template.deps
+  undefine wondermake.template.seen
 endef
-define recurse_libs_ # $1 = scope
-$(eval
-seen += 1
-$$(info $1 $$(seen))
-)
-endef
-define recurse_libs_0
-$(if $(filter $(dep),$(seen)) \
-,,$(if $(call wondermake.equals,headers,$(call wondermake.inherit_unique,$(dep),type)) \
-,,$(or $($(dep).name),$(dep))) \
-$(foreach rec,$(call wondermake.inherit_append,$(dep),public_deps),$(call $0,$(rec)) $(info zzzzzzzzzzzzzz $(wondermake.template.scope) -> $(rec))))
+
+define wondermake.template.topologically_sorted_unique_deep_deps.recurse # $1 = scope, $2 = dep, $3 = is_not_root, $4 = do_not_expose_private_deps
+  $(if $(filter $2,$(wondermake.template.seen)),,
+	$(eval wondermake.template.seen += $2)
+	$(if $3,wondermake.template.deps += $(if $(call wondermake.equals,headers,$(call wondermake.inherit_unique,$2,type)),,$(or $($2.name),$2)))
+    $(if $4,,
+      $(foreach rec,$(call wondermake.inherit_append,$2,private_deps), \
+        $(call $0,$1,$(rec),x,x)) \
+    )
+    $(foreach rec,$(call wondermake.inherit_append,$2,public_deps), \
+      $(call $0,$1,$(rec),x,x))
+  )
 endef
 
 ###############################################################################
@@ -349,7 +343,7 @@ endif
 undefine wondermake.template
 undefine wondermake.template.define_vars
 undefine wondermake.template.undefine_vars
-undefine wondermake.template.rules
+undefine wondermake.template.rules_with_evaluated_recipes
 
 ###############################################################################
 # Compilation database (compile_commands.json)

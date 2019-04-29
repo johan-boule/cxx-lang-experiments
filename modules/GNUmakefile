@@ -35,7 +35,7 @@ wondermake += letters
 letters.inherit := module_demo_common_conf
 letters.type := headers
 letters.src := src/letters/letters.mxx
-letters.public_deps := letters-vowels letter-consonants
+letters.public_deps := letters-vowels letters-consonants
 
 wondermake += letters-vowels
 letters-vowels.inherit := module_demo_common_conf
@@ -50,12 +50,3 @@ punctuations.inherit := module_demo_common_conf
 punctuations.src := src/punctuations/
 
 include $(module_demo_common_conf.src_dir)/wondermake/main.mk
-
-define wondermake.template
-$(info {$(wondermake.template.scope)})
-libs := $(foreach l,$(call wondermake.inherit_append,$(wondermake.template.scope),private_deps) $(call wondermake.inherit_append,$(wondermake.template.scope),public_deps),$(or $($(l).name),$(l)))
-$(info libs -> $(libs))
-endef
-
-# Execute the template for each user-declared scope
-$(foreach wondermake.template.scope,$(wondermake),$(eval $(value wondermake.template)))
