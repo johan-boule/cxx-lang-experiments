@@ -17,12 +17,14 @@
 
 *	pkg-config
 		use
-		auto-generate
+		auto-generate (use pcfiledir, is this new?)
 	env
 		'PKG_CONFIG_PATH', 'PKG_CONFIG_LIBDIR', 'PKG_CONFIG_DISABLE_UNINSTALLED'
 		# PKG_CONFIG_TOP_BUILD_DIR, PKG_CONFIG_ALLOW_SYSTEM_CFLAGS, PKG_CONFIG_ALLOW_SYSTEM_LIBS
 
 *	ar
+	options rcsD, or d
+	rule (%.o):
 	-Wl,-Bstatic
 	-Wl,-Bdynamic
 
@@ -30,6 +32,7 @@
 	soname and symlinks
 		ln -s lib.%.so.<version> lib.%.so
 		-Wl,-h,lib.%.so.<version>
+	-Wl,-no-undefined -Wl,--undefined
 
 *	detect compiler
 	c++/cc/g++/gcc/clang++/clang -dumpversion (note: clang => fake old gcc version)
@@ -156,8 +159,6 @@
 	lib%.dll instead of lib%.so
 	import lib: -Wl,--out-implib,lib%.dll.a # mingw doesn't need import libs
 	-Wl,--enable-auto-import # suppress informational messages
-
-*	-Wl,-no-undefined
 
 *	msvc? really, do we care anymore?
 	Taken from Wonderbuild msvc_imply.py

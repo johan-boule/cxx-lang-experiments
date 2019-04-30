@@ -50,3 +50,8 @@ punctuations.inherit := module_demo_common_conf
 punctuations.src := src/punctuations/
 
 include $(module_demo_common_conf.src_dir)/wondermake/main.mk
+
+test: test-hello
+test-hello: $(hello-world.out)
+	$(call wondermake.announce,test,$@)
+	''$(hello-world.out)

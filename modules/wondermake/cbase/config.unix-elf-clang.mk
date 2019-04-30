@@ -8,10 +8,10 @@ ifndef wondermake.cbase.config.unix_elf_clang.included
 # Overridable programs
 
 wondermake.cbase.config[unix_elf_clang].cxx    := $(or $(call wondermake.user_override,CXX),clang++)
-wondermake.cbase.config[unix_elf_clang].cpp    := $(or $(call wondermake.user_override,CPP),$(wondermake.cbase.config[unix_elf_clang].cxx)) #-E
+wondermake.cbase.config[unix_elf_clang].cpp    := $(or $(call wondermake.user_override,CPP),$(wondermake.cbase.config[unix_elf_clang].cxx)) # -E
 wondermake.cbase.config[unix_elf_clang].ld     := $(or $(call wondermake.user_override,LD),$(wondermake.cbase.config[unix_elf_clang].cxx))
 wondermake.cbase.config[unix_elf_clang].ar     := $(or $(call wondermake.user_override,AR),ar)
-wondermake.cbase.config[unix_elf_clang].ranlib := $(or $(call wondermake.user_override,RANLIB),$(wondermake.cbase.config[unix_elf_clang].ar) s)
+wondermake.cbase.config[unix_elf_clang].ranlib := $(or $(call wondermake.user_override,RANLIB),$(wondermake.cbase.config[unix_elf_clang].ar)) # s
 
 ###############################################################################
 # Toolchain configuration variables
@@ -85,7 +85,7 @@ endif
 
 ifndef MAKE_RESTARTS # only do this on the first make phase
   define wondermake.cbase.config[unix_elf_clang].check_toolchain_version # $1 = min_required_clang_major_version
-    $(call wondermake.announce,check clang version,requires clang version >= $1)
+    $(call wondermake.announce,configure,check clang version,requires clang version >= $1)
     @set -e; \
     if ! command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) 1>/dev/null; \
     then \

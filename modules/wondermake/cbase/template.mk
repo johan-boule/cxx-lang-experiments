@@ -136,9 +136,9 @@ define wondermake.template.rules_with_evaluated_recipes
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
     $(foreach src,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
       ${wondermake.newline} $(wondermake.template.intermediate_dir)$(src).ii: \
+		$(wondermake.bld_dir)wondermake.cbase.configure \
 		$(if $(findstring / /,/ $(src)),$(src),$(wondermake.template.src_dir)$(src)) \
 		$(wondermake.template.scope_dir)cpp_command \
-		$(wondermake.bld_dir)wondermake.cbase.configure \
 		| $(dir $(wondermake.template.intermediate_dir)$(src)) \
       ${wondermake.newline}		$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
       ${wondermake.newline}		$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).cpp_command)) \
@@ -254,7 +254,7 @@ define wondermake.cbase.cpp_command # $1 = scope
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern),$(call wondermake.inherit_prepend,$1,include)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern),$(call wondermake.inherit_prepend,$1,include_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern),$(call wondermake.inherit_prepend,$1,frameworks)) \
-	$(shell pkg-config --cflags $(call wondermake.inherit_append,$1,pkg_config)) \
+	$(shell $(call wondermake.inherit_unique,$1,pkg_config) --cflags $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(call wondermake.inherit_append,$1,cpp_flags) \
 	$(CPPFLAGS) \
 	$$(abspath $$<)
@@ -268,7 +268,7 @@ define wondermake.cbase.mxx_command # $1 = scope, $(module_map) is a var private
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
 	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
+	$(shell $(call wondermake.inherit_unique,$1,pkg_config) --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(CXXFLAGS) \
 	$$<
@@ -282,7 +282,7 @@ define wondermake.cbase.cxx_command # $1 = scope, $(module_map) is a var private
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
 	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-	$(shell pkg-config --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
+	$(shell $(call wondermake.inherit_unique,$1,pkg_config) --cflags-only-other $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(CXXFLAGS) \
 	$$<
@@ -299,7 +299,7 @@ define wondermake.cbase.ld_command # $1 = scope
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
-	$(shell pkg-config --libs $(call wondermake.inherit_append,$1,pkg_config)) \
+	$(shell $(call wondermake.inherit_unique,$1,pkg_config) --libs $(call wondermake.inherit_append,$1,pkg_config)) \
 	$(LDLIBS)
 endef
 

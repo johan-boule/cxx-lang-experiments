@@ -26,17 +26,17 @@ $(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_
 	$(eval $@.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null)))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
-		$(call wondermake.announce,auto-clean,,no change) \
+		$(if $(wondermake.verbose),$(call wondermake.announce,auto-clean,,no change)) \
 	, \
 		$(eval $@.rm := $(filter-out $($@.new),$($@.old))) \
 		$(if $($@.rm), \
 			$(call wondermake.announce,auto-clean) \
 			$(call wondermake.notice,removing $($@.rm)) \
-			printf '%s' '$($@.rm)' | xargs rm -f ; \
+			@printf '%s' '$($@.rm)' | xargs rm -f; \
 			printf '%s' '$(sort $(dir $($@.rm)))' | xargs rmdir -p 2>/dev/null || true; \
 			printf '%s\n' '$($@.new)' > $@ \
 		, \
-			$(call wondermake.announce,auto-clean,new files - nothing to remove) \
+			$(call wondermake.announce,auto-clean,new files,nothing to remove) \
 			$(file > $@,$($@.new)) \
 		) \
 		$(eval undefine $@.rm) \
