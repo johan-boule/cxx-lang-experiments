@@ -51,6 +51,9 @@ endif
 
 # If the wondermake.verbose var is set or make is not in silent mode
 ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS))))'
+  wondermake.if_not_silent       = $1
+  wondermake.if_not_silent_shell = $1
+
   wondermake.trace_style  := $(wondermake.term.cyan)$(wondermake.term.dim)
   wondermake.trace         = $(info        $(call wondermake.maybe_colored_out,$(wondermake.trace_style),$1))
   wondermake.trace_shell   = printf '%s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.trace_style),$1)
@@ -76,17 +79,11 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
     printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style),$2); \
     printf ' %s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.dim),$3)
 
-else # Be quiet
-  wondermake.trace :=
+else # Be quiet. We need a no-op definition for the shell, because these calls may be followed by a semicolon and it's syntax error to have a stray semicolon.
+  wondermake.if_not_silent_shell := :
   wondermake.trace_shell := :
-
-  wondermake.info :=
   wondermake.info_shell := :
-
-  wondermake.notice :=
   wondermake.notice_shell := :
-
-  wondermake.announce :=
   wondermake.announce_shell := :
 endif
 
