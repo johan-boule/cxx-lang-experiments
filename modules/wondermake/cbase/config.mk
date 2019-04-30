@@ -25,12 +25,15 @@ include $(dir $(lastword $(MAKEFILE_LIST)))config.unix-elf-clang.mk
 wondermake.cbase.inherit := wondermake.cbase.config[unix_elf_clang]
 
 # By default, make shared libs and dynamic executables rather than static
-wondermake.cbase.cxx_flags[executable]           := $(call wondermake.inherit_append,wondermake.cbase,cxx_flags[dynamic_executable])
-wondermake.cbase.cxx_flags[lib]                  := $(call wondermake.inherit_append,wondermake.cbase,cxx_flags[shared_lib])
-wondermake.cbase.ld_flags[executable]            := $(call wondermake.inherit_append,wondermake.cbase,ld_flags[dynamic_executable])
-wondermake.cbase.ld_flags[lib]                   := $(call wondermake.inherit_append,wondermake.cbase,ld_flags[shared_lib])
-wondermake.cbase.binary_file_pattern[executable] := $(call wondermake.inherit_unique,wondermake.cbase,binary_file_pattern[dynamic_executable])
-wondermake.cbase.binary_file_pattern[lib]        := $(call wondermake.inherit_unique,wondermake.cbase,binary_file_pattern[shared_lib])
+wondermake.cbase.default_executable_type := dynamic_executable
+wondermake.cbase.default_lib_type        := shared_lib
+
+wondermake.cbase.cxx_flags[executable]           := $(call wondermake.inherit_append,wondermake.cbase,cxx_flags[$(wondermake.cbase.default_executable_type)])
+wondermake.cbase.cxx_flags[lib]                  := $(call wondermake.inherit_append,wondermake.cbase,cxx_flags[$(wondermake.cbase.default_lib_type)])
+wondermake.cbase.ld_flags[executable]            := $(call wondermake.inherit_append,wondermake.cbase,ld_flags[$(wondermake.cbase.default_executable_type)])
+wondermake.cbase.ld_flags[lib]                   := $(call wondermake.inherit_append,wondermake.cbase,ld_flags[$(wondermake.cbase.default_lib_type)])
+wondermake.cbase.binary_file_pattern[executable] := $(call wondermake.inherit_unique,wondermake.cbase,binary_file_pattern[$(wondermake.cbase.default_executable_type)])
+wondermake.cbase.binary_file_pattern[lib]        := $(call wondermake.inherit_unique,wondermake.cbase,binary_file_pattern[$(wondermake.cbase.default_lib_type)])
 
 # This rule is done only on first build or when changes in the env are detected.
 $(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9 # First version with ISO C++ module TS support

@@ -16,11 +16,8 @@
 *	auto-link by using module import information
 
 *	pkg-config
-		use
+		use a common cache: counter := xxxx, counter += x, foreach(i, x xx xxx xxxx) cache.$i.key cache.$i.value
 		auto-generate (use pcfiledir, is this new?)
-	env
-		'PKG_CONFIG_PATH', 'PKG_CONFIG_LIBDIR', 'PKG_CONFIG_DISABLE_UNINSTALLED'
-		# PKG_CONFIG_TOP_BUILD_DIR, PKG_CONFIG_ALLOW_SYSTEM_CFLAGS, PKG_CONFIG_ALLOW_SYSTEM_LIBS
 
 *	ar
 	options rcsD, or d

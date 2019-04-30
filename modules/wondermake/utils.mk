@@ -61,6 +61,21 @@ $(foreach s,$(wondermake), \
 undefine wondermake.inherit_root
 
 ###############################################################################
+# Depencency support functions
+
+define wondermake.topologically_sorted_unique_deep_deps # $1 = scope, $2 = do_not_expose_private_deep_deps, $3 = is_not_root, $4 = seen
+  $(if $(and $3,$(filter $1,$4)),, \
+    $(if $(and $3,$2),, \
+      $(foreach d,$(call wondermake.inherit_append,$1,private_deps), \
+        $(call $0,$d,$2,x,$4 $1)) \
+    ) \
+    $(foreach d,$(call wondermake.inherit_append,$1,public_deps), \
+      $(call $0,$d,$2,x,$4 $1)) \
+    $(if $3,$1) \
+  )
+endef
+
+###############################################################################
 # Write a given scope variable to a file only when the var value differs from the content of the existing file,
 # thereby preserving file timestamp if value has not changed. The file can then be used as a rule prerequisite.
 
