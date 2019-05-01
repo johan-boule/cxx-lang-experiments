@@ -223,15 +223,15 @@ define wondermake.template.rules_with_evaluated_recipes
     
         # Library dependencies
         # XXX maybe allow static by default? static_executable or executable and wondermake.cbase.default_executable_type is static_executable
-        $(if $(filter-out headers objects static_lib,$(wondermake.template.type)), \
+        $(if $(filter-out headers objects static_lib,$(wondermake.template.type)),
           $(eval wondermake.template.deep_deps := \
-            $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(if \
+            $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(if
               $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$(wondermake.template.scope),type)),,x)))
-          $(eval \
-            $(wondermake.newline) $(wondermake.template.binary_file): | $(wondermake.template.deep_deps) \
-            $(wondermake.newline) $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps),$(if $(filter-out headers objects,$(call wondermake.inherit_unique,$d,type)),$(or $($d.name),$d))) \
-            $(wondermake.newline) undefine wondermake.template.deep_deps \
-          ) \
+            $(wondermake.template.binary_file): | $(wondermake.template.deep_deps)
+            $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps)
+              ,$(if $(filter-out headers objects,$(call wondermake.inherit_unique,$d,type))
+                ,$(or $($d.name),$d)))
+            undefine wondermake.template.deep_deps
         )
       endif
     endif
