@@ -227,11 +227,11 @@ define wondermake.template.rules_with_evaluated_recipes
           $(eval wondermake.template.deep_deps := \
             $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(if
               $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$(wondermake.template.scope),type)),,x)))
-            $(wondermake.template.binary_file): | $(wondermake.template.deep_deps)
-            $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps)
-              ,$(if $(filter-out headers objects,$(call wondermake.inherit_unique,$d,type))
-                ,$(or $($d.name),$d)))
-            undefine wondermake.template.deep_deps
+          $(wondermake.template.binary_file): | $(wondermake.template.deep_deps)
+          $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps)
+            ,$(if $(filter-out headers objects,$(call wondermake.inherit_unique,$d,type))
+              ,$(or $($d.name),$d)))
+          $(eval undefine wondermake.template.deep_deps)
         )
       endif
     endif
