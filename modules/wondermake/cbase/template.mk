@@ -213,9 +213,11 @@ define wondermake.template.rules_with_evaluated_recipes
 
       $(if $(call wondermake.equals,static_lib,$(wondermake.template.type)),
         # Rule to archive object files
-        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope),$$$$1))
+        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope)))
         $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ar_command | $(dir $(wondermake.template.binary_file))
-			$$(eval $$@.object_files := $$(filter-out $(wondermake.template.scope_dir)ar_command $(wondermake.template.scope_dir)obj_files, $$(if $$(filter $(wondermake.template.scope_dir)obj_files,$$?),$$+,$$?)))
+			$$(eval $$@.object_files := \
+				$$(filter-out   $(wondermake.template.scope_dir)ar_command $(wondermake.template.scope_dir)obj_files, \
+				$$(if $$(filter $(wondermake.template.scope_dir)ar_command $(wondermake.template.scope_dir)obj_files,$$?),$$+,$$?)))
 			$$(call wondermake.announce,$(wondermake.template.scope),archive $$@,from objects $$($$@.object_files))
 			$$(eval $$@.evaluated_command = $$($(wondermake.template.scope).ar_command))
 			$$(call $$@.evaluated_command,$$($$@.object_files))
@@ -223,7 +225,7 @@ define wondermake.template.rules_with_evaluated_recipes
 			$$(eval undefine $$@.evaluated_command)
 
       , # Rule to link object files and produce an executable or shared library file
-        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope),$$$$1))
+        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
         $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.binary_file))
 			$$(eval $$@.object_files := $$(filter-out $(wondermake.template.scope_dir)ld_command $(wondermake.template.scope_dir)obj_files,$$+))
 			$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$($$@.object_files))
@@ -295,13 +297,13 @@ define wondermake.cbase.cxx_command # $1 = scope, $(module_map) is a var private
 endef
 
 # Command to link object files and produce an executable or shared library file
-define wondermake.cbase.ld_command # $1 = scope, $2 = object files
+define wondermake.cbase.ld_command # $1 = scope, $$1 = object files
 	$(or $(call wondermake.user_override,LD),$(call wondermake.inherit_unique,$1,ld)) \
 	$(call wondermake.inherit_unique,$1,ld_flags_out_mode) \
 	$(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(call wondermake.inherit_append,$1,ld_flags) \
 	$(call wondermake.user_override,LDFLAGS) \
-	$2 \
+	$$1 \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
@@ -310,12 +312,12 @@ define wondermake.cbase.ld_command # $1 = scope, $2 = object files
 endef
 
 # Command to archive object files
-define wondermake.cbase.ar_command # $1 = scope, $2 = object files
+define wondermake.cbase.ar_command # $1 = scope, $$1 = object files
 	$(or $(call wondermake.user_override,AR),$(call wondermake.inherit_unique,$1,ar)) \
 	$(call wondermake.inherit_append,$1,ar_flags) \
 	$(call wondermake.user_override,ARFLAGS) \
 	$(call wondermake.inherit_unique,$1,ar_flags_out_mode) \
-	$2
+	$$1
 	$(or $(call wondermake.user_override,RANLIB),$(call wondermake.inherit_unique,$1,ranlib))
 endef
 

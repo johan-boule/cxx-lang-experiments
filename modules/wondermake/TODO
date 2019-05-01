@@ -19,17 +19,12 @@
 		use a common cache: counter := xxxx, counter += x, foreach(i, x xx xxx xxxx) cache.$i.key cache.$i.value
 		auto-generate (use pcfiledir, is this new?)
 
-*	ar
-	options rcsD, or d
-	rule (%.o):
-	-Wl,-Bstatic
-	-Wl,-Bdynamic
-
 *	ld
 	soname and symlinks
 		ln -s lib.%.so.<version> lib.%.so
 		-Wl,-h,lib.%.so.<version>
 	-Wl,-no-undefined -Wl,--undefined
+	-Wl,-Bstatic -Wl,-Bdynamic
 
 *	std version
 	note: to list clang's supported names, use clang++ -xc++ -std= -
