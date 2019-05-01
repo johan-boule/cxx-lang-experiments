@@ -129,11 +129,10 @@ endef
 # Define the template rules with recipes that have the temporary loop variables evaluated
 
 define wondermake.template.rules_with_evaluated_recipes
-
   # Rules to preprocess c++ source files
-  ifdef MAKE_RESTARTS # cpp_command has been executed to bring .ii and .d files up-to-date
+  $(if $(MAKE_RESTARTS), # cpp_command has been executed to bring .ii and .d files up-to-date
     wondermake.clean += $(wondermake.template.scope_dir)cpp_command # explicitly prevent auto-cleaning since we don't call wondermake.write_iif_content_changed.rule
-  else # only do this on the first make phase
+  , # else, only do this on the first make phase
     # Rule to create an output directory
     $(wondermake.template.scope_dir) $(patsubst %,$(wondermake.template.intermediate_dir)%,$(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))): ; mkdir -p $$@
 
@@ -167,7 +166,7 @@ define wondermake.template.rules_with_evaluated_recipes
 		$$(call wondermake.cbase.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
 		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
     )
-  endif
+  )
   wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
   wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
   wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
