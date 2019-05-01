@@ -65,13 +65,13 @@ undefine wondermake.inherit_root
 
 define wondermake.topologically_sorted_unique_deep_deps # $1 = scope, $2 = do_not_expose_private_deep_deps, $3 = is_not_root, $4 = seen
   $(if $(and $3,$(filter $1,$4)),, \
+    $(if $3,$1) \
     $(if $(and $3,$2),, \
       $(foreach d,$(call wondermake.inherit_append,$1,private_deps), \
         $(call $0,$d,$2,x,$4 $1)) \
     ) \
     $(foreach d,$(call wondermake.inherit_append,$1,public_deps), \
       $(call $0,$d,$2,x,$4 $1)) \
-    $(if $3,$1) \
   )
 endef
 

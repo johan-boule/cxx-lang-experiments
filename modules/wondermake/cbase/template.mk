@@ -129,11 +129,13 @@ endef
 # Define the template rules with recipes that have the temporary loop variables evaluated
 
 define wondermake.template.rules_with_evaluated_recipes
-  # Rules to preprocess c++ source files
+  
   $(if $(MAKE_RESTARTS),
     # cpp_command has been executed to bring .ii and .d files up-to-date
     wondermake.clean += $(wondermake.template.scope_dir)cpp_command # explicitly prevent auto-cleaning since we don't call wondermake.write_iif_content_changed.rule
-  , # else, only do this on the first make phase
+
+  , # Rules to preprocess c++ source files (only done on the first make phase)
+
     # Rule to create an output directory
     $(wondermake.template.scope_dir) $(patsubst %,$(wondermake.template.intermediate_dir)%,$(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))): ; mkdir -p $$@
 
@@ -204,35 +206,41 @@ define wondermake.template.rules_with_evaluated_recipes
     wondermake.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
 
     $(if $(call wondermake.equals,objects,$(wondermake.template.type)),,
-      # XXX maybe allow static by default? static_lib or lib and wondermake.cbase.default_lib_type is static_lib
-      $(if $(call wondermake.equals,static_lib,$(wondermake.template.type)),
-        # TODO static archive
-      , # else, there is a link step
-        # Rule to link object files and produce an executable or shared library file
-        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
-        $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.binary_file))
-			$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$(filter-out $(wondermake.template.scope_dir)ld_command $(wondermake.template.scope_dir)obj_files,$$+))
-			$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).ld_command))
-			$$($$@.evaluated_command)
-			$$(eval undefine $$@.evaluated_command)
-        wondermake.clean += $(wondermake.template.binary_file)
+      # Rule to trigger relinking or dearchiving when a source file (and hence its derived object file) is removed
+      $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),obj_files,$(wondermake.template.obj_files))
+      $(wondermake.template.binary_file): $(wondermake.template.scope_dir)obj_files
+      wondermake.clean += $(wondermake.template.binary_file)
 
-        # Rule to trigger relinking when a source file (and hence its derived object file) is removed
-        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),obj_files,$(wondermake.template.obj_files))
-        $(wondermake.template.binary_file): $(wondermake.template.scope_dir)obj_files
+      $(if $(call wondermake.equals,static_lib,$(wondermake.template.type)),
+        # Rule to archive object files
+        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope),$$$$1))
+        $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ar_command | $(dir $(wondermake.template.binary_file))
+			$$(eval $$@.object_files := $$(filter-out $(wondermake.template.scope_dir)ar_command $(wondermake.template.scope_dir)obj_files, $$(if $$(filter $(wondermake.template.scope_dir)obj_files,$$?),$$+,$$?)))
+			$$(call wondermake.announce,$(wondermake.template.scope),archive $$@,from objects $$($$@.object_files))
+			$$(eval $$@.evaluated_command = $$($(wondermake.template.scope).ar_command))
+			$$(call $$@.evaluated_command,$$($$@.object_files))
+			$$(eval undefine $$@.object_files)
+			$$(eval undefine $$@.evaluated_command)
+
+      , # Rule to link object files and produce an executable or shared library file
+        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope),$$$$1))
+        $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.binary_file))
+			$$(eval $$@.object_files := $$(filter-out $(wondermake.template.scope_dir)ld_command $(wondermake.template.scope_dir)obj_files,$$+))
+			$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$($$@.object_files))
+			$$(eval $$@.evaluated_command = $$($(wondermake.template.scope).ld_command))
+			$$(call $$@.evaluated_command,$$($$@.object_files))
+			$$(eval undefine $$@.object_files)
+			$$(eval undefine $$@.evaluated_command)
 
         # Library dependencies
-        # XXX maybe allow static by default? static_executable or executable and wondermake.cbase.default_executable_type is static_executable
-        $(if $(filter-out headers objects static_lib,$(wondermake.template.type)),
-          $(eval wondermake.template.deep_deps := \
-            $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(if
-              $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$(wondermake.template.scope),type)),,x)))
-          $(wondermake.template.binary_file): | $(wondermake.template.deep_deps)
-          $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps)
-            ,$(if $(filter-out headers objects,$(call wondermake.inherit_unique,$d,type))
-              ,$(or $($d.name),$d)))
-          $(eval undefine wondermake.template.deep_deps)
-        )
+        $(eval wondermake.template.deep_deps := \
+          $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(if
+            $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$(wondermake.template.scope),type)),,x)))
+        $(wondermake.template.binary_file): | $(wondermake.template.deep_deps)
+        $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps)
+          ,$(if $(filter-out headers objects,$(call wondermake.inherit_unique,$d,type))
+            ,$(or $($d.name),$d)))
+        $(eval undefine wondermake.template.deep_deps)
       )
     )
   )
@@ -252,9 +260,9 @@ define wondermake.cbase.cpp_command # $1 = scope
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern),$(call wondermake.inherit_prepend,$1,include)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern),$(call wondermake.inherit_prepend,$1,include_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern),$(call wondermake.inherit_prepend,$1,frameworks)) \
-	$(shell $(call wondermake.inherit_unique,$1,pkg_config_prog) --cflags '$(call wondermake.inherit_append,$1,pkg_config)') \
+	$(call wondermake.cbase.pkg_config_command,$1,--cflags) \
 	$(call wondermake.inherit_append,$1,cpp_flags) \
-	$(CPPFLAGS) \
+	$(call wondermake.user_override,CPPFLAGS) \
 	$$(abspath $$<)
 endef
 
@@ -266,7 +274,7 @@ define wondermake.cbase.mxx_command # $1 = scope, $(module_map) is a var private
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
 	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-	$(shell $(call wondermake.inherit_unique,$1,pkg_config_prog) --cflags-only-other '$(call wondermake.inherit_append,$1,pkg_config)') \
+	$(call wondermake.cbase.pkg_config_command,$1,--cflags-only-other) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
 	$(CXXFLAGS) \
 	$$<
@@ -280,25 +288,43 @@ define wondermake.cbase.cxx_command # $1 = scope, $(module_map) is a var private
 	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
 	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-	$(shell $(call wondermake.inherit_unique,$1,pkg_config_prog) --cflags-only-other '$(call wondermake.inherit_append,$1,pkg_config)') \
+	$(call wondermake.cbase.pkg_config_command,$1,--cflags-only-other) \
 	$(call wondermake.inherit_append,$1,cxx_flags) \
-	$(CXXFLAGS) \
+	$(call wondermake.user_override,CXXFLAGS) \
 	$$<
 endef
 
 # Command to link object files and produce an executable or shared library file
-define wondermake.cbase.ld_command # $1 = scope
+define wondermake.cbase.ld_command # $1 = scope, $2 = object files
 	$(or $(call wondermake.user_override,LD),$(call wondermake.inherit_unique,$1,ld)) \
 	$(call wondermake.inherit_unique,$1,ld_flags_out_mode) \
 	$(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
 	$(call wondermake.inherit_append,$1,ld_flags) \
-	$(LDFLAGS) \
-	$$(filter-out $$(wondermake.bld_dir)scopes/$1/ld_command $$(wondermake.bld_dir)scopes/$1/obj_files,$$+) \
+	$(call wondermake.user_override,LDFLAGS) \
+	$2 \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
 	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
-	$(shell $(call wondermake.inherit_unique,$1,pkg_config_prog) --libs '$(call wondermake.inherit_append,$1,pkg_config)') \
-	$(LDLIBS)
+	$(call wondermake.cbase.pkg_config_command,$1,--libs) \
+	$(call wondermake.user_override,LDLIBS)
+endef
+
+# Command to archive object files
+define wondermake.cbase.ar_command # $1 = scope, $2 = object files
+	$(or $(call wondermake.user_override,AR),$(call wondermake.inherit_unique,$1,ar)) \
+	$(call wondermake.inherit_append,$1,ar_flags) \
+	$(call wondermake.user_override,ARFLAGS) \
+	$(call wondermake.inherit_unique,$1,ar_flags_out_mode) \
+	$2
+	$(or $(call wondermake.user_override,RANLIB),$(call wondermake.inherit_unique,$1,ranlib))
+endef
+
+# Command to call pkg-config
+define wondermake.cbase.pkg_config_command # $1 = scope, $2 = cflags or libs
+	$(shell $(or $(call wondermake.user_override,PKG_CONFIG),$(call wondermake.inherit_unique,$1,pkg_config_prog)) $2 \
+		$(if $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$1,type)),--static) \
+		'$(call wondermake.inherit_append,$1,pkg_config)' \
+	)
 endef
 
 # Command to parse ISO C++ module "export module" keywords in an interface file

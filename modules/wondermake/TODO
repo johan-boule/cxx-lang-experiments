@@ -31,14 +31,14 @@
 		-Wl,-h,lib.%.so.<version>
 	-Wl,-no-undefined -Wl,--undefined
 
+*	std version
+	note: to list clang's supported names, use clang++ -xc++ -std= -
+
 *	detect compiler
 	c++/cc/g++/gcc/clang++/clang -dumpversion (note: clang => fake old gcc version)
 	cl -? => First line "XXX Version X.Y.Z for XXX"
 	In the end: 3 "kinds": gcc, msvc, posix (which prolly won't work)
 	See also g++/clang++ -print-prog-name=ld, g++/clang++ -Wl,--version
-
-*	std version
-	note: to list clang's supported names, use clang++ -xc++ -std= -
 
 *	cross-compilation
 	#if defined __ELF__
@@ -129,15 +129,6 @@
 		exec_prefix/libexec
 		prefix/include
 		prefix/share
-
-*	env sig
-	gcc
-		cxx_env_sig
-			'CPATH', 'CPLUS_INCLUDE_PATH', 'C_INCLUDE_PATH'
-		ld_env_sig
-			'GNUTARGET', 'LDEMULATION', 'COLLECT_NO_DEMANGLE',
-			'LD_RUN_PATH', # for elf native linker
-			'LD_LIBRARY_PATH' # for native linker
 
 *	mac-o
 	either lib%.dylib (shared-lib) or %.bundle (loadable_module) instead of lib%.so and %.so

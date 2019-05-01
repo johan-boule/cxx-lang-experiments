@@ -11,7 +11,7 @@ wondermake.cbase.config[unix_elf_clang].cxx    := $(or $(call wondermake.user_ov
 wondermake.cbase.config[unix_elf_clang].cpp    := $(or $(call wondermake.user_override,CPP),$(wondermake.cbase.config[unix_elf_clang].cxx)) # -E
 wondermake.cbase.config[unix_elf_clang].ld     := $(or $(call wondermake.user_override,LD),$(wondermake.cbase.config[unix_elf_clang].cxx))
 wondermake.cbase.config[unix_elf_clang].ar     := $(or $(call wondermake.user_override,AR),ar)
-wondermake.cbase.config[unix_elf_clang].ranlib := $(or $(call wondermake.user_override,RANLIB),$(wondermake.cbase.config[unix_elf_clang].ar)) # s
+wondermake.cbase.config[unix_elf_clang].ranlib := $(call wondermake.user_override,RANLIB) # empty default because done through 'ar s'
 
 ###############################################################################
 # Toolchain configuration variables
@@ -21,12 +21,14 @@ wondermake.cbase.config[unix_elf_clang].pch_flags_out_mode = -o$$@    -MD -MF$$@
 wondermake.cbase.config[unix_elf_clang].cxx_flags_out_mode = -o$$@ -c -MJ$$@.compile_commands.json
 wondermake.cbase.config[unix_elf_clang].mxx_flags_out_mode = -o$$@ --precompile -MJ$$@.compile_commands.json
 wondermake.cbase.config[unix_elf_clang].ld_flags_out_mode  = -o$$@
+wondermake.cbase.config[unix_elf_clang].ar_flags_out_mode  = $$@
 
 # some useful options: -Wmissing-include-dirs -Winvalid-pch -H -fpch-deps -Wp,-v
 # g++/clang++ -print-search-dirs ; ld --verbose | grep SEARCH_DIR | tr -s ' ;' \\012
 # to print the include search path: g++/clang++ -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed -e '/^[^ ]/d' -e 's,^ ,-I,'
 wondermake.cbase.config[unix_elf_clang].cpp_flags := -Winvalid-pch
 wondermake.cbase.config[unix_elf_clang].cxx_flags := -pipe
+wondermake.cbase.config[unix_elf_clang].ar_flags := rcsD
 
 wondermake.cbase.config[unix_elf_clang].cpp_flags[c++]           := -xc++
 wondermake.cbase.config[unix_elf_clang].pch_flags[c++]           := -xc++-header
