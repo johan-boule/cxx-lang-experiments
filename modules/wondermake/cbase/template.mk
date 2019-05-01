@@ -152,21 +152,21 @@ define wondermake.template.rules_with_evaluated_recipes
       $(wondermake.newline) \
     )
 
-    ifneq '' '$(wondermake.template.mxx_d_files)'
+    $(if $(wondermake.template.mxx_d_files),
       # Rule to parse ISO C++ module keywords in an interface file
       $(wondermake.template.mxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.cbase.parse_export_module_keyword,$$(basename $$*).$(wondermake.template.bmi_suffix))
 		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.obj_suffix) $$(basename $$*).$(wondermake.template.bmi_suffix))
-    endif
+    )
 
-    ifneq '' '$(wondermake.template.cxx_d_files)'
+    $(if $(wondermake.template.cxx_d_files),
       # Rule to parse ISO C++ module keywords in an implementation file
       $(wondermake.template.cxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.cbase.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
 		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
-    endif
+    )
   endif
   wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
   wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
@@ -204,10 +204,11 @@ define wondermake.template.rules_with_evaluated_recipes
     wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
     wondermake.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
 
-    ifneq 'objects' '$(wondermake.template.type)'
-      ifeq 'static_lib' '$(wondermake.template.type)' # XXX maybe allow static by default? static_lib or lib and wondermake.cbase.default_lib_type is static_lib
+    $(if $(call wondermake.equals,objects,$(wondermake.template.type)),,
+      # XXX maybe allow static by default? static_lib or lib and wondermake.cbase.default_lib_type is static_lib
+      $(if $(call wondermake.equals,static_lib,$(wondermake.template.type)),
         # TODO static archive
-      else # There is a link step
+      , # else, there is a link step
         # Rule to link object files and produce an executable or shared library file
         $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
         $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.binary_file))
@@ -216,11 +217,11 @@ define wondermake.template.rules_with_evaluated_recipes
 			$$($$@.evaluated_command)
 			$$(eval undefine $$@.evaluated_command)
         wondermake.clean += $(wondermake.template.binary_file)
-    
+
         # Rule to trigger relinking when a source file (and hence its derived object file) is removed
         $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),obj_files,$(wondermake.template.obj_files))
         $(wondermake.template.binary_file): $(wondermake.template.scope_dir)obj_files
-    
+
         # Library dependencies
         # XXX maybe allow static by default? static_executable or executable and wondermake.cbase.default_executable_type is static_executable
         $(if $(filter-out headers objects static_lib,$(wondermake.template.type)),
@@ -233,8 +234,8 @@ define wondermake.template.rules_with_evaluated_recipes
               ,$(or $($d.name),$d)))
           $(eval undefine wondermake.template.deep_deps)
         )
-      endif
-    endif
+      )
+    )
   )
 endef
 
