@@ -176,23 +176,23 @@ define wondermake.template.rules_with_evaluated_recipes
 
   $(if $(strip $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files)),
     # Rule to precompile a c++ source file to a binary module interface file
-    $(wondermake.newline) $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),mxx_command,$$(call wondermake.cbase.mxx_command,$(wondermake.template.scope)))
+    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),mxx_command,$$(call wondermake.cbase.mxx_command,$(wondermake.template.scope)))
     $(foreach mxx,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files),
-      $(wondermake.newline) $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix): \
+      $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix): \
         $(wondermake.template.intermediate_dir)$(mxx).ii \
         $(wondermake.template.scope_dir)mxx_command \
         | $(wondermake.template.intermediate_dir)$(mxx).ii.d # if .d failed to build, don't continue
-      $(wondermake.newline)	$$(call wondermake.announce,$(wondermake.template.scope),precompile $$<,to $$@)
-      $(wondermake.newline)	$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).mxx_command))
-      $(wondermake.newline)	$$($$@.evaluated_command)
-      $(wondermake.newline)	$$(eval undefine $$@.evaluated_command)
-      $(wondermake.newline) wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix)
-      $(wondermake.newline) wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
-      $(wondermake.newline) wondermake.compile_commands.json += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
+			$$(call wondermake.announce,$(wondermake.template.scope),precompile $$<,to $$@)
+			$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).mxx_command))
+			$$($$@.evaluated_command)
+			$$(eval undefine $$@.evaluated_command)
+      wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix)
+      wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
+      wondermake.compile_commands.json += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
     )
   )
 
-  ifneq 'headers' '$(wondermake.template.type)'
+  $(if $(call wondermake.equals,headers,$(wondermake.template.type)),,
     # Rule to compile a c++ source file to an object file
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
     $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope_dir)cxx_command | %.ii.d # if .d failed to build, don't continue
@@ -235,7 +235,7 @@ define wondermake.template.rules_with_evaluated_recipes
         )
       endif
     endif
-  endif
+  )
 endef
 
 ###############################################################################

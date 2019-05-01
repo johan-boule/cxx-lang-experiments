@@ -19,7 +19,7 @@ hello-world.name := hello
 hello-world.type := executable
 hello-world.src := src/hello_world.cxx
 hello-world.private_deps := phrases
-hello-world.external_modules_path := external-include/new_line.mxx
+module_demo_common_conf.external_modules_path := external-include/new_line.mxx
 
 wondermake += phrases
 phrases.inherit := module_demo_common_conf
