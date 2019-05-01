@@ -1,17 +1,21 @@
 #! /usr/bin/make -f
 
+# unneeded stuff
+dummy.define := DUMMY_DEFINE=demo
+dummy.undefine := DUMMY_DEFINE
+dummy.libs := m dl
+dummy.pkg_config := zlib
+dummy.cxx_flags := #-pthreads
+dummy.ld_flags := #-pthreads
+
+common.inherit := dummy
 common.toolchain := cbase
 common.lang := c++
 common.src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 common.include_path := src
 common.type := static_lib
-common.define := DUMMY_DEFINE=demo
-common.undefine := DUMMY_DEFINE
 common.cpp_flags := -std=c++2a
-common.cxx_flags := -std=c++2a #-pthreads
-common.ld_flags := #-pthreads
-common.libs := m dl
-common.pkg_config := zlib
+common.cxx_flags := -std=c++2a
 
 wondermake += hello-world
 hello-world.inherit := common
