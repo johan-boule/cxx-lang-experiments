@@ -130,7 +130,8 @@ endef
 
 define wondermake.template.rules_with_evaluated_recipes
   # Rules to preprocess c++ source files
-  $(if $(MAKE_RESTARTS), # cpp_command has been executed to bring .ii and .d files up-to-date
+  $(if $(MAKE_RESTARTS),
+    # cpp_command has been executed to bring .ii and .d files up-to-date
     wondermake.clean += $(wondermake.template.scope_dir)cpp_command # explicitly prevent auto-cleaning since we don't call wondermake.write_iif_content_changed.rule
   , # else, only do this on the first make phase
     # Rule to create an output directory
@@ -138,17 +139,16 @@ define wondermake.template.rules_with_evaluated_recipes
 
     # Rule to preprocess a c++ source file (the output directory creation is triggered here)
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
-    $(foreach src,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files), \
-      $(wondermake.newline) $(wondermake.template.intermediate_dir)$(src).ii: \
-		$(if $(findstring / /,/ $(src)),$(src),$(wondermake.template.src_dir)$(src)) \
-		$(wondermake.bld_dir)wondermake.cbase.configure \
-		$(wondermake.template.scope_dir)cpp_command \
-		| $(dir $(wondermake.template.intermediate_dir)$(src)) \
-      $(wondermake.newline)		$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
-      $(wondermake.newline)		$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).cpp_command)) \
-      $(wondermake.newline)		$$($$@.evaluated_command) \
-      $(wondermake.newline)		$$(eval undefine $$@.evaluated_command) \
-      $(wondermake.newline) \
+    $(foreach src,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files),
+      $(wondermake.template.intermediate_dir)$(src).ii: \
+        $(if $(findstring / /,/ $(src)),$(src),$(wondermake.template.src_dir)$(src)) \
+        $(wondermake.bld_dir)wondermake.cbase.configure \
+        $(wondermake.template.scope_dir)cpp_command \
+        | $(dir $(wondermake.template.intermediate_dir)$(src))
+			$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@) \
+			$$(eval $$@.evaluated_command := $$($(wondermake.template.scope).cpp_command)) \
+			$$($$@.evaluated_command) \
+			$$(eval undefine $$@.evaluated_command) \
     )
 
     $(if $(wondermake.template.mxx_d_files),
