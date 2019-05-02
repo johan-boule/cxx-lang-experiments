@@ -24,7 +24,7 @@
 		ln -s lib.%.so.<version> lib.%.so
 		-Wl,-h,lib.%.so.<version>
 	-Wl,-no-undefined -Wl,--undefined
-	-Wl,-Bstatic -Wl,-Bdynamic
+	-Wl,-Bstatic -Wl,-Bdynamic (no need thanks to auto-clean)
 
 *	std version
 	note: to list clang's supported names, use clang++ -xc++ -std= -
@@ -158,7 +158,7 @@
 	ranlib: none
 	env vars: cpp INCLUDE, ld LIB
 
-*	large build system: allow parsing only the scopes that are in command requested goals
+*	large build system: allow evaluating only the scopes that are in command requested goals
 	=> requires auto-clean per scope
 
 *	find source files only on first make phase and read a file that contains the list on second phase

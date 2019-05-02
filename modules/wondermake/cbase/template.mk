@@ -33,8 +33,18 @@ endef
 # First loop: stores extra computed variables in the scopes
 
 define wondermake.cbase.template.first_loop
+  $(wondermake.template.scope).produced := true
+
+  wondermake.default: $(wondermake.template.scope)
+
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
   $(wondermake.template.scope).name := $(wondermake.template.name)
+
+  # If scope has a name that is different from the scope name
+  ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
+    .PHONY: $(wondermake.template.scope)
+    $(wondermake.template.scope): $(wondermake.template.name)
+  endif
 
   wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
   wondermake.template.type := $(or $(call wondermake.inherit_unique,$(wondermake.template.scope),default_type[$(wondermake.template.type)]),$(wondermake.template.type))
@@ -160,15 +170,7 @@ endef
 # Define the temporary variables used in the template execution loop
 
 define wondermake.cbase.template.define_vars
-  wondermake.default: $(wondermake.template.scope)
-
   wondermake.template.name := $($(wondermake.template.scope).name)
-  # If scope has a name that is different from the scope name
-  ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
-    .PHONY: $(wondermake.template.scope)
-    $(wondermake.template.scope): $(wondermake.template.name)
-  endif
-
   wondermake.template.type := $($(wondermake.template.scope).type)
 
   wondermake.template.src_dir := $($(wondermake.template.scope).src_dir)
@@ -189,32 +191,12 @@ define wondermake.cbase.template.define_vars
   wondermake.template.mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files))
   wondermake.template.bmi_suffix := $(call wondermake.inherit_unique,$(wondermake.template.scope),bmi_suffix)
 
-  ifeq 'headers' '$(wondermake.template.type)'
-    .PHONY: $(wondermake.template.name)
-  else
+  ifneq 'headers' '$(wondermake.template.type)'
     wondermake.template.cxx_files := $($(wondermake.template.scope).cxx_files)
     wondermake.template.cxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d,$(wondermake.template.cxx_files))
     wondermake.template.obj_suffix := $($(wondermake.template.scope).obj_suffix)
     wondermake.template.obj_files := $($(wondermake.template.scope).obj_files)
-    ifeq 'objects' '$(wondermake.template.type)'
-      # No link nor archive step: target is just the list of object files
-      wondermake.template.out_files := $(wondermake.template.obj_files)
-      .PHONY: $(wondermake.template.name)
-      $(wondermake.template.name): $(wondermake.template.out_files)
-    else # There is a link or archive step
-      wondermake.template.out_files := $(addprefix $(wondermake.staged_install), \
-        $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name)))
-      # If the platform has any prefix or suffix added to the binary file name
-      ifneq '$(wondermake.template.name)' '$(wondermake.template.out_files)'
-        .PHONY: $(wondermake.template.name)
-        $(wondermake.template.name): $(wondermake.template.out_files)
-      endif
-      ifeq 'shared_lib' '$(wondermake.template.type)'
-        wondermake.template.out_files += $(addprefix $(wondermake.staged_install), \
-          $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[import_lib]),$(wondermake.template.name)))
-      endif
-    endif
-    $(wondermake.template.scope).out_files := $(wondermake.template.out_files)
+	wondermake.template.out_files := $($(wondermake.template.scope).out_files)
   endif
 endef
 
@@ -333,9 +315,12 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         # Library dependencies
         $(eval wondermake.template.deep_deps := \
           $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(call wondermake.equals,static_executable,$(wondermake.template.type))))
-        $(firstword $(wondermake.template.out_files)): | $(foreach d,$(wondermake.template.deep_deps),$(if $(filter shared_lib,$($d.type)),$d))
-        $(firstword $(wondermake.template.out_files)):   $(foreach d,$(wondermake.template.deep_deps),$(if $(filter static_lib objects,$($d.type)),$($d.out_files)))
-        $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps),$(if $(filter-out headers objects,$($d.type)),$($d.name)))
+        $(firstword $(wondermake.template.out_files)): \
+          $(foreach d,$(wondermake.template.deep_deps),$(if $(filter static_lib objects,$($d.type)),$($d.out_files))) | \
+          $(foreach d,$(wondermake.template.deep_deps),$(if $(filter shared_lib,$($d.type)),$d))
+        # note: we don't use += so we are sure to create an immediate var
+        $(wondermake.template.scope).libs := $($(wondermake.template.scope).libs) \
+          $(foreach d,$(wondermake.template.deep_deps),$(if $(filter-out headers objects,$($d.type)),$($d.name)))
         $(eval undefine wondermake.template.deep_deps)
       )
     )

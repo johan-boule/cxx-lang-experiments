@@ -34,16 +34,20 @@ $(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_
 			$(call wondermake.notice,removing $($@.rm)) \
 			@printf '%s' '$($@.rm)' | xargs rm -f; \
 			printf '%s' '$(sort $(dir $($@.rm)))' | xargs rmdir -p 2>/dev/null || true; \
-			printf '%s\n' '$($@.new)' > $@ \
+			printf '%s\n' '$($@.new)' > $@.new; \
+			mv $@.new $@ \
 		, \
 			$(call wondermake.announce,auto-clean,new files,nothing to remove) \
-			$(file > $@,$($@.new)) \
+			$(file > $@.new,$($@.new)) \
+			@mv $@.new $@ \
 		) \
 		$(eval undefine $@.rm) \
 	)
 	$(eval undefine $@.old)
 	$(eval undefine $@.new)
-wondermake.clean += $(wondermake.bld_dir)wondermake.auto-clean
+wondermake.clean += \
+	$(wondermake.bld_dir)wondermake.auto-clean \
+	$(wondermake.bld_dir)wondermake.auto-clean.new
 
 ###############################################################################
 endif # ifndef wondermake.clean.included

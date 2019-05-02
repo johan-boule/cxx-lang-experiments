@@ -27,15 +27,10 @@ wondermake.cbase.inherit := wondermake.cbase.config[unix_elf_clang]
 # By default, make shared libs and dynamic executables rather than static
 wondermake.cbase.default_type[executable] := dynamic_executable
 wondermake.cbase.default_type[lib]        := shared_lib
-wondermake.cbase.default_executable_type := dynamic_executable
-wondermake.cbase.default_lib_type        := shared_lib
 
-wondermake.cbase.cxx_flags[executable]           := $(call wondermake.inherit_append,wondermake.cbase,cxx_flags[$(wondermake.cbase.default_executable_type)])
-wondermake.cbase.cxx_flags[lib]                  := $(call wondermake.inherit_append,wondermake.cbase,cxx_flags[$(wondermake.cbase.default_lib_type)])
-wondermake.cbase.ld_flags[executable]            := $(call wondermake.inherit_append,wondermake.cbase,ld_flags[$(wondermake.cbase.default_executable_type)])
-wondermake.cbase.ld_flags[lib]                   := $(call wondermake.inherit_append,wondermake.cbase,ld_flags[$(wondermake.cbase.default_lib_type)])
-wondermake.cbase.binary_file_pattern[executable] := $(call wondermake.inherit_unique,wondermake.cbase,binary_file_pattern[$(wondermake.cbase.default_executable_type)])
-wondermake.cbase.binary_file_pattern[lib]        := $(call wondermake.inherit_unique,wondermake.cbase,binary_file_pattern[$(wondermake.cbase.default_lib_type)])
+# This rule ensures wondermake.auto-clean is called even when specific goals have been given on the make command line.
+# Otherwise, auto-clean is only done when the wondermake.default phony target is triggered.
+$(wondermake.bld_dir)wondermake.cbase.configure: | $(wondermake.bld_dir)wondermake.auto-clean
 
 # This rule is done only on first build or when changes in the env are detected.
 $(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9 # First version with ISO C++ module TS support
