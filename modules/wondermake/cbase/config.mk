@@ -73,7 +73,7 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 				"		LD_RUN_PATH=$(LD_RUN_PATH)" \
 				"		DT_RUNPATH=$(DT_RUNPATH)" \
 				"		DT_RPATH=$(DT_RPATH)" \
-			"pkg-config:" \
+			"pkg-config env:" \
 				"	PKG_CONFIG_PATH=$(PKG_CONFIG_PATH)" \
 				"	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR)" \
 				"	PKG_CONFIG_DISABLE_UNINSTALLED=$(PKG_CONFIG_DISABLE_UNINSTALLED)" \

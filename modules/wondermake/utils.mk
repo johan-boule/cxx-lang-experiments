@@ -63,46 +63,21 @@ undefine wondermake.inherit_root
 ###############################################################################
 # Depencency support functions
 
-define wondermake.topologically_sorted_unique_deep_deps0 # $1 = scope, $2 = do_not_expose_private_deep_deps, $3 = is_not_root, $4 = seen
-  $(if $(and $3,$(filter $1,$4)),, \
-    $(if $3,$1) \
-    $(if $(and $3,$2),, \
-      $(foreach d,$(call wondermake.inherit_append,$1,private_deps), \
-        $(call $0,$d,$2,x,$4 $1)) \
-    ) \
-    $(foreach d,$(call wondermake.inherit_append,$1,public_deps), \
-      $(call $0,$d,$2,x,$4 $1)) \
-  )
-endef
-
-define wondermake.topologically_sorted_unique_deep_deps # $1 = scope, $2 = do_not_expose_private_deep_deps
+define wondermake.topologically_sorted_unique_deep_deps # $1 = scope, $2 = expose_private_deep_deps
 $(strip
   $(eval $1.topologically_sorted_unique_deep_deps :=)
-  $(call wondermake.topologically_sorted_unique_deep_deps.__recurse__,$1,$2,,$1.topologically_sorted_unique_deep_deps)
+  $(call wondermake.topologically_sorted_unique_deep_deps.__recurse__,$1,$2,$1.topologically_sorted_unique_deep_deps)
   $($1.topologically_sorted_unique_deep_deps)
   $(eval undefine $1.topologically_sorted_unique_deep_deps)
 )
 endef
 
-define wondermake.topologically_sorted_unique_deep_deps.__recurse__ # $1 = scope, $2 = do_not_expose_private_deep_deps, $3 = is_not_root, $4 = accumulator, $5 = seen
-  $(if $(and $3,$(filter $1,$5)),,
-    $(if $(and $3,$2),,
-      $(foreach d,$(call wondermake.inherit_append,$1,private_deps),
-        $(call $0,$d,$2,x,$4,$1 $5))
-    )
-    $(foreach d,$(call wondermake.inherit_append,$1,public_deps),
-      $(call $0,$d,$2,x,$4,$1 $5))
+define wondermake.topologically_sorted_unique_deep_deps.__recurse__ # $1 = scope, $2 = expose_private_deep_deps, $3 = accumulator
+  $(foreach d,$(call wondermake.inherit_append,$1,public_deps) $(if $2,$(call wondermake.inherit_append,$1,private_deps)),
+    $(eval $3 := $(filter-out $d,$($3)) $d)
+    $(call $0,$d,$2,$3)
   )
-  $(if $3,$(eval $4 := $1 $($4)))
 endef
-
-a.public_deps := b c
-c.public_deps := b
-
-x := $(call wondermake.topologically_sorted_unique_deep_deps0,a)
-$(info x $x)
-x := $(call wondermake.topologically_sorted_unique_deep_deps,a)
-$(info x $x)
 
 ###############################################################################
 # Write a given scope variable to a file only when the var value differs from the content of the existing file,
