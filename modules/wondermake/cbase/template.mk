@@ -37,6 +37,7 @@ define wondermake.cbase.template.first_loop
   $(wondermake.template.scope).name := $(wondermake.template.name)
 
   wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
+  wondermake.template.type := $(or $(call wondermake.inherit_unique,$(wondermake.template.scope),default_type[$(wondermake.template.type)]),$(wondermake.template.type))
   $(wondermake.template.scope).type := $(wondermake.template.type)
 
   wondermake.template.src_dir := $(call wondermake.inherit_unique,$(wondermake.template.scope),src_dir)
@@ -169,8 +170,8 @@ define wondermake.cbase.template.define_vars
   endif
 
   wondermake.template.type := $($(wondermake.template.scope).type)
-  wondermake.template.src_dir := $($(wondermake.template.scope).src_dir)
 
+  wondermake.template.src_dir := $($(wondermake.template.scope).src_dir)
   wondermake.template.external_mxx_files := $(call wondermake.inherit_prepend,$(wondermake.template.scope),external_modules_path)
   ifneq '' '$(wondermake.template.external_mxx_files)'
     wondermake.template.external_mxx_files := \
@@ -331,14 +332,10 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
         # Library dependencies
         $(eval wondermake.template.deep_deps := \
-          $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(call \
-		  	wondermake.equals,static_executable,$(call wondermake.inherit_unique,$(wondermake.template.scope),type))))
-        $(firstword $(wondermake.template.out_files)): | $(foreach d,$(wondermake.template.deep_deps) \
-          ,$(if $(filter shared_lib,$(call wondermake.inherit_unique,$d,type)),$d))
-        $(firstword $(wondermake.template.out_files)): $(foreach d,$(wondermake.template.deep_deps) \
-          ,$(if $(filter static_lib objects,$(call wondermake.inherit_unique,$d,type)),$($d.out_files)))
-        $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps) \
-          ,$(if $(filter-out headers objects,$(call wondermake.inherit_unique,$d,type)),$($d.name)))
+          $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(call wondermake.equals,static_executable,$(wondermake.template.type))))
+        $(firstword $(wondermake.template.out_files)): | $(foreach d,$(wondermake.template.deep_deps),$(if $(filter shared_lib,$($d.type)),$d))
+        $(firstword $(wondermake.template.out_files)):   $(foreach d,$(wondermake.template.deep_deps),$(if $(filter static_lib objects,$($d.type)),$($d.out_files)))
+        $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps),$(if $(filter-out headers objects,$($d.type)),$($d.name)))
         $(eval undefine wondermake.template.deep_deps)
       )
     )

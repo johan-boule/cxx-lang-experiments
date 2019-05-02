@@ -69,7 +69,7 @@ wondermake.cbase.config[unix_elf_clang].obj_suffix := o
 wondermake.cbase.config[unix_elf_clang].out_file_pattern[dynamic_executable] := bin/%
 wondermake.cbase.config[unix_elf_clang].out_file_pattern[static_executable]  := bin/%
 wondermake.cbase.config[unix_elf_clang].out_file_pattern[shared_lib]         := lib/lib%.so
-wondermake.cbase.config[unix_elf_clang].out_file_pattern[import_lib]         := lib/lib%.so
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[import_lib]         := # none
 wondermake.cbase.config[unix_elf_clang].out_file_pattern[loadable_module]    := lib/%.so
 wondermake.cbase.config[unix_elf_clang].out_file_pattern[static_lib]         := lib/lib%.a
 

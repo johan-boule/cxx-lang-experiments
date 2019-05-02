@@ -25,6 +25,8 @@ include $(dir $(lastword $(MAKEFILE_LIST)))config.unix-elf-clang.mk
 wondermake.cbase.inherit := wondermake.cbase.config[unix_elf_clang]
 
 # By default, make shared libs and dynamic executables rather than static
+wondermake.cbase.default_type[executable] := dynamic_executable
+wondermake.cbase.default_type[lib]        := shared_lib
 wondermake.cbase.default_executable_type := dynamic_executable
 wondermake.cbase.default_lib_type        := shared_lib
 

@@ -66,14 +66,14 @@ undefine wondermake.inherit_root
 define wondermake.topologically_sorted_unique_deep_deps # $1 = scope, $2 = expose_private_deep_deps
 $(strip
   $(eval $1.topologically_sorted_unique_deep_deps :=)
-  $(call wondermake.topologically_sorted_unique_deep_deps.__recurse__,$1,$2,$1.topologically_sorted_unique_deep_deps)
+  $(call wondermake.topologically_sorted_unique_deep_deps.__recurse__,$1,$2,$1.topologically_sorted_unique_deep_deps,x)
   $($1.topologically_sorted_unique_deep_deps)
   $(eval undefine $1.topologically_sorted_unique_deep_deps)
 )
 endef
 
-define wondermake.topologically_sorted_unique_deep_deps.__recurse__ # $1 = scope, $2 = expose_private_deep_deps, $3 = accumulator
-  $(foreach d,$(call wondermake.inherit_append,$1,public_deps) $(if $2,$(call wondermake.inherit_append,$1,private_deps)),
+define wondermake.topologically_sorted_unique_deep_deps.__recurse__ # $1 = scope, $2 = expose_private_deep_deps, $3 = accumulator, $4 = is_root
+  $(foreach d,$(call wondermake.inherit_append,$1,public_deps) $(if $(or $4,$2),$(call wondermake.inherit_append,$1,private_deps)),
     $(eval $3 := $(filter-out $d,$($3)) $d)
     $(call $0,$d,$2,$3)
   )

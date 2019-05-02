@@ -13,14 +13,14 @@ common.toolchain := cbase
 common.lang := c++
 common.src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 common.include_path := src
-common.type := static_lib
+common.type := lib
 common.cpp_flags := -std=c++2a
 common.cxx_flags := -std=c++2a
 
 wondermake += hello-world
 hello-world.inherit := common
 hello-world.name := hello
-hello-world.type := static_executable
+hello-world.type := executable
 hello-world.src := src/hello_world.cxx
 hello-world.private_deps := phrases
 hello-world.external_modules_path := external-include/new_line.mxx
@@ -43,7 +43,6 @@ letters.public_deps := letters-vowels letters-consonants
 
 wondermake += letters-vowels
 letters-vowels.inherit := common
-letters-vowels.type = static_lib
 letters-vowels.src := src/letters/vowels/
 
 wondermake += letters-consonants
