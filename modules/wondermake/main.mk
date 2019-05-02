@@ -6,11 +6,11 @@
 # Also, undefining all variables that have a default origin removes useful ones too.
 MAKEFLAGS += --no-builtin-rules #--no-builtin-variables
 
-.PHONY: default all clean
 .DEFAULT_GOAL := default
-
-include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.mk
-
+.PHONY: default all clean
 default: wondermake.default
 all: wondermake.all
 clean: wondermake.clean
+
+include $(dir $(lastword $(MAKEFILE_LIST)))wondermake.mk
+$(wondermake.main)

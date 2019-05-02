@@ -6,4 +6,7 @@ ifndef wondermake.cbase.included
   include $(dir $(lastword $(MAKEFILE_LIST)))src-suffixes.mk
   include $(dir $(lastword $(MAKEFILE_LIST)))config.mk
   include $(dir $(lastword $(MAKEFILE_LIST)))template.mk
+  define wondermake.cbase.main
+    $(eval $(value wondermake.cbase.template.loop))
+  endef
 endif

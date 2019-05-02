@@ -8,6 +8,7 @@ ifndef wondermake.init.included
 wondermake.all: wondermake.default
 
 wondermake.dynamically_generated_makefiles := # this is an immediate var
+wondermake.dynamically_generated_makefiles.included := # this is an immediate var
 
 ###############################################################################
 # Directory under which all derived files are put. It must end with a / or be empty.
