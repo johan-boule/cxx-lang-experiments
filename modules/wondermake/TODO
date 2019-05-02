@@ -126,7 +126,7 @@
 		prefix/share
 
 *	mac-o
-	either lib%.dylib (shared-lib) or %.bundle (loadable_module) instead of lib%.so and %.so
+	either lib%.dylib (shared_lib) or %.bundle (loadable_module) instead of lib%.so and %.so
 	framework: cpp: -F %, ld -framework % (or -Xlinker -f% or -Wl,-f%)
 	no need for pic flag
 	ld: -dynamiclib instead of -shared
@@ -145,9 +145,9 @@
 
 *	msvc? really, do we care anymore?
 	Taken from Wonderbuild msvc_imply.py
-	for everything: -nologo
+	for everything: -nologo (grrr!)
 	programs: cpp/cxx = cl, ld = link, ar/ranlib = lib
-	cpp -ShowIncludes -I -D -U -FI
+	cpp -ShowIncludes -D -U -FI -I
 	build check: -EP = pipe preproc, -P = preproc, -c = compile, -linker = link
 	pch:
 		create: -c -Yc -Tp %.hxx -Fp %.pch (default) -Fo %.obj (default)

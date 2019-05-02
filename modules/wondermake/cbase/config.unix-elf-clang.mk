@@ -66,14 +66,12 @@ wondermake.cbase.config[unix_elf_clang].pch_suffix := pch
 wondermake.cbase.config[unix_elf_clang].bmi_suffix := pcm
 wondermake.cbase.config[unix_elf_clang].obj_suffix := o
 
-wondermake.cbase.config[unix_elf_clang].binary_file_pattern[dynamic_executable] := bin/%
-wondermake.cbase.config[unix_elf_clang].binary_file_pattern[static_executable]  := bin/%
-wondermake.cbase.config[unix_elf_clang].binary_file_pattern[shared_lib]         := lib/lib%.so
-wondermake.cbase.config[unix_elf_clang].binary_file_pattern[import_lib]         := lib/lib%.so
-wondermake.cbase.config[unix_elf_clang].binary_file_pattern[loadable_module]    := lib/%.so
-wondermake.cbase.config[unix_elf_clang].binary_file_pattern[static_lib]         := lib/lib%.a
-wondermake.cbase.config[unix_elf_clang].binary_file_pattern[objects]            := # no link nor archive step
-wondermake.cbase.config[unix_elf_clang].binary_file_pattern[headers]            := # no link nor archive step
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[dynamic_executable] := bin/%
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[static_executable]  := bin/%
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[shared_lib]         := lib/lib%.so
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[import_lib]         := lib/lib%.so
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[loadable_module]    := lib/%.so
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[static_lib]         := lib/lib%.a
 
 # When using make -j>1 -O, the compiler cannot know when we're actually on tty
 ifdef MAKE_TERMERR

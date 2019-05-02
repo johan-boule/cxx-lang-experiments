@@ -57,6 +57,6 @@ punctuations.src := src/punctuations/
 include $(common.src_dir)/wondermake/main.mk
 
 test: test-hello
-test-hello: $(hello-world.out)
+test-hello: $(hello-world.out_files)
 	$(call wondermake.announce,test,$@,$<)
 	@''$<

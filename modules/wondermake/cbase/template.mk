@@ -33,7 +33,80 @@ endef
 # First loop: stores extra computed variables in the scopes
 
 define wondermake.cbase.template.first_loop
-  $(wondermake.template.scope).name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
+  wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
+  $(wondermake.template.scope).name := $(wondermake.template.name)
+
+  wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
+  $(wondermake.template.scope).type := $(wondermake.template.type)
+
+  wondermake.template.src_dir := $(call wondermake.inherit_unique,$(wondermake.template.scope),src_dir)
+  $(wondermake.template.scope).src_dir := $(wondermake.template.src_dir)
+
+  wondermake.template.mxx_files := $(patsubst $(wondermake.template.src_dir)%,%, \
+    $(shell find $(addprefix $(wondermake.template.src_dir),$($(wondermake.template.scope).src)) \
+      -name '' \
+      $(patsubst %,-o -name '*.%', \
+      $(or \
+        $(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix) \
+        $(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix[$(call wondermake.inherit_unique,$(wondermake.template.scope),lang)])))))
+  $(wondermake.template.scope).mxx_files := $(wondermake.template.mxx_files)
+
+  wondermake.template.scope_dir := $(wondermake.bld_dir)scopes/$(wondermake.template.scope)/
+  $(wondermake.template.scope).scope_dir := $(wondermake.template.scope_dir)
+
+  wondermake.template.intermediate_dir := $(wondermake.template.scope_dir)intermediate/
+  $(wondermake.template.scope).intermediate_dir := $(wondermake.template.intermediate_dir)
+
+  ifeq 'headers' '$(wondermake.template.type)'
+    .PHONY: $(wondermake.template.name)
+  else
+    wondermake.template.cxx_files := $(patsubst $(wondermake.template.src_dir)%,%, \
+      $(shell find $(addprefix $(wondermake.template.src_dir),$($(wondermake.template.scope).src)) \
+        -name '' \
+        $(patsubst %,-o -name '*.%', \
+          $(or \
+            $(call wondermake.inherit_unique,$(wondermake.template.scope),cxx_suffix) \
+            $(call wondermake.inherit_unique,$(wondermake.template.scope),cxx_suffix[$(call wondermake.inherit_unique,$(wondermake.template.scope),lang)])))))
+    $(wondermake.template.scope).cxx_files := $(wondermake.template.cxx_files)
+
+    wondermake.template.obj_suffix := $(call wondermake.inherit_unique,$(wondermake.template.scope),obj_suffix)
+    $(wondermake.template.scope).obj_suffix := $(wondermake.template.obj_suffix)
+
+    wondermake.template.obj_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.obj_suffix),$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
+    $(wondermake.template.scope).obj_files := $(wondermake.template.obj_files)
+
+    ifeq 'objects' '$(wondermake.template.type)'
+      # No link nor archive step: target is just the list of object files
+      wondermake.template.out_files := $(wondermake.template.obj_files)
+      .PHONY: $(wondermake.template.name)
+      $(wondermake.template.name): $(wondermake.template.out_files)
+    else # There is a link or archive step
+      wondermake.template.out_files := $(addprefix $(wondermake.staged_install), \
+        $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name)))
+      # If the platform has any prefix or suffix added to the binary file name
+      ifneq '$(wondermake.template.name)' '$(wondermake.template.out_files)'
+        .PHONY: $(wondermake.template.name)
+        $(wondermake.template.name): $(wondermake.template.out_files)
+      endif
+      ifeq 'shared_lib' '$(wondermake.template.type)'
+        wondermake.template.out_files += $(addprefix $(wondermake.staged_install), \
+          $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[import_lib]),$(wondermake.template.name)))
+      endif
+    endif
+    $(wondermake.template.scope).out_files := $(wondermake.template.out_files)
+
+    undefine wondermake.template.cxx_files
+    undefine wondermake.template.obj_suffix
+    undefine wondermake.template.obj_files
+    undefine wondermake.template.out_files
+  endif
+
+  undefine wondermake.template.name
+  undefine wondermake.template.type
+  undefine wondermake.template.src_dir
+  undefine wondermake.template.mxx_files
+  undefine wondermake.template.scope_dir
+  undefine wondermake.template.intermediate_dir
 endef
 
 ###############################################################################
@@ -79,7 +152,7 @@ define wondermake.cbase.template.undefine_vars
   undefine wondermake.template.bmi_suffix
   undefine wondermake.template.obj_suffix
   undefine wondermake.template.obj_files
-  undefine wondermake.template.binary_file
+  undefine wondermake.template.out_files
 endef
 
 ###############################################################################
@@ -97,7 +170,6 @@ define wondermake.cbase.template.define_vars
 
   wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
   wondermake.template.src_dir := $(call wondermake.inherit_unique,$(wondermake.template.scope),src_dir)
-  wondermake.template.scope_dir := $(wondermake.bld_dir)scopes/$(wondermake.template.scope)/
 
   wondermake.template.external_mxx_files := $(call wondermake.inherit_prepend,$(wondermake.template.scope),external_modules_path)
   ifneq '' '$(wondermake.template.external_mxx_files)'
@@ -117,6 +189,7 @@ define wondermake.cbase.template.define_vars
       $(or \
         $(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix) \
         $(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix[$(call wondermake.inherit_unique,$(wondermake.template.scope),lang)])))))
+  wondermake.template.scope_dir := $(wondermake.bld_dir)scopes/$(wondermake.template.scope)/
   wondermake.template.intermediate_dir := $(wondermake.template.scope_dir)intermediate/
   wondermake.template.mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files))
   wondermake.template.bmi_suffix := $(call wondermake.inherit_unique,$(wondermake.template.scope),bmi_suffix)
@@ -136,26 +209,23 @@ define wondermake.cbase.template.define_vars
     wondermake.template.obj_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.obj_suffix),$(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
     ifeq 'objects' '$(wondermake.template.type)'
       # No link nor archive step: target is just the list of object files
-      $(wondermake.template.scope).out := $(wondermake.template.obj_files)
-      $(wondermake.template.scope).ld_out := $(wondermake.template.scope).out
+      wondermake.template.out_files := $(wondermake.template.obj_files)
       .PHONY: $(wondermake.template.name)
-      $(wondermake.template.name): $($(wondermake.template.scope).out)
+      $(wondermake.template.name): $(wondermake.template.out_files)
     else # There is a link or archive step
-      wondermake.template.binary_file := $(addprefix $(wondermake.staged_install), \
-        $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name)))
-      $(wondermake.template.scope).out := $(wondermake.template.binary_file)
-      ifeq 'static_lib' '$(wondermake.template.type)'
-        $(wondermake.template.scope).ld_out := $(wondermake.template.scope).out
-      else
-        $(wondermake.template.scope).ld_out := $(addprefix $(wondermake.staged_install), \
-          $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),binary_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name)))
-      endif
+      wondermake.template.out_files := $(addprefix $(wondermake.staged_install), \
+        $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name)))
       # If the platform has any prefix or suffix added to the binary file name
-      ifneq '$(wondermake.template.name)' '$(wondermake.template.binary_file)'
+      ifneq '$(wondermake.template.name)' '$(wondermake.template.out_files)'
         .PHONY: $(wondermake.template.name)
-        $(wondermake.template.name): $($(wondermake.template.scope).out)
+        $(wondermake.template.name): $(wondermake.template.out_files)
+      endif
+      ifeq 'shared_lib' '$(wondermake.template.type)'
+        wondermake.template.out_files += $(addprefix $(wondermake.staged_install), \
+          $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[import_lib]),$(wondermake.template.name)))
       endif
     endif
+    $(wondermake.template.scope).out_files := $(wondermake.template.out_files)
   endif
 endef
 
@@ -241,13 +311,12 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     $(if $(call wondermake.equals,objects,$(wondermake.template.type)),,
       # Rule to trigger relinking or dearchiving when a source file (and hence its derived object file) is removed
       $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),obj_files,$(wondermake.template.obj_files))
-      $(wondermake.template.binary_file): $(wondermake.template.scope_dir)obj_files
-      wondermake.clean += $(wondermake.template.binary_file)
+      $(wondermake.template.out_files): $(wondermake.template.scope_dir)obj_files
 
       $(if $(call wondermake.equals,static_lib,$(wondermake.template.type)),
         # Rule to update object files in an archive
         $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope)))
-        $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ar_command | $(dir $(wondermake.template.binary_file))
+        $(wondermake.template.out_files): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ar_command | $(dir $(wondermake.template.out_files))
 			$$(eval $$@.object_files := \
 				$$(filter $$($(wondermake.template.scope).obj_files), \
 					$$(if $$(filter $(wondermake.template.scope_dir)ar_command $(wondermake.template.scope_dir)obj_files,$$?), \
@@ -261,22 +330,25 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ar_flags_unsigned),$$($$@.object_files))
 			$$(eval undefine $$@.evaluable_command)
 			$$(eval undefine $$@.object_files)
+        wondermake.clean += $(wondermake.template.out_files)
 
       , # Rule to link object files and produce an executable or shared library file
         $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
-        $(wondermake.template.binary_file): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.binary_file))
+        $(firstword $(wondermake.template.out_files)): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.out_files))
 			$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$($(wondermake.template.scope).obj_files))
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).ld_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ld_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
+        wondermake.clean += $(wondermake.template.out_files)
 
         # Library dependencies
         $(eval wondermake.template.deep_deps := \
           $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(call \
 		  	wondermake.equals,static_executable,$(call wondermake.inherit_unique,$(wondermake.template.scope),type))))
-        $(wondermake.template.binary_file): | $(wondermake.template.deep_deps)
-        $(wondermake.template.binary_file): $(foreach d,$(wondermake.template.deep_deps) \
-          ,$(if $(filter static_lib objects,$(call wondermake.inherit_unique,$d,type)),$d))
+        $(firstword $(wondermake.template.out_files)): | $(foreach d,$(wondermake.template.deep_deps) \
+          ,$(if $(filter shared_lib,$(call wondermake.inherit_unique,$d,type)),$d))
+        $(firstword $(wondermake.template.out_files)): $(foreach d,$(wondermake.template.deep_deps) \
+          ,$(if $(filter static_lib objects,$(call wondermake.inherit_unique,$d,type)),$($d.out_files)))
         $(wondermake.template.scope).libs += $(foreach d,$(wondermake.template.deep_deps) \
           ,$(if $(filter-out headers objects,$(call wondermake.inherit_unique,$d,type)),$($d.name)))
         $(eval undefine wondermake.template.deep_deps)
