@@ -162,3 +162,7 @@
 	=> requires auto-clean per scope
 
 *	find source files only on first make phase and read a file that contains the list on second phase
+
+*	batch compilation.
+	also verify whether ar supports member pathname or just basename.
+	in any case, creating flat filenames like in wonderbuild would solve it.

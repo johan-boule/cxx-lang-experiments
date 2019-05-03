@@ -233,7 +233,7 @@ endef
 # Define the template rules with recipes that have the temporary loop variables evaluated
 
 define wondermake.cbase.template.rules_with_evaluated_recipes
-  $(if $(MAKE_RESTARTS),,
+  $(if $(MAKE_RESTARTS),, # only do this on the first make phase
     # Rules to preprocess c++ source files (only done on the first make phase)
 
     # Rule to create an output directory
@@ -272,10 +272,10 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
     wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
   )
-  wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
   wondermake.cbase.compile_commands.json += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
+  wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
 
-  $(if $(strip $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files)),
+  $(if $(wondermake.template.external_mxx_files)$(wondermake.template.mxx_files),
     # Rule to precompile a c++ source file to a binary module interface file
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),mxx_command,$$(call wondermake.cbase.mxx_command,$(wondermake.template.scope)))
     $(foreach mxx,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files),
@@ -287,11 +287,12 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).mxx_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
-      $(if $(MAKE_RESTARTS),,
+      $(if $(MAKE_RESTARTS),, # only do this on the first make phase
         wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix)
         wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
-	  )
+      )
       wondermake.cbase.compile_commands.json += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
+      $(wondermake.bld_dir)compile_commands.json: | $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix)
     )
   )
 
@@ -303,11 +304,12 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 		$$(eval undefine $$@.evaluable_command)
-    $(if $(MAKE_RESTARTS),,
+    $(if $(MAKE_RESTARTS),, # only do this on the first make phase
       wondermake.clean += $(wondermake.template.obj_files)
       wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
-	)
+    )
     wondermake.cbase.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
+    $(wondermake.bld_dir)compile_commands.json: | $(wondermake.template.obj_files)
 
     $(if $(call wondermake.equals,objects,$(wondermake.template.type)),,
       # Rule to trigger relinking or dearchiving when a source file (and hence its derived object file) is removed
@@ -331,7 +333,9 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ar_flags_unsigned),$$($$@.object_files))
 			$$(eval undefine $$@.evaluable_command)
 			$$(eval undefine $$@.object_files)
-        $(if $(MAKE_RESTARTS),,wondermake.clean += $(wondermake.template.out_files))
+        $(if $(MAKE_RESTARTS),, # only do this on the first make phase
+          wondermake.clean += $(wondermake.template.out_files)
+        )
 
       , # Rule to link object files and produce an executable or shared library file
         $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
@@ -340,7 +344,9 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).ld_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ld_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
-        $(if $(MAKE_RESTARTS),,wondermake.clean += $(wondermake.template.out_files))
+        $(if $(MAKE_RESTARTS),, # only do this on the first make phase
+          wondermake.clean += $(wondermake.template.out_files)
+        )
 
         # Library dependencies
         $(eval wondermake.template.deep_deps := \
@@ -355,123 +361,130 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
       )
     )
   )
+
+  $$(wondermake.cbase.compile_commands.json): %.compile_commands.json: %
 endef
 
 ###############################################################################
 # Define the commands ultimately used by the template recipes
 
-# Command to preprocess a c++ source file
-define wondermake.cbase.cpp_command # $1 = scope, $$1 = unsigned flags
-	$(or $(call wondermake.user_override,CPP),$(call wondermake.inherit_unique,$1,cpp)) \
-	$(call wondermake.inherit_unique,$1,cpp_flags_out_mode) \
-	$(call wondermake.inherit_unique,$1,cpp_flags[$(call wondermake.inherit_unique,$1,lang)]) \
-	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_define_pattern),$(call wondermake.inherit_append,$1,define)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_undefine_pattern),$(call wondermake.inherit_append,$1,undefine)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern),$(call wondermake.inherit_prepend,$1,include)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern),$(call wondermake.inherit_prepend,$1,include_path)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern),$(call wondermake.inherit_prepend,$1,frameworks)) \
-	$(call wondermake.cbase.pkg_config_command,$1,--cflags) \
-	$(call wondermake.inherit_append,$1,cpp_flags) \
-	$$1 \
-	$(call wondermake.user_override,CPPFLAGS) \
-	$$(abspath $$<)
-endef
+ifndef MAKE_RESTARTS # only do this on the first make phase
+  # Command to parse ISO C++ module "export module" keywords in an interface file
+  define wondermake.cbase.parse_export_module_keyword # $1 = bmi file
+    sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.module_map[\1] := $1,p' $< >> $@
+  endef
+  
+  # Command to parse ISO C++ module "module" keywords in an implementation file
+  define wondermake.cbase.parse_module_keyword # $1 = obj file
+    sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.module_map[\1])\n$1: private module_map = $$(wondermake.module_map[\1]),p' $< >> $@
+  endef
+  
+  # Command to parse ISO C++ module "import" keywords in an interface or implementation file
+  define wondermake.cbase.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
+    sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$$$(wondermake.module_map[\2])\n$1: private module_map += $$(wondermake.module_map[\2]:%=\2=%),p' $< >> $@
+  endef
+
+  # Command to preprocess a c++ source file
+  define wondermake.cbase.cpp_command # $1 = scope, $$1 = unsigned flags
+    $(or $(call wondermake.user_override,CPP),$(call wondermake.inherit_unique,$1,cpp)) \
+    $(call wondermake.inherit_unique,$1,cpp_flags_out_mode) \
+    $(call wondermake.inherit_unique,$1,cpp_flags[$(call wondermake.inherit_unique,$1,lang)]) \
+    $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
+    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_define_pattern),$(call wondermake.inherit_append,$1,define)) \
+    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_undefine_pattern),$(call wondermake.inherit_append,$1,undefine)) \
+    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern),$(call wondermake.inherit_prepend,$1,include)) \
+    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern),$(call wondermake.inherit_prepend,$1,include_path)) \
+    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern),$(call wondermake.inherit_prepend,$1,frameworks)) \
+    $(call wondermake.cbase.pkg_config_command,$1,--cflags) \
+    $(call wondermake.inherit_append,$1,cpp_flags) \
+    $$1 \
+    $(call wondermake.user_override,CPPFLAGS) \
+    $$(abspath $$<)
+  endef
+endif
 
 # Command to precompile a c++ source file to a binary module interface file
 define wondermake.cbase.mxx_command # $1 = scope, $$1 = unsigned flags, $(module_map) is a var private to the bmi file rule (see .d files)
-	$(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
-	$(call wondermake.inherit_unique,$1,mxx_flags_out_mode) \
-	$(call wondermake.inherit_unique,$1,mxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
-	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
-	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-	$(call wondermake.cbase.pkg_config_command,$1,--cflags-only-other) \
-	$(call wondermake.inherit_append,$1,cxx_flags) \
-	$$1 \
-	$(call wondermake.user_override,CXXFLAGS) \
-	$$<
+  $(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
+  $(call wondermake.inherit_unique,$1,mxx_flags_out_mode) \
+  $(call wondermake.inherit_unique,$1,mxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
+  $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
+  $$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
+  $(call wondermake.cbase.pkg_config_command,$1,--cflags-only-other) \
+  $(call wondermake.inherit_append,$1,cxx_flags) \
+  $$1 \
+  $(call wondermake.user_override,CXXFLAGS) \
+  $$<
 endef
 
 # Command to compile a c++ source file to an object file, $$1 = unsigned flags
 define wondermake.cbase.cxx_command # $1 = scope, $(module_map) is a var private to the object file rule (see .d files)
-	$(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
-	$(call wondermake.inherit_unique,$1,cxx_flags_out_mode) \
-	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
-	$(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
-	$$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-	$(call wondermake.cbase.pkg_config_command,$1,--cflags-only-other) \
-	$(call wondermake.inherit_append,$1,cxx_flags) \
-	$$1 \
-	$(call wondermake.user_override,CXXFLAGS) \
-	$$<
+  $(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
+  $(call wondermake.inherit_unique,$1,cxx_flags_out_mode) \
+  $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
+  $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
+  $$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
+  $(call wondermake.cbase.pkg_config_command,$1,--cflags-only-other) \
+  $(call wondermake.inherit_append,$1,cxx_flags) \
+  $$1 \
+  $(call wondermake.user_override,CXXFLAGS) \
+  $$<
 endef
 
 # Command to link object files and produce an executable or shared library file
 define wondermake.cbase.ld_command # $1 = scope, $$1 = unsigned flags
-	$(or $(call wondermake.user_override,LD),$(call wondermake.inherit_unique,$1,ld)) \
-	$(call wondermake.inherit_unique,$1,ld_flags_out_mode) \
-	$(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
-	$(call wondermake.inherit_append,$1,ld_flags) \
-	$$1 \
-	$(call wondermake.user_override,LDFLAGS) \
-	$$($1.obj_files) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
-	$(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
-	$(call wondermake.cbase.pkg_config_command,$1,--libs) \
-	$(call wondermake.user_override,LDLIBS)
+  $(or $(call wondermake.user_override,LD),$(call wondermake.inherit_unique,$1,ld)) \
+  $(call wondermake.inherit_unique,$1,ld_flags_out_mode) \
+  $(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
+  $(call wondermake.inherit_append,$1,ld_flags) \
+  $$1 \
+  $(call wondermake.user_override,LDFLAGS) \
+  $$($1.obj_files) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_path_pattern),$(call wondermake.inherit_append,$1,libs_path)) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
+  $(call wondermake.cbase.pkg_config_command,$1,--libs) \
+  $(call wondermake.user_override,LDLIBS)
 endef
 
 # Command to update object files in an archive
 define wondermake.cbase.ar_command # $1 = scope, $$1 = unsigned flags, $$2 = object files to update
-	$(or $(call wondermake.user_override,AR),$(call wondermake.inherit_unique,$1,ar)) \
-	$(call wondermake.inherit_append,$1,ar_flags) \
-	$$1 \
-	$(call wondermake.user_override,ARFLAGS) \
-	$(call wondermake.inherit_unique,$1,ar_flags_out_mode) \
-	$$2
-	$(or $(call wondermake.user_override,RANLIB),$(call wondermake.inherit_unique,$1,ranlib))
+  $(or $(call wondermake.user_override,AR),$(call wondermake.inherit_unique,$1,ar)) \
+  $(call wondermake.inherit_append,$1,ar_flags) \
+  $$1 \
+  $(call wondermake.user_override,ARFLAGS) \
+  $(call wondermake.inherit_unique,$1,ar_flags_out_mode) \
+  $$2
+  $(or $(call wondermake.user_override,RANLIB),$(call wondermake.inherit_unique,$1,ranlib))
 endef
 
 # Command to call pkg-config
 define wondermake.cbase.pkg_config_command # $1 = scope, $2 = cflags or libs
-	$(shell $(or $(call wondermake.user_override,PKG_CONFIG),$(call wondermake.inherit_unique,$1,pkg_config_prog)) $2 \
-		$(if $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$1,type)),--static) \
-		$(call wondermake.inherit_append,$1,pkg_config_flags) \
-		$(call wondermake.user_override,PKG_CONFIG_FLAGS) \
-		'$(call wondermake.inherit_append,$1,pkg_config)' \
-	)
-endef
-
-# Command to parse ISO C++ module "export module" keywords in an interface file
-define wondermake.cbase.parse_export_module_keyword # $1 = bmi file
-	sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.module_map[\1] := $1,p' $< >> $@
-endef
-
-# Command to parse ISO C++ module "module" keywords in an implementation file
-define wondermake.cbase.parse_module_keyword # $1 = obj file
-	sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.module_map[\1])\n$1: private module_map = $$(wondermake.module_map[\1]),p' $< >> $@
-endef
-
-# Command to parse ISO C++ module "import" keywords in an interface or implementation file
-define wondermake.cbase.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
-	sed -rn 's,^[         ]*(export[      ]+|)import[     ]+([^[  ;]+)[   ;],$1: $$$$(wondermake.module_map[\2])\n$1: private module_map += $$(wondermake.module_map[\2]:%=\2=%),p' $< >> $@
+  $(shell $(or $(call wondermake.user_override,PKG_CONFIG),$(call wondermake.inherit_unique,$1,pkg_config_prog)) $2 \
+    $(if $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$1,type)),--static) \
+    $(call wondermake.inherit_append,$1,pkg_config_flags) \
+    $(call wondermake.user_override,PKG_CONFIG_FLAGS) \
+    '$(call wondermake.inherit_append,$1,pkg_config)' \
+  )
 endef
 
 ###############################################################################
 # Compilation database (compile_commands.json)
 
 wondermake.cbase.compile_commands.json := # this is an immediate var
+wondermake.default: $(wondermake.bld_dir)compile_commands.json
 define wondermake.cbase.compile_commands.json.concat
-  .SECONDEXPANSION:
-  compile_commands.json: $$(wondermake.cbase.compile_commands.json)
-	$(call wondermake.announce,$@,$+)
-	printf '[\n' > $@; \
-	cat $+ >> $@; \
-	printf ']\n' >> $@
-  $(if $(MAKE_RESTARTS),,wondermake.clean += compile_commands.json)
+  $(wondermake.bld_dir)compile_commands.json: $$(wondermake.cbase.compile_commands.json) \
+    # ; $(file > $@,[$(wondermake.newline)$(foreach j,$+,$(file < $j)),$(wondermake.newline)]$(wondermake.newline))
+		$(call wondermake.announce,$(@F),$@)
+		@printf '[\n' > $@; \
+		cat $+ >> $@; \
+		printf ']\n' >> $@
+  ifndef MAKE_RESTARTS
+    wondermake.clean += $(wondermake.bld_dir)compile_commands.json
+  endif
 endef
 wondermake.second_expansion_rules += $(value wondermake.cbase.compile_commands.json.concat)
 

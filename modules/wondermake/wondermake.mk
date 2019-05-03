@@ -23,10 +23,12 @@ define wondermake.main
       # Forwards to the toolchain's main function
       $(eval $(value wondermake.$(toolchain).main))
     )
+  )
 
-    .SECONDEXPANSION:
-    $(info $(value wondermake.second_expansion_rules))
+  $(eval .SECONDEXPANSION:)
+  $(eval $(value wondermake.second_expansion_rules))
 
+  $(eval
     ###############################################################################
     # Include the dynamically generated makefiles
     # GNU make will first build (if need be) all of these makefiles
