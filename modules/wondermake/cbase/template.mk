@@ -460,12 +460,16 @@ endef
 
 # Command to call pkg-config
 define wondermake.cbase.pkg_config_command # $1 = scope, $2 = cflags or libs
-  $(shell $(or $(call wondermake.user_override,PKG_CONFIG),$(call wondermake.inherit_unique,$1,pkg_config_prog)) $2 \
-    $(if $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$1,type)),--static) \
-    $(call wondermake.inherit_append,$1,pkg_config_flags) \
-    $(call wondermake.user_override,PKG_CONFIG_FLAGS) \
-    '$(call wondermake.inherit_append,$1,pkg_config)' \
-  )
+$(strip
+  $(if $(call wondermake.inherit_append,$1,pkg_config), \
+    $(shell $(or $(call wondermake.user_override,PKG_CONFIG),$(call wondermake.inherit_unique,$1,pkg_config_prog)) $2 \
+      $(if $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$1,type)),--static) \
+      $(call wondermake.inherit_append,$1,pkg_config_flags) \
+      $(call wondermake.user_override,PKG_CONFIG_FLAGS) \
+      '$(call wondermake.inherit_append,$1,pkg_config)' \
+    ) \
+  ) \
+)
 endef
 
 ###############################################################################
