@@ -8,33 +8,69 @@ ifndef wondermake.cbase.template.included
 # Function that executes the template for each user-declared scope that's using the cbase toolchain
 
 define wondermake.cbase.template.loop
-  # A first loop stores extra computed variables in the scopes
-  $(foreach wondermake.template.scope,$(wondermake), \
-    $(if $($(wondermake.template.scope).produced),, \
+  wondermake.cbase.scopes_to_process := $(strip \
+    $(foreach wondermake.template.scope,$(wondermake), \
       $(if $(call wondermake.equals,cbase,$(call wondermake.inherit_unique,$(wondermake.template.scope),toolchain)), \
-        $(eval $(value wondermake.cbase.template.first_loop)))))
-  
-  # A second loop generates the rules
-  $(foreach wondermake.template.scope,$(wondermake),\
-    $(if $(call wondermake.equals,cbase,$(call wondermake.inherit_unique,$(wondermake.template.scope),toolchain)), \
-      $(eval $(value wondermake.cbase.template.second_loop))))
-  
+        $(if $($(wondermake.template.scope).processed),, \
+          $(wondermake.template.scope) \
+    ))))
+
   ifneq '' '$(filter template,$(wondermake.verbose))'
     $(info )
-    $(info # wondermake cbase end of template execution)
+    $(info ###############################################################################)
+    $(info ###############################################################################)
+    $(info ###############################################################################)
+    $(info # wondermake cbase begin of template execution for scopes)
+    $(info # $(wondermake.cbase.scopes_to_process))
+    $(info )
+  endif
+
+  # A first loop stores extra computed variables in the scopes
+  $(foreach wondermake.template.scope,$(wondermake.cbase.scopes_to_process), \
+    $(if $(filter template,$(wondermake.verbose)), \
+      $(info ) \
+      $(info ###############################################################################) \
+      $(info ###############################################################################) \
+      $(info ###############################################################################) \
+      $(info # wondermake cbase template execution, first loop, for scope) \
+      $(info # $(wondermake.template.scope)) \
+      $(info ) \
+	  $(info $(wondermake.cbase.template.first_loop)) \
+    ) \
+    $(eval $(value wondermake.cbase.template.first_loop)) \
+  )
+
+  # A second loop generates the rules
+  $(foreach wondermake.template.scope,$(wondermake.cbase.scopes_to_process),\
+    $(if $(filter template,$(wondermake.verbose)), \
+      $(info ) \
+      $(info ###############################################################################) \
+      $(info ###############################################################################) \
+      $(info ###############################################################################) \
+      $(info # wondermake cbase template execution, second loop, for scope) \
+      $(info # $(wondermake.template.scope)) \
+      $(info ) \
+    ) \
+    $(eval $(value wondermake.cbase.template.second_loop)) \
+  )
+
+  ifneq '' '$(filter template,$(wondermake.verbose))'
+    $(info )
+    $(info # wondermake cbase end of template execution for scopes)
+    $(info # $(wondermake.cbase.scopes_to_process))
     $(info ###############################################################################)
     $(info ###############################################################################)
     $(info ###############################################################################)
     $(info )
   endif
+
+  undefine wondermake.cbase.scopes_to_process
 endef
 
 ###############################################################################
 # First loop: stores extra computed variables in the scopes
 
 define wondermake.cbase.template.first_loop
-  $(wondermake.template.scope).produced := true
-
   wondermake.default: $(wondermake.template.scope)
 
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
@@ -124,15 +160,6 @@ endef
 # Second loop: generates the rules
 
 define wondermake.cbase.template.second_loop
-  ifneq '' '$(filter template,$(wondermake.verbose))'
-    $(info )
-    $(info ###############################################################################)
-    $(info ###############################################################################)
-    $(info ###############################################################################)
-    $(info # wondermake cbase template execution for scope $(wondermake.template.scope))
-    $(info )
-  endif
-
   $(eval $(value wondermake.cbase.template.define_vars))
   ifneq '' '$(filter template,$(wondermake.verbose))'
     $(info $(wondermake.cbase.template.define_vars))
@@ -144,6 +171,8 @@ define wondermake.cbase.template.second_loop
   endif
 
   $(eval $(value wondermake.cbase.template.undefine_vars))
+
+  $(wondermake.template.scope).processed := true
 endef
 
 ###############################################################################
@@ -204,11 +233,8 @@ endef
 # Define the template rules with recipes that have the temporary loop variables evaluated
 
 define wondermake.cbase.template.rules_with_evaluated_recipes
-  $(if $(MAKE_RESTARTS),
-    # cpp_command has been executed to bring .ii and .d files up-to-date
-    wondermake.clean += $(wondermake.template.scope_dir)cpp_command # explicitly prevent auto-cleaning since we don't call wondermake.write_iif_content_changed.rule
-
-  , # Rules to preprocess c++ source files (only done on the first make phase)
+  $(if $(MAKE_RESTARTS),,
+    # Rules to preprocess c++ source files (only done on the first make phase)
 
     # Rule to create an output directory
     $(wondermake.template.scope_dir) $(patsubst %,$(wondermake.template.intermediate_dir)%,$(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))): ; mkdir -p $$@
@@ -242,11 +268,11 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 		$$(call wondermake.cbase.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
 		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
     )
+    wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+    wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
+    wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
   )
   wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
-  wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
-  wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
-  wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
   wondermake.cbase.compile_commands.json += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
 
   $(if $(strip $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files)),
@@ -261,8 +287,10 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).mxx_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
-      wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix)
-      wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
+      $(if $(MAKE_RESTARTS),,
+        wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix)
+        wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
+	  )
       wondermake.cbase.compile_commands.json += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
     )
   )
@@ -275,8 +303,10 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 		$$(eval undefine $$@.evaluable_command)
-    wondermake.clean += $(wondermake.template.obj_files)
-    wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
+    $(if $(MAKE_RESTARTS),,
+      wondermake.clean += $(wondermake.template.obj_files)
+      wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
+	)
     wondermake.cbase.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
 
     $(if $(call wondermake.equals,objects,$(wondermake.template.type)),,
@@ -301,7 +331,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ar_flags_unsigned),$$($$@.object_files))
 			$$(eval undefine $$@.evaluable_command)
 			$$(eval undefine $$@.object_files)
-        wondermake.clean += $(wondermake.template.out_files)
+        $(if $(MAKE_RESTARTS),,wondermake.clean += $(wondermake.template.out_files))
 
       , # Rule to link object files and produce an executable or shared library file
         $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
@@ -310,7 +340,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).ld_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ld_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
-        wondermake.clean += $(wondermake.template.out_files)
+        $(if $(MAKE_RESTARTS),,wondermake.clean += $(wondermake.template.out_files))
 
         # Library dependencies
         $(eval wondermake.template.deep_deps := \
@@ -409,6 +439,8 @@ endef
 define wondermake.cbase.pkg_config_command # $1 = scope, $2 = cflags or libs
 	$(shell $(or $(call wondermake.user_override,PKG_CONFIG),$(call wondermake.inherit_unique,$1,pkg_config_prog)) $2 \
 		$(if $(call wondermake.equals,static_executable,$(call wondermake.inherit_unique,$1,type)),--static) \
+		$(call wondermake.inherit_append,$1,pkg_config_flags) \
+		$(call wondermake.user_override,PKG_CONFIG_FLAGS) \
 		'$(call wondermake.inherit_append,$1,pkg_config)' \
 	)
 endef
@@ -432,12 +464,16 @@ endef
 # Compilation database (compile_commands.json)
 
 wondermake.cbase.compile_commands.json := # this is an immediate var
-compile_commands.json: $(wondermake.cbase.compile_commands.json)
-	$(call wondermake.announce,$@)
+define wondermake.cbase.compile_commands.json.concat
+  .SECONDEXPANSION:
+  compile_commands.json: $$(wondermake.cbase.compile_commands.json)
+	$(call wondermake.announce,$@,$+)
 	printf '[\n' > $@; \
-	cat >> $@; \
+	cat $+ >> $@; \
 	printf ']\n' >> $@
-#TODO wondermake.default: compile_commands.json
+  $(if $(MAKE_RESTARTS),,wondermake.clean += compile_commands.json)
+endef
+wondermake.second_expansion_rules += $(value wondermake.cbase.compile_commands.json.concat)
 
 ###############################################################################
 endif # ifndef wondermake.cbase.template.included

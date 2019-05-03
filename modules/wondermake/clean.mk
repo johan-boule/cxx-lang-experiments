@@ -21,8 +21,9 @@ wondermake.clean:
 ###############################################################################
 # Auto-clean rule
 
-wondermake.default: $(wondermake.bld_dir)wondermake.auto-clean
-$(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_dir)
+ifndef MAKE_RESTARTS # only do this on the first make phase
+  wondermake.default: $(wondermake.bld_dir)wondermake.auto-clean
+  $(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_dir)
 	$(eval $@.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null)))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
@@ -45,9 +46,10 @@ $(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_
 	)
 	$(eval undefine $@.old)
 	$(eval undefine $@.new)
-wondermake.clean += \
-	$(wondermake.bld_dir)wondermake.auto-clean \
-	$(wondermake.bld_dir)wondermake.auto-clean.new
+  wondermake.clean += \
+    $(wondermake.bld_dir)wondermake.auto-clean \
+    $(wondermake.bld_dir)wondermake.auto-clean.new
+endif
 
 ###############################################################################
 endif # ifndef wondermake.clean.included

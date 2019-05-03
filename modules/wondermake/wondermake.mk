@@ -23,7 +23,10 @@ define wondermake.main
       # Forwards to the toolchain's main function
       $(eval $(value wondermake.$(toolchain).main))
     )
-  
+
+    .SECONDEXPANSION:
+    $(info $(value wondermake.second_expansion_rules))
+
     ###############################################################################
     # Include the dynamically generated makefiles
     # GNU make will first build (if need be) all of these makefiles
@@ -35,7 +38,6 @@ define wondermake.main
     # Secondary expansion is used to allow variables to be defined out of order.
     # (Without secondary expansion, we have to include $(mxx).d before $(cxx).d)
     ifeq '' '$(or $(call wondermake.equals,clean,$(MAKECMDGOALS)),$(call wondermake.equals,wondermake.clean,$(MAKECMDGOALS)))' # don't remake the .d files when only cleaning
-      .SECONDEXPANSION:
       -include $(filter-out $(wondermake.dynamically_generated_makefiles.included),$(wondermake.dynamically_generated_makefiles))
       wondermake.dynamically_generated_makefiles.included += $(wondermake.dynamically_generated_makefiles)
     endif

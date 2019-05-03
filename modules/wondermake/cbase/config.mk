@@ -15,6 +15,13 @@ wondermake.cbase.libs_path := $(wondermake.staged_install)lib
 wondermake.cbase.pkg_config_prog := $(or $(call wondermake.user_override,PKG_CONFIG),pkg-config)
 
 ###############################################################################
+# Overridable options
+
+# By default, make shared libs and dynamic executables rather than static
+wondermake.cbase.default_type[executable] := dynamic_executable
+wondermake.cbase.default_type[lib]        := shared_lib
+
+###############################################################################
 # Configuration support
 
 ###############################################################################
@@ -24,25 +31,17 @@ wondermake.cbase.pkg_config_prog := $(or $(call wondermake.user_override,PKG_CON
 include $(dir $(lastword $(MAKEFILE_LIST)))config.unix-elf-clang.mk
 wondermake.cbase.inherit := wondermake.cbase.config[unix_elf_clang]
 
-# By default, make shared libs and dynamic executables rather than static
-wondermake.cbase.default_type[executable] := dynamic_executable
-wondermake.cbase.default_type[lib]        := shared_lib
-
-# This rule ensures wondermake.auto-clean is called even when specific goals have been given on the make command line.
-# Otherwise, auto-clean is only done when the wondermake.default phony target is triggered.
-$(wondermake.bld_dir)wondermake.cbase.configure: | $(wondermake.bld_dir)wondermake.auto-clean
-
-# This rule is done only on first build or when changes in the env are detected.
-$(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9 # First version with ISO C++ module TS support
-$(wondermake.bld_dir)wondermake.cbase.configure: clang_min_required_version := 6 # First version with ISO C++ module TS support
-$(wondermake.bld_dir)wondermake.cbase.configure: $(wondermake.bld_dir)wondermake.cbase.config
-	$(call wondermake.announce,configure,toolchain cbase)
-	$(call wondermake.cbase.config[unix_elf_clang].check_toolchain_version,$(clang_min_required_version))
-	@touch $@
-wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.configure
-
 ifndef MAKE_RESTARTS # only do this on the first make phase
-  $(wondermake.bld_dir)wondermake.cbase.config: wondermake.force $(wondermake.bld_dir)wondermake.cbase.env | $(wondermake.bld_dir)
+  # This rule is done only on first build or when changes in the env are detected.
+  $(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9 # First version with ISO C++ module TS support
+  $(wondermake.bld_dir)wondermake.cbase.configure: clang_min_required_version := 6 # First version with ISO C++ module TS support
+  $(wondermake.bld_dir)wondermake.cbase.configure: $(wondermake.bld_dir)wondermake.cbase.toolchain
+		$(call wondermake.cbase.config[unix_elf_clang].check_toolchain_version,$(clang_min_required_version))
+		@touch $@
+		@$(call wondermake.announce_shell,configure,toolchain cbase configured,with $(wondermake.cbase.inherit))
+  wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.configure
+
+  $(wondermake.bld_dir)wondermake.cbase.toolchain: wondermake.force $(wondermake.bld_dir)wondermake.cbase.env | $(wondermake.bld_dir)
 	@new=$$( \
 		printf '%s\n' \
 			"stat: env CPP CXX LD AR RANLIB PKG_CONFIG" \
@@ -93,10 +92,8 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		fi; \
 		printf '%s\n' "$$new" > $@; \
 	fi
-endif
-wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.config
+  wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.toolchain
 
-ifndef MAKE_RESTARTS # only do this on the first make phase
   $(wondermake.bld_dir)wondermake.cbase.env: wondermake.force | $(wondermake.bld_dir) # Note: LIBRARY_PATH used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO
 	@new=$$( \
 		printf '%s\n' \
@@ -124,8 +121,12 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		fi; \
 		printf '%s\n' "$$new" > $@; \
 	fi
+  wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.env
+
+  # This rule ensures wondermake.auto-clean is called even when specific goals have been given on the make command line.
+  # Otherwise, auto-clean is only done when the wondermake.default phony target is triggered.
+  $(wondermake.bld_dir)wondermake.cbase.env: | $(wondermake.bld_dir)wondermake.auto-clean
 endif
-wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.env
 
 ###############################################################################
 endif # ifndef wondermake.cbase.config.included
