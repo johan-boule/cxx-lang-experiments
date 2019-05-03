@@ -59,19 +59,19 @@ wondermake.cbase.config[unix_elf_clang].cxx_pic_flag                 := -fPIC
 wondermake.cbase.config[unix_elf_clang].cxx_pie_flag                 := -fPIE
 wondermake.cbase.config[unix_elf_clang].cxx_flags[shared_lib]        := $(wondermake.cbase.config[unix_elf_clang].cxx_pic_flag)
 wondermake.cbase.config[unix_elf_clang].ld_flags[shared_lib]         := -shared -Wl,-rpath=\$$$$ORIGIN
-wondermake.cbase.config[unix_elf_clang].ld_flags[dynamic_executable] := -Wl,-rpath-link=$(wondermake.staged_install)lib -Wl,-rpath=\$$$$ORIGIN/../lib
-wondermake.cbase.config[unix_elf_clang].ld_flags[static_executable]  := -static # we can have both -shared and -static but that's not very useful
+wondermake.cbase.config[unix_elf_clang].ld_flags[dynamic_executable] := -Wl,-rpath-link=$(wondermake.fhs.lib) -Wl,-rpath=\$$$$ORIGIN/$(wondermake.fhs.bin_to_lib)
+wondermake.cbase.config[unix_elf_clang].ld_flags[static_executable]  := -static
 
 wondermake.cbase.config[unix_elf_clang].pch_suffix := pch
 wondermake.cbase.config[unix_elf_clang].bmi_suffix := pcm
 wondermake.cbase.config[unix_elf_clang].obj_suffix := o
 
-wondermake.cbase.config[unix_elf_clang].out_file_pattern[dynamic_executable] := bin/%
-wondermake.cbase.config[unix_elf_clang].out_file_pattern[static_executable]  := bin/%
-wondermake.cbase.config[unix_elf_clang].out_file_pattern[shared_lib]         := lib/lib%.so
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[dynamic_executable] := $(wondermake.fhs.bin)%
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[static_executable]  := $(wondermake.fhs.bin)%
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[shared_lib]         := $(wondermake.fhs.lib)lib%.so
 wondermake.cbase.config[unix_elf_clang].out_file_pattern[import_lib]         := # none
-wondermake.cbase.config[unix_elf_clang].out_file_pattern[loadable_module]    := lib/%.so
-wondermake.cbase.config[unix_elf_clang].out_file_pattern[static_lib]         := lib/lib%.a
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[loadable_module]    := $(wondermake.fhs.lib)%.so
+wondermake.cbase.config[unix_elf_clang].out_file_pattern[static_lib]         := $(wondermake.fhs.lib)lib%.a
 
 # When using make -j>1 -O, the compiler cannot know when we're actually on tty
 ifdef MAKE_TERMERR

@@ -3,11 +3,19 @@
 # This source is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 ifndef wondermake.cbase.config.included
+wondermake.cbase.config.makefile_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 
 ###############################################################################
-# Staged install
 
-wondermake.cbase.libs_path := $(wondermake.staged_install)lib
+include $(wondermake.cbase.config.makefile_dir)src-suffixes.mk
+
+wondermake.cbase.libs_path := $(wondermake.fhs.lib)
+
+###############################################################################
+# Choose a toolchain
+
+include $(wondermake.cbase.config.makefile_dir)unix-elf-clang.mk
+wondermake.cbase.inherit := wondermake.cbase.config[unix_elf_clang]
 
 ###############################################################################
 # Overridable programs
@@ -23,13 +31,6 @@ wondermake.cbase.default_type[lib]        := shared_lib
 
 ###############################################################################
 # Configuration support
-
-###############################################################################
-# TODO This is only a placeholder for a real configuration
-###############################################################################
-
-include $(dir $(lastword $(MAKEFILE_LIST)))config.unix-elf-clang.mk
-wondermake.cbase.inherit := wondermake.cbase.config[unix_elf_clang]
 
 ifndef MAKE_RESTARTS # only do this on the first make phase
   # This rule is done only on first build or when changes in the env are detected.
@@ -129,4 +130,5 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 endif
 
 ###############################################################################
+undefine wondermake.cbase.config.makefile_dir
 endif # ifndef wondermake.cbase.config.included

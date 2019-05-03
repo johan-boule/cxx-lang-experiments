@@ -3,9 +3,11 @@
 # This source is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
 ifndef wondermake.cbase.included
-  include $(dir $(lastword $(MAKEFILE_LIST)))src-suffixes.mk
-  include $(dir $(lastword $(MAKEFILE_LIST)))config.mk
-  include $(dir $(lastword $(MAKEFILE_LIST)))template.mk
+  wondermake.cbase.makefile_dir := $(dir $(lastword $(MAKEFILE_LIST)))
+  include $(wondermake.cbase.makefile_dir)config/config.mk # XXXX changes last dir!!!
+  include $(wondermake.cbase.makefile_dir)template.mk
+  include $(wondermake.cbase.makefile_dir)compile_commands.json.mk
+  undefine wondermake.cbase.makefile_dir
   define wondermake.cbase.main
     $(eval $(value wondermake.cbase.template.loop))
   endef

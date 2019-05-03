@@ -24,7 +24,7 @@
 		ln -s lib.%.so.<version> lib.%.so
 		-Wl,-h,lib.%.so.<version>
 	-Wl,-no-undefined -Wl,--undefined
-	-Wl,-Bstatic -Wl,-Bdynamic (no need thanks to auto-clean)
+	--push/pop-state -Wl,-Bstatic -Wl,-Bdynamic (no need thanks to auto-clean)
 
 *	std version
 	note: to list clang's supported names, use clang++ -xc++ -std= -

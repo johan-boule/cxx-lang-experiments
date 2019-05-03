@@ -130,16 +130,16 @@ define wondermake.cbase.template.first_loop
       .PHONY: $(wondermake.template.name)
       $(wondermake.template.name): $(wondermake.template.out_files)
     else # There is a link or archive step
-      wondermake.template.out_files := $(addprefix $(wondermake.staged_install), \
-        $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name)))
+      wondermake.template.out_files := \
+        $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name))
       # If the platform has any prefix or suffix added to the binary file name
       ifneq '$(wondermake.template.name)' '$(wondermake.template.out_files)'
         .PHONY: $(wondermake.template.name)
         $(wondermake.template.name): $(wondermake.template.out_files)
       endif
       ifeq 'shared_lib' '$(wondermake.template.type)'
-        wondermake.template.out_files += $(addprefix $(wondermake.staged_install), \
-          $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[import_lib]),$(wondermake.template.name)))
+        wondermake.template.out_files += \
+          $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[import_lib]),$(wondermake.template.name))
       endif
     endif
     $(wondermake.template.scope).out_files := $(wondermake.template.out_files)

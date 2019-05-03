@@ -4,11 +4,14 @@
 
 ifndef wondermake.included
 
-include $(dir $(lastword $(MAKEFILE_LIST)))check_make_version.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))utils.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))log.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))init.mk
-include $(dir $(lastword $(MAKEFILE_LIST)))clean.mk
+wondermake.makefile_dir := $(dir $(lastword $(MAKEFILE_LIST)))
+include $(wondermake.makefile_dir)check_make_version.mk
+include $(wondermake.makefile_dir)utils.mk
+include $(wondermake.makefile_dir)log.mk
+include $(wondermake.makefile_dir)init.mk
+include $(wondermake.makefile_dir)fhs.mk
+include $(wondermake.makefile_dir)clean.mk
+undefine wondermake.makefile_dir
 
 ###############################################################################
 # Define the main entry point as a function
@@ -25,8 +28,6 @@ define wondermake.main
       # Forwards to the toolchain's main function
       $(eval $(value wondermake.$(toolchain).main))
     )
-
-    include $(dir $(lastword $(MAKEFILE_LIST)))compile_commands.json.mk
 
     ###############################################################################
     # Include the dynamically generated makefiles
