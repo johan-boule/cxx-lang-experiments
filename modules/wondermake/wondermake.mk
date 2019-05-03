@@ -11,7 +11,6 @@ include $(wondermake.makefile_dir)log.mk
 include $(wondermake.makefile_dir)init.mk
 include $(wondermake.makefile_dir)fhs.mk
 include $(wondermake.makefile_dir)clean.mk
-undefine wondermake.makefile_dir
 
 ###############################################################################
 # Define the main entry point as a function
@@ -24,7 +23,7 @@ define wondermake.main
     # Loop through the toolchains used by the scopes
     $(foreach toolchain,$(sort $(foreach scope,$(wondermake),$(call wondermake.inherit_unique,$(scope),toolchain))),
       # Include the toolchain
-      $(eval include $(dir $(lastword $(MAKEFILE_LIST)))$(toolchain)/$(toolchain).mk)
+      $(eval include $(wondermake.makefile_dir)/toolchains/$(toolchain)/$(toolchain).mk)
       # Forwards to the toolchain's main function
       $(eval $(value wondermake.$(toolchain).main))
     )
