@@ -15,6 +15,8 @@ include $(dir $(lastword $(MAKEFILE_LIST)))clean.mk
 # The function is reentrant and supports a modular toolchain inclusion.
 
 define wondermake.main
+  # note: special care here is taken to allow this function to be called without the usual $(eval $(value ))
+
   $(eval
     # Loop through the toolchains used by the scopes
     $(foreach toolchain,$(sort $(foreach scope,$(wondermake),$(call wondermake.inherit_unique,$(scope),toolchain))),
@@ -23,12 +25,9 @@ define wondermake.main
       # Forwards to the toolchain's main function
       $(eval $(value wondermake.$(toolchain).main))
     )
-  )
 
-  $(eval .SECONDEXPANSION:)
-  $(eval $(value wondermake.second_expansion_rules))
+    include $(dir $(lastword $(MAKEFILE_LIST)))compile_commands.json.mk
 
-  $(eval
     ###############################################################################
     # Include the dynamically generated makefiles
     # GNU make will first build (if need be) all of these makefiles
@@ -40,6 +39,7 @@ define wondermake.main
     # Secondary expansion is used to allow variables to be defined out of order.
     # (Without secondary expansion, we have to include $(mxx).d before $(cxx).d)
     ifeq '' '$(or $(call wondermake.equals,clean,$(MAKECMDGOALS)),$(call wondermake.equals,wondermake.clean,$(MAKECMDGOALS)))' # don't remake the .d files when only cleaning
+      .SECONDEXPANSION:
       -include $(filter-out $(wondermake.dynamically_generated_makefiles.included),$(wondermake.dynamically_generated_makefiles))
       wondermake.dynamically_generated_makefiles.included += $(wondermake.dynamically_generated_makefiles)
     endif

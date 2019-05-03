@@ -54,6 +54,8 @@ define wondermake.cbase.template.loop
     $(eval $(value wondermake.cbase.template.second_loop)) \
   )
 
+  $(wondermake.cbase.compile_commands.json): %.compile_commands.json: %
+
   ifneq '' '$(filter template,$(wondermake.verbose))'
     $(info )
     $(info # wondermake cbase end of template execution for scopes)
@@ -361,8 +363,6 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
       )
     )
   )
-
-  $$(wondermake.cbase.compile_commands.json): %.compile_commands.json: %
 endef
 
 ###############################################################################
@@ -469,24 +469,6 @@ define wondermake.cbase.pkg_config_command # $1 = scope, $2 = cflags or libs
     '$(call wondermake.inherit_append,$1,pkg_config)' \
   )
 endef
-
-###############################################################################
-# Compilation database (compile_commands.json)
-
-wondermake.cbase.compile_commands.json := # this is an immediate var
-wondermake.default: $(wondermake.bld_dir)compile_commands.json
-define wondermake.cbase.compile_commands.json.concat
-  $(wondermake.bld_dir)compile_commands.json: $$(wondermake.cbase.compile_commands.json) \
-    # ; $(file > $@,[$(wondermake.newline)$(foreach j,$+,$(file < $j)),$(wondermake.newline)]$(wondermake.newline))
-		$(call wondermake.announce,$(@F),$@)
-		@printf '[\n' > $@; \
-		cat $+ >> $@; \
-		printf ']\n' >> $@
-  ifndef MAKE_RESTARTS
-    wondermake.clean += $(wondermake.bld_dir)compile_commands.json
-  endif
-endef
-wondermake.second_expansion_rules += $(value wondermake.cbase.compile_commands.json.concat)
 
 ###############################################################################
 endif # ifndef wondermake.cbase.template.included

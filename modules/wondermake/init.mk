@@ -13,7 +13,7 @@ wondermake.all: wondermake.default
 ###############################################################################
 # Create accumulator vars as immediate
 
-wondermake.second_expansion_rules := # this is an immediate var
+wondermake.cbase.compile_commands.json := # this is an immediate var
 wondermake.dynamically_generated_makefiles := # this is an immediate var
 wondermake.dynamically_generated_makefiles.included := # this is an immediate var
 

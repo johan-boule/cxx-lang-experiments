@@ -15,6 +15,7 @@ wondermake.clean := # this is an immediate var
 .PHONY: wondermake.clean
 wondermake.clean:
 	$(call wondermake.announce,clean)
+	$(if $(MAKE_RESTARTS),$(call wondermake.error,cannot clean after make restarts))
 	printf '%s' '$(wondermake.clean)' | xargs rm -f; \
 	printf '%s' '$(sort $(dir $(wondermake.clean)))' | xargs rmdir -p 2>/dev/null || true
 
