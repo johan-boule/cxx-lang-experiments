@@ -294,7 +294,6 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
       )
       wondermake.cbase.compile_commands.json += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
-      $(wondermake.bld_dir)compile_commands.json: | $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix)
     )
   )
 
@@ -311,7 +310,6 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
       wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
     )
     wondermake.cbase.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
-    $(wondermake.bld_dir)compile_commands.json: | $(wondermake.template.obj_files)
 
     $(if $(call wondermake.equals,objects,$(wondermake.template.type)),,
       # Rule to trigger relinking or dearchiving when a source file (and hence its derived object file) is removed
