@@ -16,6 +16,7 @@ common.include_path := src
 common.type := lib
 common.cpp_flags := -std=c++2a
 common.cxx_flags := -std=c++2a
+common.version = 1 2 3
 
 wondermake += hello-world
 hello-world.inherit := common

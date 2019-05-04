@@ -166,3 +166,5 @@
 *	batch compilation.
 	also verify whether ar supports member pathname or just basename.
 	in any case, creating flat filenames like in wonderbuild would solve it.
+
+*	library dependency: when a dep changes its type from static to shared, we need to relink (see wonderbuild _mod.py).

@@ -444,7 +444,8 @@ define wondermake.cbase.ld_command # $1 = scope, $$1 = unsigned flags
   $(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
   $(call wondermake.cbase.pkg_config_command,$1,--libs) \
-  $(call wondermake.user_override,LDLIBS)
+  $(call wondermake.user_override,LDLIBS) \
+  -Wl,-h,$$(@F).$(firstword $(call wondermake.inherit_append,$1,version))
 endef
 
 # Command to update object files in an archive

@@ -43,7 +43,8 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
   wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.configure
 
   $(wondermake.bld_dir)wondermake.cbase.toolchain: wondermake.force $(wondermake.bld_dir)wondermake.cbase.env | $(wondermake.bld_dir)
-	@new=$$( \
+	@set -e && \
+	new=$$( \
 		printf '%s\n' \
 			"stat: env CPP CXX LD AR RANLIB PKG_CONFIG" \
 			"$$(stat -Lc'	%Y %n' \
@@ -96,7 +97,8 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
   wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.toolchain
 
   $(wondermake.bld_dir)wondermake.cbase.env: wondermake.force | $(wondermake.bld_dir) # Note: LIBRARY_PATH used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO
-	@new=$$( \
+	@set -e && \
+	new=$$( \
 		printf '%s\n' \
 			"PATH=$(PATH)" \
 			"linux/solaris/macosx LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)" \

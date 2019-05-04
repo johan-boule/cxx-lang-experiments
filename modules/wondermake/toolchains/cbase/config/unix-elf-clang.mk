@@ -86,7 +86,7 @@ endif
 ifndef MAKE_RESTARTS # only do this on the first make phase
   define wondermake.cbase.config[unix_elf_clang].check_toolchain_version # $1 = min_required_clang_major_version
     $(call wondermake.announce,configure,check clang version,requires clang version >= $1)
-    @set -e; \
+    @set -e && \
     if ! command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) 1>/dev/null; \
     then \
       $(call wondermake.error_shell,Requires clang version >= $1. Compiler is '$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp))' and cannot be found.); \
