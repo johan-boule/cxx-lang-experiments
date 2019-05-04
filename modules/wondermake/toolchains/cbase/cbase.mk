@@ -4,8 +4,10 @@
 
 ifndef wondermake.cbase.included
   wondermake.cbase.makefile_dir := $(dir $(lastword $(MAKEFILE_LIST)))
-  include $(wondermake.cbase.makefile_dir)config/config.mk # XXXX changes last dir!!!
+  include $(wondermake.cbase.makefile_dir)config/config.mk
   include $(wondermake.cbase.makefile_dir)template.mk
+  include $(wondermake.cbase.makefile_dir)commands.mk
+  include $(wondermake.cbase.makefile_dir)pkg-config.mk
   include $(wondermake.cbase.makefile_dir)compile_commands.json.mk
   undefine wondermake.cbase.makefile_dir
   define wondermake.cbase.main
