@@ -62,6 +62,11 @@ wondermake.cbase.config[unix_elf_clang].ld_flags[shared_lib]         := -shared 
 wondermake.cbase.config[unix_elf_clang].ld_flags[dynamic_executable] := -Wl,-rpath-link=$(wondermake.fhs.lib) -Wl,-rpath=\$$$$ORIGIN/$(wondermake.fhs.bin_to_lib)
 wondermake.cbase.config[unix_elf_clang].ld_flags[static_executable]  := -static
 
+wondermake.cbase.config[unix_elf_clang].ld_flags_soname = -Wl,-h,$$(@F).$(firstword $(subst ., ,$(call wondermake.inherit_unique,$1,version)))
+
+wondermake.cbase.config[unix_elf_clang].cxx_flags[loadable_module]   := $(wondermake.cbase.config[unix_elf_clang].cxx_flags[shared_lib])
+wondermake.cbase.config[unix_elf_clang].ld_flags[loadable_module]    := $(wondermake.cbase.config[unix_elf_clang].ld_flags[shared_lib])
+
 wondermake.cbase.config[unix_elf_clang].pch_suffix := pch
 wondermake.cbase.config[unix_elf_clang].bmi_suffix := pcm
 wondermake.cbase.config[unix_elf_clang].obj_suffix := o

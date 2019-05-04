@@ -144,7 +144,7 @@
 	-Wl,--enable-auto-import # suppress informational messages
 
 *	msvc? really, do we care anymore?
-	Taken from Wonderbuild msvc_imply.py
+	Taken from Wonderbuild msvc_impl.py
 	for everything: -nologo (grrr!)
 	programs: cpp/cxx = cl, ld = link, ar/ranlib = lib
 	cpp -ShowIncludes -D -U -FI -I
@@ -168,3 +168,12 @@
 	in any case, creating flat filenames like in wonderbuild would solve it.
 
 *	library dependency: when a dep changes its type from static to shared, we need to relink (see wonderbuild _mod.py).
+
+*	multiple inheritance
+	$(scope).inherit += $(wondermake.cbase.inherit).$(call wondermake.inherit_unique,$(scope),type)
+	$(scope).type := shared_lib
+	$(call wondermake.inherit_append,$(scope),cxx_flags) => cbase.cxxflags cbase.shared_lib.cxxflags
+
+*	accessors
+	$(scope).cxx_flags._ := $($(scope).cxx_flags) # note: test $(flavor ...) for := or =
+	$(scope).cxx_flags = $($(scope).cxx_flags._) $(call wondermake.inherit_append_no_self,$(scope),cxx_flags) # note _no_self
