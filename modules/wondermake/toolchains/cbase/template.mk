@@ -354,7 +354,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         )
 
         # Library dependencies
-        # Note: If a dep's type just changed to shared_lib, we need to relink. Hence the dep on type file.
+        # Note: If a dep's type just changed to shared_lib, we need to relink. Hence why we add the dep's type file as a prerequisite.
         # Note: For the libs var assignement, we don't use += so we are sure to create an immediate var if the var didn't exist.
         $(eval wondermake.template.deep_deps := \
           $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(call wondermake.equals,static_executable,$(wondermake.template.type))))

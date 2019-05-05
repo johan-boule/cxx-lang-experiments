@@ -179,8 +179,9 @@
 	consider whether this would make for a nicer syntax or not:
 	$(scope).cxx_flags._ := $($(scope).cxx_flags) # note: test $(flavor ...) for := or =
 	$(scope).cxx_flags = $($(scope).cxx_flags._) $(call wondermake.inherit_append_no_self,$(scope),cxx_flags) # note _no_self
-	beware of a scope that inherits from another scope: that wold lead to duplicated values:
-		if need be use an alternate symbol like $(scope)!cxx_flags or $(scope)^cxx_flags
+	beware of a scope that inherits from another scope: that wold lead to duplicated values
+	note also that this will prevent further assignments
+	a more sane approach is prolly to use an alternate symbol like $(scope)!cxx_flags or $(scope)^cxx_flags
 
 *	akin to -MM, use ldd to generate a dynamic makefile that contains the implicit deps on system-wide libs
 

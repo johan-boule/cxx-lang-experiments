@@ -61,7 +61,7 @@ prog.private_deps := lib
 wondermake += prog
 
 lib.inherit := common
-lib.type := shared_lib
+lib.type := static_lib
 lib.src := lib.hxx lib.cxx
 wondermake += lib
 
