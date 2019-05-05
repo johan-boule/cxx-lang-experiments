@@ -78,7 +78,7 @@ define wondermake.cbase.template.first_loop
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
   $(wondermake.template.scope).name := $(wondermake.template.name)
 
-  # If scope has a name that is different from the scope name
+  # If scope has a name attribute that is different from the scope variable name itself
   ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
     .PHONY: $(wondermake.template.scope)
     $(wondermake.template.scope): $(wondermake.template.name)
@@ -86,6 +86,7 @@ define wondermake.cbase.template.first_loop
 
   wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
   wondermake.template.type := $(or $(call wondermake.inherit_unique,$(wondermake.template.scope),default_type[$(wondermake.template.type)]),$(wondermake.template.type))
+  $(eval $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),type,$(wondermake.template.type)))
   $(wondermake.template.scope).type := $(wondermake.template.type)
 
   wondermake.template.src_dir := $(call wondermake.inherit_unique,$(wondermake.template.scope),src_dir)
@@ -239,7 +240,11 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     # Rules to preprocess c++ source files (only done on the first make phase)
 
     # Rule to create an output directory
-    $(wondermake.template.scope_dir) $(wondermake.template.intermediate_dir) $(patsubst %,$(wondermake.template.intermediate_dir)%,$(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))): ; mkdir -p $$@
+    $(wondermake.template.scope_dir) \
+    $(wondermake.template.intermediate_dir) \
+    $(patsubst %,$(wondermake.template.intermediate_dir)%, \
+      $(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))) \
+    : ; mkdir -p $$@
 
     # Rule to preprocess a c++ source file (the output directory creation is triggered here)
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
@@ -349,12 +354,14 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         )
 
         # Library dependencies
+        # Note: If a dep's type just changed to shared_lib, we need to relink. Hence the dep on type file.
+        # Note: For the libs var assignement, we don't use += so we are sure to create an immediate var if the var didn't exist.
         $(eval wondermake.template.deep_deps := \
           $(call wondermake.topologically_sorted_unique_deep_deps,$(wondermake.template.scope),$(call wondermake.equals,static_executable,$(wondermake.template.type))))
         $(firstword $(wondermake.template.out_files)): \
-          $(foreach d,$(wondermake.template.deep_deps),$(if $(filter static_lib objects,$($d.type)),$($d.out_files))) | \
+          $(foreach d,$(wondermake.template.deep_deps),$(if $(filter static_lib objects,$($d.type)),$($d.out_files))) \
+          $(foreach d,$(wondermake.template.deep_deps),$(if $(filter shared_lib,$($d.type)),$($d.scope_dir)type)) | \
           $(foreach d,$(wondermake.template.deep_deps),$(if $(filter shared_lib,$($d.type)),$d))
-        # note: we don't use += so we are sure to create an immediate var
         $(wondermake.template.scope).libs := $($(wondermake.template.scope).libs) \
           $(foreach d,$(wondermake.template.deep_deps),$(if $(filter-out headers objects,$($d.type)),$($d.name)))
         $(eval undefine wondermake.template.deep_deps)
