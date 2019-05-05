@@ -7,12 +7,13 @@ ifndef wondermake.fhs.included
 ###############################################################################
 # Filesystem hierarchy standard
 
-wondermake.fhs.bin := $(wondermake.staged_install)bin/
-wondermake.fhs.lib := $(wondermake.staged_install)lib/
-wondermake.fhs.include := $(wondermake.staged_install)include/
+wondermake.fhs := $(wondermake.bld_dir)staged-install/
+wondermake.fhs.bin := $(wondermake.fhs)bin/
+wondermake.fhs.lib := $(wondermake.fhs)lib/
+wondermake.fhs.include := $(wondermake.fhs)include/
 wondermake.fhs.bin_to_lib := ../lib
 
-$(wondermake.fhs.bin) $(wondermake.fhs.lib): ; mkdir -p $@
+$(wondermake.fhs.bin) $(wondermake.fhs.lib) $(wondermake.fhs.include): ; mkdir -p $@
 
 ###############################################################################
 endif # ifndef wondermake.fhs.included

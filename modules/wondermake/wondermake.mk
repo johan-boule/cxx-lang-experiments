@@ -9,6 +9,7 @@ include $(wondermake.makefile_dir)check_make_version.mk
 include $(wondermake.makefile_dir)utils.mk
 include $(wondermake.makefile_dir)log.mk
 include $(wondermake.makefile_dir)init.mk
+include $(wondermake.makefile_dir)write_iif_content_changed.mk
 include $(wondermake.makefile_dir)fhs.mk
 include $(wondermake.makefile_dir)clean.mk
 

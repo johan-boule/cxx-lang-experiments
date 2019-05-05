@@ -239,7 +239,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     # Rules to preprocess c++ source files (only done on the first make phase)
 
     # Rule to create an output directory
-    $(wondermake.template.scope_dir) $(patsubst %,$(wondermake.template.intermediate_dir)%,$(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))): ; mkdir -p $$@
+    $(wondermake.template.scope_dir) $(wondermake.template.intermediate_dir) $(patsubst %,$(wondermake.template.intermediate_dir)%,$(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))): ; mkdir -p $$@
 
     # Rule to preprocess a c++ source file (the output directory creation is triggered here)
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))

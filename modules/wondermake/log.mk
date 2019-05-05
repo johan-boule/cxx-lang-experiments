@@ -62,7 +62,7 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
   wondermake.info          = $(info        $(call wondermake.maybe_colored_out,$(wondermake.info_style),$1))
   wondermake.info_shell    = printf '%s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style),$1)
 
-  wondermake.notice_style := $(wondermake.term.magenta)$(wondermake.term.bold)
+  wondermake.notice_style := $(wondermake.term.yellow)$(wondermake.term.bold)
   wondermake.notice        = $(info        $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$1))
   wondermake.notice_shell  = printf '%s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.notice_style),$1)
 

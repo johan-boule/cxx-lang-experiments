@@ -5,16 +5,18 @@
 ifndef wondermake.compile_commands.included
 
 ###############################################################################
-# Compilation database (compile_commands.json)
+# Compilation database (a pretentious name given to the dumb file compile_commands.json)
 
 wondermake.default: $(wondermake.bld_dir)compile_commands.json
+
+wondermake.cbase.compile_commands.json := # this is an immediate var
 
 .SECONDEXPANSION:
 $(wondermake.bld_dir)compile_commands.json: $$(wondermake.cbase.compile_commands.json) \
   # ; $(file > $@,[$(wondermake.newline)$(foreach j,$+,$(file < $j)),$(wondermake.newline)]$(wondermake.newline))
 	$(call wondermake.announce,$(@F),$@)
 	@printf '[\n' > $@; \
-	cat $+ >> $@; \
+	$(if $+,cat $+ >> $@;) \
 	printf ']\n' >> $@
 ifndef MAKE_RESTARTS
   wondermake.clean += $(wondermake.bld_dir)compile_commands.json

@@ -8,14 +8,8 @@ ifndef wondermake.init.included
 # Phony targets
 
 .PHONY: wondermake.default wondermake.all
+wondermake.default:
 wondermake.all: wondermake.default
-
-###############################################################################
-# Create accumulator vars as immediate
-
-wondermake.cbase.compile_commands.json := # this is an immediate var
-wondermake.dynamically_generated_makefiles := # this is an immediate var
-wondermake.dynamically_generated_makefiles.included := # this is an immediate var
 
 ###############################################################################
 # Directory under which all derived files are put.
@@ -38,11 +32,11 @@ ifneq '' '$(wondermake.bld_dir)'
   $(wondermake.bld_dir): ; mkdir -p $@
 endif
 
-
 ###############################################################################
-# Staged install dir
+# Create accumulator vars as immediate
 
-wondermake.staged_install := $(wondermake.bld_dir)staged-install/
+wondermake.dynamically_generated_makefiles := # this is an immediate var
+wondermake.dynamically_generated_makefiles.included := # this is an immediate var
 
 ###############################################################################
 endif # ifndef wondermake.init.included
