@@ -167,8 +167,6 @@
 	also verify whether ar supports member pathname or just basename.
 	in any case, creating flat filenames like in wonderbuild would solve it.
 
-*	library dependency: when a dep changes its type from static to shared, we need to relink (see wonderbuild _mod.py).
-
 *	multiple inheritance
 	consider whether this would make for a nicer syntax or not:
 	$(scope).inherit += $(wondermake.cbase.inherit).$(call wondermake.inherit_unique,$(scope),type)
