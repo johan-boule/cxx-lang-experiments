@@ -13,9 +13,6 @@ include $(wondermake.makefile_dir)write_iif_content_changed.mk
 include $(wondermake.makefile_dir)fhs.mk
 include $(wondermake.makefile_dir)clean.mk
 
-$(eval $(call wondermake.write_iif_content_changed_shell,test,$(wondermake.bld_dir)date,date))
-wondermake.default: $(wondermake.bld_dir)date
-
 ###############################################################################
 # Define the main entry point as a function
 # The function is reentrant and supports a modular toolchain inclusion.
