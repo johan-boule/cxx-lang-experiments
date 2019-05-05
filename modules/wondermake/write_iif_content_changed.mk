@@ -63,7 +63,7 @@ define wondermake.write_iif_content_changed_shell.recipe # $1 = scope, # $2 = fi
 	fi
 endef
 
-$(eval $(call wondermake.write_iif_content_changed_shell,test,date,date))
+$(info $(call wondermake.write_iif_content_changed_shell,test,date,date))
 wondermake.default: $(wondermake.bld_dir)date
 
 ###############################################################################
