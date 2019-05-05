@@ -238,7 +238,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     : ; mkdir -p $$@
 
     # Rule to preprocess a c++ source file (the output directory creation is triggered here)
-    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
+    $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
     $(foreach src,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files),
       $(wondermake.template.intermediate_dir)$(src).ii: \
         $(if $(findstring / /,/ $(src)),$(src),$(wondermake.template.src_dir)$(src)) \
@@ -275,7 +275,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
   $(if $(wondermake.template.external_mxx_files)$(wondermake.template.mxx_files),
     # Rule to precompile a c++ source file to a binary module interface file
-    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),mxx_command,$$(call wondermake.cbase.mxx_command,$(wondermake.template.scope)))
+    $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),mxx_command,$$(call wondermake.cbase.mxx_command,$(wondermake.template.scope)))
     $(foreach mxx,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files),
       $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix): \
         $(wondermake.template.intermediate_dir)$(mxx).ii \
@@ -293,10 +293,10 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     )
   )
 
-  $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),type,$(wondermake.template.type))
+  $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),type,$(wondermake.template.type))
   $(if $(call wondermake.equals,headers,$(wondermake.template.type)),,
     # Rule to compile a c++ source file to an object file
-    $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
+    $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
     $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope_dir)cxx_command | %.ii.d # if .d failed to build, don't continue
 		$$(call wondermake.announce,$(wondermake.template.scope),compile $$<,to $$@)
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cxx_command))
@@ -310,12 +310,12 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
     $(if $(call wondermake.equals,objects,$(wondermake.template.type)),,
       # Rule to trigger relinking or dearchiving when a source file (and hence its derived object file) is removed
-      $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),obj_files,$(wondermake.template.obj_files))
+      $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),obj_files,$(wondermake.template.obj_files))
       $(wondermake.template.out_files): $(wondermake.template.scope_dir)obj_files
 
       $(if $(call wondermake.equals,static_lib,$(wondermake.template.type)),
         # Rule to update object files in an archive
-        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope)))
+        $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope)))
         $(wondermake.template.out_files): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ar_command | $(dir $(wondermake.template.out_files))
 			$$(eval $$@.object_files := \
 				$$(filter $$($(wondermake.template.scope).obj_files), \
@@ -335,7 +335,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         )
 
       , # Rule to link object files and produce an executable or shared library file
-        $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
+        $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
         $(firstword $(wondermake.template.out_files)): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.out_files))
 			$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$($(wondermake.template.scope).obj_files))
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).ld_command))
