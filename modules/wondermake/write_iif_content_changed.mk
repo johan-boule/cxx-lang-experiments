@@ -38,13 +38,17 @@ define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = 
 	$(eval undefine $1.$2.old)
 endef
 
-define wondermake.write_iif_content_changed_shell # $1 = scope, # $2 = file, $3 = value
-  $(wondermake.bld_dir)$2: wondermake.force | $(wondermake.bld_dir)
+###############################################################################
+# Write the result of a given shell expression to a file only when the result differs from the content of the existing file,
+# thereby preserving file timestamp if result has not changed. The file can then be used as a rule prerequisite.
+
+define wondermake.write_iif_content_changed_shell # $1 = announce, # $2 = file, $3 = value
+  $(wondermake.bld_dir)$2: wondermake.force | $(dir $(wondermake.bld_dir)$2)
 	$$(call wondermake.write_iif_content_changed_shell.recipe,$1,$2,$3)
   wondermake.clean += $(wondermake.bld_dir)$2
 endef
 
-define wondermake.write_iif_content_changed_shell.recipe # $1 = scope, # $2 = file, $3 = value
+define wondermake.write_iif_content_changed_shell.recipe # $1 = announce, # $2 = file, $3 = value
 	@set -e && \
 	new=$$($3); \
 	if test "$$new" = "$$(cat $@ 2>/dev/null)"; \
@@ -63,7 +67,7 @@ define wondermake.write_iif_content_changed_shell.recipe # $1 = scope, # $2 = fi
 	fi
 endef
 
-$(info $(call wondermake.write_iif_content_changed_shell,test,date,date))
+$(eval $(call wondermake.write_iif_content_changed_shell,test,date,date))
 wondermake.default: $(wondermake.bld_dir)date
 
 ###############################################################################
