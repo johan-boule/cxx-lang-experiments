@@ -75,16 +75,8 @@ endef
 # First loop: stores extra computed variables in the scopes
 
 define wondermake.cbase.template.first_loop
-  wondermake.default: $(wondermake.template.scope)
-
   wondermake.template.name := $(or $($(wondermake.template.scope).name),$(wondermake.template.scope))
   $(wondermake.template.scope).name := $(wondermake.template.name)
-
-  # If scope has a name attribute that is different from the scope variable name itself
-  ifneq '$(wondermake.template.scope)' '$(wondermake.template.name)'
-    .PHONY: $(wondermake.template.scope)
-    $(wondermake.template.scope): $(wondermake.template.name)
-  endif
 
   wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
   wondermake.template.type := $(or $(call wondermake.inherit_unique,$(wondermake.template.scope),default_type[$(wondermake.template.type)]),$(wondermake.template.type))
@@ -102,15 +94,13 @@ define wondermake.cbase.template.first_loop
         $(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix[$(call wondermake.inherit_unique,$(wondermake.template.scope),lang)])))))
   $(wondermake.template.scope).mxx_files := $(wondermake.template.mxx_files)
 
-  wondermake.template.scope_dir := $(wondermake.bld_dir)scopes/$(wondermake.template.scope)/
+  wondermake.template.scope_dir := $(wondermake.scopes_dir)$(wondermake.template.scope)/
   $(wondermake.template.scope).scope_dir := $(wondermake.template.scope_dir)
 
   wondermake.template.intermediate_dir := $(wondermake.template.scope_dir)intermediate/
   $(wondermake.template.scope).intermediate_dir := $(wondermake.template.intermediate_dir)
 
-  ifeq 'headers' '$(wondermake.template.type)'
-    .PHONY: $(wondermake.template.name)
-  else
+  ifneq 'headers' '$(wondermake.template.type)'
     wondermake.template.cxx_files := $(patsubst $(wondermake.template.src_dir)%,%, \
       $(shell find $(addprefix $(wondermake.template.src_dir),$($(wondermake.template.scope).src)) \
         -name '' \
@@ -129,17 +119,11 @@ define wondermake.cbase.template.first_loop
     ifeq 'objects' '$(wondermake.template.type)'
       # No link nor archive step: target is just the list of object files
       wondermake.template.out_files := $(wondermake.template.obj_files)
-      .PHONY: $(wondermake.template.name)
-      $(wondermake.template.name): $(wondermake.template.out_files)
     else # There is a link or archive step
       wondermake.template.out_files := \
         $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[$(wondermake.template.type)]),$(wondermake.template.name))
-      # If the platform has any prefix or suffix added to the binary file name
-      ifneq '$(wondermake.template.name)' '$(wondermake.template.out_files)'
-        .PHONY: $(wondermake.template.name)
-        $(wondermake.template.name): $(wondermake.template.out_files)
-      endif
       ifeq 'shared_lib' '$(wondermake.template.type)'
+        # Some platform has an import lib as a by-product
         wondermake.template.out_files += \
           $(patsubst %,$(call wondermake.inherit_unique,$(wondermake.template.scope),out_file_pattern[import_lib]),$(wondermake.template.name))
       endif
@@ -237,6 +221,12 @@ endef
 # Define the template rules with recipes that have the temporary loop variables evaluated
 
 define wondermake.cbase.template.rules_with_evaluated_recipes
+  wondermake.default: $(wondermake.template.scope)
+  $(if $(call wondermake.equals,$(wondermake.template.scope),$(wondermake.template.out_files)),,
+    .PHONY: $(wondermake.template.scope)
+    $(wondermake.template.scope): $(wondermake.template.out_files)
+  )
+
   $(if $(MAKE_RESTARTS),, # only do this on the first make phase
     # Rules to preprocess c++ source files (only done on the first make phase)
 
@@ -353,6 +343,11 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(eval undefine $$@.evaluable_command)
         $(if $(MAKE_RESTARTS),, # only do this on the first make phase
           wondermake.clean += $(wondermake.template.out_files)
+        )
+
+        $(if $(call wondermake.equals,1,$(words $(wondermake.template.out_files))),,
+          # Some platform has an import lib as a by-product
+          $(wordlist 1,$(words $(wondermake.template.out_files)),$(wondermake.template.out_files)): $(firstword $(wondermake.template.out_files))
         )
 
         # Library dependencies

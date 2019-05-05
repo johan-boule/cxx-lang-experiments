@@ -25,7 +25,7 @@ wondermake.clean:
 ifndef MAKE_RESTARTS # only do this on the first make phase
   wondermake.default: $(wondermake.bld_dir)wondermake.auto-clean
   $(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_dir) # new way S(file < S@)
-	$(eval $@.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null)))
+	$(eval $@.old := $(shell cat $@ 2>/dev/null))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
 		$(if $(wondermake.verbose),$(call wondermake.announce,auto-clean,,no change)) \

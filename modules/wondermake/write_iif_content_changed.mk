@@ -9,7 +9,7 @@ ifndef wondermake.write_iif_content_changed.included
 # thereby preserving file timestamp if value has not changed. The file can then be used as a rule prerequisite.
 
 define wondermake.write_iif_content_changed # $1 = scope, $2 = var, $3 = value
-  $(wondermake.bld_dir)scopes/$1/$2: wondermake.force | $(wondermake.bld_dir)scopes/$1/
+  $(wondermake.scopes_dir)$1/$2: wondermake.force | $(wondermake.scopes_dir)$1/
 	$$(call wondermake.write_iif_content_changed.recipe,$1,$2,$3)
   wondermake.clean += $(wondermake.bld_dir)scopes/$1/$2
 endef

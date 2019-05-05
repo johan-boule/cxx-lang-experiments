@@ -32,6 +32,8 @@ ifneq '' '$(wondermake.bld_dir)'
   $(wondermake.bld_dir): ; mkdir -p $@
 endif
 
+wondermake.scopes_dir := $(wondermake.bld_dir)wondermake.scopes/
+
 ###############################################################################
 # Create accumulator vars as immediate
 
