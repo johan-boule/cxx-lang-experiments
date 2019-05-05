@@ -88,7 +88,7 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		if test -e $@; \
 		then \
 			$(call wondermake.notice_shell,changed:); \
-			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new" | $$(command -v wdiff || diff -y -W$$(tput cols)) $@ -$(if $(MAKE_TERMOUT), | $$(command -v colordiff || cat))); \
+			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new" $(wondermake.diff)); \
 		else \
 			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new"); \
 		fi; \
@@ -118,7 +118,7 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		if test -e $@; \
 		then \
 			$(call wondermake.notice_shell,changed:); \
-			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new" | $$(command -v wdiff || diff -y -W$$(tput cols)) $@ -$(if $(MAKE_TERMOUT), | $$(command -v colordiff || cat))); \
+			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new" $(wondermake.diff)); \
 		else \
 			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new"); \
 		fi; \

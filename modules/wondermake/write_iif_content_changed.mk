@@ -24,11 +24,24 @@ define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = 
 		$(if $(wondermake.verbose),$(call wondermake.announce,$1,compare $2,no change)) \
 	, \
 		$(call wondermake.announce,$1,compare $2) \
-		$(call wondermake.notice,- $(filter-out $($1.$2),$($1.$2.old))$(wondermake.newline)+ $(filter-out $($1.$2.old),$($1.$2))) \
-		$(file > $@,$($1.$2)) \
+		@if test -e $@; \
+		then \
+			$(call wondermake.notice_shell,changed:- $(filter-out $($1.$2),$($1.$2.old))); \
+			$(call wondermake.notice_shell,changed:+ $(filter-out $($1.$2.old),$($1.$2))); \
+			$(call wondermake.if_not_silent_shell,printf '%s\n' '$($1.$2)' $(wondermake.diff)); \
+		else \
+			$(call wondermake.if_not_silent_shell,printf '%s\n' '$($1.$2)'); \
+		fi; \
+		printf '%s\n' '$($1.$2)' > $@ \
 	)
 	$(eval undefine $1.$2.old)
 endef
 
 ###############################################################################
+# A shell pipe to show diff between $@ and standard input
+wondermake.diff = | $$(command -v wdiff -n || diff -y -W$$(tput cols)) $@ -$(if $(MAKE_TERMOUT), | $$(command -v colordiff || cat))
+
+###############################################################################
 endif # ifndef wondermake.write_iif_content_changed.included
+
+xxxxxxxxxxxxxxx = $(shellx printf '%s\n' '$($1.$2)';)
