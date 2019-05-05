@@ -8,16 +8,18 @@ ifndef wondermake.write_iif_content_changed.included
 # Write a given scope variable to a file only when the var value differs from the content of the existing file,
 # thereby preserving file timestamp if value has not changed. The file can then be used as a rule prerequisite.
 
-define wondermake.write_iif_content_changed # $1 = scope, $2 = var, $3 = expression to evaluate
+define wondermake.write_iif_content_changed # $1 = scope, $2 = var, $3 = value
   $(wondermake.bld_dir)scopes/$1/$2: wondermake.force | $(wondermake.bld_dir)scopes/$1/
 	$$(call wondermake.write_iif_content_changed.recipe,$1,$2,$3)
   wondermake.clean += $(wondermake.bld_dir)scopes/$1/$2
 endef
 
 # new way S(file < S@)
-define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = expression to evaluate
-	$(eval $1.$2 := $(subst $$,$$$$,$3))
-	$(eval $1.$2.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null)))
+define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = value
+	$(eval
+		$1.$2 := $(subst $$,$$$$,$3)
+		$1.$2.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null))
+	)
 	$(if $(call wondermake.equals,$($1.$2),$($1.$2.old)), \
 		$(if $(wondermake.verbose),$(call wondermake.announce,$1,compare $2,no change)) \
 	, \

@@ -8,7 +8,7 @@ ifndef wondermake.cbase.template.included
 # Function that executes the template for each user-declared scope that's using the cbase toolchain
 
 define wondermake.cbase.template.loop
-  wondermake.cbase.scopes_to_process := $(strip \
+  wondermake.template.scopes_to_process := $(strip \
     $(foreach wondermake.template.scope,$(wondermake), \
       $(if $(call wondermake.equals,cbase,$(call wondermake.inherit_unique,$(wondermake.template.scope),toolchain)), \
         $(if $($(wondermake.template.scope).processed),, \
@@ -20,35 +20,37 @@ define wondermake.cbase.template.loop
     $(info ###############################################################################)
     $(info ###############################################################################)
     $(info ###############################################################################)
-    $(info # wondermake cbase begin of template execution for scopes)
-    $(info # $(wondermake.cbase.scopes_to_process))
+    $(info # wondermake cbase begin of template execution)
+    $(info # scopes: $(wondermake.template.scopes_to_process))
     $(info )
   endif
 
   # A first loop stores extra computed variables in the scopes
-  $(foreach wondermake.template.scope,$(wondermake.cbase.scopes_to_process), \
+  $(foreach wondermake.template.scope,$(wondermake.template.scopes_to_process), \
     $(if $(filter template,$(wondermake.verbose)), \
       $(info ) \
       $(info ###############################################################################) \
       $(info ###############################################################################) \
       $(info ###############################################################################) \
-      $(info # wondermake cbase template execution, first loop, for scope) \
-      $(info # $(wondermake.template.scope)) \
+      $(info # wondermake cbase template execution) \
+      $(info # first loop) \
+      $(info # scope: $(wondermake.template.scope)) \
       $(info ) \
-	  $(info $(wondermake.cbase.template.first_loop)) \
+      $(info $(wondermake.cbase.template.first_loop)) \
     ) \
     $(eval $(value wondermake.cbase.template.first_loop)) \
   )
 
   # A second loop generates the rules
-  $(foreach wondermake.template.scope,$(wondermake.cbase.scopes_to_process),\
+  $(foreach wondermake.template.scope,$(wondermake.template.scopes_to_process),\
     $(if $(filter template,$(wondermake.verbose)), \
       $(info ) \
       $(info ###############################################################################) \
       $(info ###############################################################################) \
       $(info ###############################################################################) \
-      $(info # wondermake cbase template execution, second loop, for scope) \
-      $(info # $(wondermake.template.scope)) \
+      $(info # wondermake cbase template execution) \
+      $(info # second loop) \
+      $(info # scope: $(wondermake.template.scope)) \
       $(info ) \
     ) \
     $(eval $(value wondermake.cbase.template.second_loop)) \
@@ -58,15 +60,15 @@ define wondermake.cbase.template.loop
 
   ifneq '' '$(filter template,$(wondermake.verbose))'
     $(info )
-    $(info # wondermake cbase end of template execution for scopes)
-    $(info # $(wondermake.cbase.scopes_to_process))
+    $(info # wondermake cbase end of template execution)
+    $(info # scopes: $(wondermake.template.scopes_to_process))
     $(info ###############################################################################)
     $(info ###############################################################################)
     $(info ###############################################################################)
     $(info )
   endif
 
-  undefine wondermake.cbase.scopes_to_process
+  undefine wondermake.template.scopes_to_process
 endef
 
 ###############################################################################
@@ -86,7 +88,6 @@ define wondermake.cbase.template.first_loop
 
   wondermake.template.type := $(call wondermake.inherit_unique,$(wondermake.template.scope),type)
   wondermake.template.type := $(or $(call wondermake.inherit_unique,$(wondermake.template.scope),default_type[$(wondermake.template.type)]),$(wondermake.template.type))
-  $(eval $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),type,$(wondermake.template.type)))
   $(wondermake.template.scope).type := $(wondermake.template.type)
 
   wondermake.template.src_dir := $(call wondermake.inherit_unique,$(wondermake.template.scope),src_dir)
@@ -163,15 +164,15 @@ endef
 # Second loop: generates the rules
 
 define wondermake.cbase.template.second_loop
-  $(eval $(value wondermake.cbase.template.define_vars))
   ifneq '' '$(filter template,$(wondermake.verbose))'
     $(info $(wondermake.cbase.template.define_vars))
   endif
+  $(eval $(value wondermake.cbase.template.define_vars))
 
-  $(eval $(wondermake.cbase.template.rules_with_evaluated_recipes))
   ifneq '' '$(filter template,$(wondermake.verbose))'
     $(info $(wondermake.cbase.template.rules_with_evaluated_recipes))
   endif
+  $(eval $(wondermake.cbase.template.rules_with_evaluated_recipes))
 
   $(eval $(value wondermake.cbase.template.undefine_vars))
 
@@ -302,6 +303,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     )
   )
 
+  $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),type,$(wondermake.template.type))
   $(if $(call wondermake.equals,headers,$(wondermake.template.type)),,
     # Rule to compile a c++ source file to an object file
     $(call wondermake.write_iif_content_changed,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
