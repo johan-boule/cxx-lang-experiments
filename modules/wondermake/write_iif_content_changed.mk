@@ -14,9 +14,10 @@ define wondermake.write_iif_content_changed # $1 = scope, $2 = var, $3 = express
   wondermake.clean += $(wondermake.bld_dir)scopes/$1/$2
 endef
 
+# new way S(file < S@)
 define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = expression to evaluate
 	$(eval $1.$2 := $(subst $$,$$$$,$3))
-	$(eval $1.$2.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null))) # new way $(file < $@)
+	$(eval $1.$2.old := $(subst $$,$$$$,$(shell cat $@ 2>/dev/null)))
 	$(if $(call wondermake.equals,$($1.$2),$($1.$2.old)), \
 		$(if $(wondermake.verbose),$(call wondermake.announce,$1,compare $2,no change)) \
 	, \
