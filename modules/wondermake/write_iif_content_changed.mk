@@ -11,7 +11,7 @@ ifndef wondermake.write_iif_content_changed.included
 define wondermake.write_iif_content_changed # $1 = scope, $2 = var, $3 = value
   $(wondermake.scopes_dir)$1/$2: wondermake.force | $(wondermake.scopes_dir)$1/
 	$$(call wondermake.write_iif_content_changed.recipe,$1,$2,$3)
-  wondermake.clean += $(wondermake.bld_dir)scopes/$1/$2
+  wondermake.clean += $(wondermake.scopes_dir)$1/$2
 endef
 
 # new way S(file < S@)
@@ -24,7 +24,8 @@ define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = 
 		$(if $(wondermake.verbose),$(call wondermake.announce,$1,compare $2,no change)) \
 	, \
 		$(call wondermake.announce,$1,compare $2) \
-		@if test -e $@; \
+		@set -e && \
+		if test -e $@; \
 		then \
 			$(call wondermake.notice_shell,"'changed:- $(filter-out $($1.$2),$($1.$2.old))'"); \
 			$(call wondermake.notice_shell,"'changed:+ $(filter-out $($1.$2.old),$($1.$2))'"); \
@@ -36,6 +37,34 @@ define wondermake.write_iif_content_changed.recipe # $1 = scope, $2 = var, $3 = 
 	)
 	$(eval undefine $1.$2.old)
 endef
+
+define wondermake.write_iif_content_changed_shell # $1 = scope, # $2 = file, $3 = value
+  $(wondermake.bld_dir)$2: wondermake.force | $(wondermake.bld_dir)
+	$$(call wondermake.write_iif_content_changed_shell.recipe,$1,$2,$3)
+  wondermake.clean += $(wondermake.bld_dir)$2
+endef
+
+define wondermake.write_iif_content_changed_shell.recipe # $1 = scope, # $2 = file, $3 = value
+	@set -e && \
+	new=$$($3); \
+	if test "$$new" = "$$(cat $@ 2>/dev/null)"; \
+	then \
+		$(if $(wondermake.verbose),$(call wondermake.announce_shell,$1,compare $@,no change),:); \
+	else \
+		$(call wondermake.announce_shell,$1,compare $@); \
+		if test -e $@; \
+		then \
+			$(call wondermake.notice_shell,changed:); \
+			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new" $(wondermake.diff)); \
+		else \
+			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new"); \
+		fi; \
+		printf '%s\n' "$$new" > $@; \
+	fi
+endef
+
+$(eval $(call wondermake.write_iif_content_changed_shell,test,date,date))
+wondermake.default: $(wondermake.bld_dir)date
 
 ###############################################################################
 # A shell pipe to show diff between $@ and standard input
