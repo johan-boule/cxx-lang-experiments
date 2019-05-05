@@ -4,7 +4,7 @@
 dummy.define := DUMMY_DEFINE=demo
 dummy.undefine := DUMMY_DEFINE
 dummy.libs := m dl
-dummy.pkg_config := zlib
+#dummy.pkg_config := zlib
 dummy.cxx_flags := #-pthreads
 dummy.ld_flags := #-pthreads
 
