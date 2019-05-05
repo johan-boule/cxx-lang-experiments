@@ -16,8 +16,8 @@ $(wondermake.bld_dir)compile_commands.json: $$(wondermake.cbase.compile_commands
   # ; $(file > $@,[$(wondermake.newline)$(foreach j,$+,$(file < $j)),$(wondermake.newline)]$(wondermake.newline))
 	$(call wondermake.announce,$(@F),$@)
 	@printf '[\n' > $@; \
-	$(if $+,cat $+ >> $@;) \
-	printf ']\n' >> $@
+	$(if $+,printf '%s ' $+ | xargs cat | head -q -c-2 >> $@;) \
+	printf '\n]\n' >> $@
 ifndef MAKE_RESTARTS
   wondermake.clean += $(wondermake.bld_dir)compile_commands.json
 endif
