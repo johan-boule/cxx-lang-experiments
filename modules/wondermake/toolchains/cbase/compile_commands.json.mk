@@ -9,15 +9,16 @@ ifndef wondermake.compile_commands.included
 
 wondermake.default: $(wondermake.bld_dir)compile_commands.json
 
+wondermake.cbase.compile_commands := # this is an immediate var
 wondermake.cbase.compile_commands.json := # this is an immediate var
 
 .SECONDEXPANSION:
-$(wondermake.bld_dir)compile_commands.json: $$(wondermake.cbase.compile_commands.json) \
-  # ; $(file > $@,[$(wondermake.newline)$(foreach j,$+,$(file < $j)),$(wondermake.newline)]$(wondermake.newline))
+$(wondermake.bld_dir)compile_commands.json: $$(wondermake.cbase.compile_commands) | $$(wondermake.cbase.compile_commands.json)
 	$(call wondermake.announce,$(@F),$@)
 	@printf '[\n' > $@; \
-	$(if $+,printf '%s ' $+ | xargs cat | head -q -c-2 >> $@;) \
+	$(if $|,printf '%s ' $| | xargs cat | head -q -c-2 >> $@;) \
 	printf '\n]\n' >> $@
+# $(file > $@,[$(wondermake.newline)$(foreach j,$|,$(file < $j))]$(wondermake.newline))
 ifndef MAKE_RESTARTS
   wondermake.clean += $(wondermake.bld_dir)compile_commands.json
 endif

@@ -270,6 +270,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
     wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
   )
+  wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cpp_command
   wondermake.cbase.compile_commands.json += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
   wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
 
@@ -289,6 +290,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix)
         wondermake.clean += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
       )
+      wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)mxx_command
       wondermake.cbase.compile_commands.json += $(wondermake.template.intermediate_dir)$(basename $(mxx)).$(wondermake.template.bmi_suffix).compile_commands.json
     )
   )
@@ -306,14 +308,19 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
       wondermake.clean += $(wondermake.template.obj_files)
       wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
     )
+    wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cxx_command
     wondermake.cbase.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
 
     $(if $(call wondermake.equals,objects,$(wondermake.template.type)),,
+      # There is a link or archive step
+
       # Rule to trigger relinking or dearchiving when a source file (and hence its derived object file) is removed
       $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),obj_files,$(wondermake.template.obj_files))
       $(wondermake.template.out_files): $(wondermake.template.scope_dir)obj_files
 
       $(if $(call wondermake.equals,static_lib,$(wondermake.template.type)),
+        # Static lib archive
+
         # Rule to update object files in an archive
         $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope)))
         $(wondermake.template.out_files): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ar_command | $(dir $(wondermake.template.out_files))
@@ -330,21 +337,18 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ar_flags_unsigned),$$($$@.object_files))
 			$$(eval undefine $$@.evaluable_command)
 			$$(eval undefine $$@.object_files)
-        $(if $(MAKE_RESTARTS),, # only do this on the first make phase
-          wondermake.clean += $(wondermake.template.out_files)
-        )
 
-      , # Rule to link object files and produce an executable or shared library file
+      , # Shared lib or loadable module
+
+        # Rule to link object files and produce an executable or shared library file
         $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
         $(firstword $(wondermake.template.out_files)): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.out_files))
 			$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$($(wondermake.template.scope).obj_files))
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).ld_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ld_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
-        $(if $(MAKE_RESTARTS),, # only do this on the first make phase
-          wondermake.clean += $(wondermake.template.out_files)
-        )
 
+        # Multi-output rule
         $(if $(call wondermake.equals,1,$(words $(wondermake.template.out_files))),,
           # Some platform has an import lib as a by-product
           $(wordlist 1,$(words $(wondermake.template.out_files)),$(wondermake.template.out_files)): $(firstword $(wondermake.template.out_files))
@@ -362,6 +366,10 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         $(wondermake.template.scope).libs := $($(wondermake.template.scope).libs) \
           $(foreach d,$(wondermake.template.deep_deps),$(if $(filter-out headers objects,$($d.type)),$($d.name)))
         $(eval undefine wondermake.template.deep_deps)
+      )
+
+      $(if $(MAKE_RESTARTS),, # only do this on the first make phase
+        wondermake.clean += $(wondermake.template.out_files)
       )
     )
   )
