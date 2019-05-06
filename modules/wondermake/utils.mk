@@ -22,7 +22,7 @@ define wondermake.newline
 endef
 
 ###############################################################################
-# The comma character (useful in call statements when you want to pass a message literal that contains a comma)
+# The comma character (useful in function calls when you want to pass a literal comma)
 wondermake.comma := ,
 
 ###############################################################################
