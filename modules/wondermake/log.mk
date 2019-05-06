@@ -88,12 +88,12 @@ else # Be quiet. We need a no-op definition for the shell, because these calls m
 endif
 
 wondermake.warning_style := $(wondermake.term.bold)$(wondermake.term.yellow)
-wondermake.warning        = $(warning     $(call wondermake.maybe_colored_err,$(wondermake.warning_style),$1))
-wondermake.warning_shell  = printf '%s\n' $(call wondermake.maybe_colored_err_shell,$(wondermake.warning_style),$1) 1>&2
+wondermake.warning        = $(warning     $(call wondermake.maybe_colored_err,$(wondermake.warning_style),warning: $1))
+wondermake.warning_shell  = printf '%s\n' $(call wondermake.maybe_colored_err_shell,$(wondermake.warning_style),warning: $1) 1>&2
 
 wondermake.error_style   := $(wondermake.term.bold)$(wondermake.term.red)
-wondermake.error          = $(error       $(call wondermake.maybe_colored_err,$(wondermake.error_style),$1))
-wondermake.error_shell    = printf '%s\n' $(call wondermake.maybe_colored_err_shell,$(wondermake.error_style),$1) 1>&2; false
+wondermake.error          = $(error       $(call wondermake.maybe_colored_err,$(wondermake.error_style),error: $1))
+wondermake.error_shell    = printf '%s\n' $(call wondermake.maybe_colored_err_shell,$(wondermake.error_style),error: $1) 1>&2; false
 
 ifdef MAKE_RESTARTS
   $(call wondermake.announce,make restarts)

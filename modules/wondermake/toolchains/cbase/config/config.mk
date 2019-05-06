@@ -34,8 +34,8 @@ wondermake.cbase.default_type[lib]        := shared_lib
 
 ifndef MAKE_RESTARTS # only do this on the first make phase
   # This rule is done only on first build or when changes in the env are detected.
-  $(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9 # First version with ISO C++ module TS support
-  $(wondermake.bld_dir)wondermake.cbase.configure: clang_min_required_version := 6 # First version with ISO C++ module TS support
+  $(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9# First version with ISO C++ module TS support
+  $(wondermake.bld_dir)wondermake.cbase.configure: clang_min_required_version := 6# First version with ISO C++ module TS support
   $(wondermake.bld_dir)wondermake.cbase.configure: $(wondermake.bld_dir)wondermake.cbase.toolchain | $(wondermake.bld_dir)
 		$(call wondermake.cbase.config[unix_elf_clang].check_toolchain_version,$(clang_min_required_version))
 		@touch $@
