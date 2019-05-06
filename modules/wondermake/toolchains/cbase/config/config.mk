@@ -59,25 +59,25 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		"	gcc: $$(gcc_min_required_version)" \
 		"	clang: $$(clang_min_required_version)" \
 		"cxx env:" \
-			"	CPATH=$$(CPATH)" \
-			"	CPLUS_INCLUDE_PATH=$$(CPLUS_INCLUDE_PATH)" \
-			"	C_INCLUDE_PATH=$$(C_INCLUDE_PATH)" \
+		"	CPATH=$$(CPATH)" \
+		"	CPLUS_INCLUDE_PATH=$$(CPLUS_INCLUDE_PATH)" \
+		"	C_INCLUDE_PATH=$$(C_INCLUDE_PATH)" \
 		"ld env:" \
-			"	GNUTARGET=$$(GNUTARGET)" \
-			"	LDEMULATION=$$(LDEMULATION)" \
-			"	COLLECT_NO_DEMANGLE=$$(COLLECT_NO_DEMANGLE)" \
-			"	native-elf (linux/solaris):" \
-			"		LD_RUN_PATH=$$(LD_RUN_PATH)" \
-			"		DT_RUNPATH=$$(DT_RUNPATH)" \
-			"		DT_RPATH=$$(DT_RPATH)" \
+		"	GNUTARGET=$$(GNUTARGET)" \
+		"	LDEMULATION=$$(LDEMULATION)" \
+		"	COLLECT_NO_DEMANGLE=$$(COLLECT_NO_DEMANGLE)" \
+		"	native-elf (linux/solaris):" \
+		"		LD_RUN_PATH=$$(LD_RUN_PATH)" \
+		"		DT_RUNPATH=$$(DT_RUNPATH)" \
+		"		DT_RPATH=$$(DT_RPATH)" \
 		"pkg-config env:" \
-			"	PKG_CONFIG_PATH=$$(PKG_CONFIG_PATH)" \
-			"	PKG_CONFIG_LIBDIR=$$(PKG_CONFIG_LIBDIR)" \
-			"	PKG_CONFIG_DISABLE_UNINSTALLED=$$(PKG_CONFIG_DISABLE_UNINSTALLED)" \
-			"	PKG_CONFIG_TOP_BUILD_DIR=$$(PKG_CONFIG_TOP_BUILD_DIR)" \
-			"	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=$$(PKG_CONFIG_ALLOW_SYSTEM_CFLAGS)" \
-			"	PKG_CONFIG_ALLOW_SYSTEM_LIBS=$$(PKG_CONFIG_ALLOW_SYSTEM_LIBS)" \
-			"	PKG_CONFIG_SYSROOT_DIR=$$(PKG_CONFIG_SYSROOT_DIR)" \
+		"	PKG_CONFIG_PATH=$$(PKG_CONFIG_PATH)" \
+		"	PKG_CONFIG_LIBDIR=$$(PKG_CONFIG_LIBDIR)" \
+		"	PKG_CONFIG_DISABLE_UNINSTALLED=$$(PKG_CONFIG_DISABLE_UNINSTALLED)" \
+		"	PKG_CONFIG_TOP_BUILD_DIR=$$(PKG_CONFIG_TOP_BUILD_DIR)" \
+		"	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=$$(PKG_CONFIG_ALLOW_SYSTEM_CFLAGS)" \
+		"	PKG_CONFIG_ALLOW_SYSTEM_LIBS=$$(PKG_CONFIG_ALLOW_SYSTEM_LIBS)" \
+		"	PKG_CONFIG_SYSROOT_DIR=$$(PKG_CONFIG_SYSROOT_DIR)" \
   ))
 
   # Note: LIBRARY_PATH used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO
