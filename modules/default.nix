@@ -11,9 +11,9 @@ derivation {
 		set -eux &&
 		export PATH="$gnumake/bin:$coreutils/bin:$findutils/bin:$gnused/bin:$clang/bin:$patchelf/bin:$binutils/bin:$pkg_config/bin"
 		make -f $src/GNUmakefile -j$NIX_BUILD_CORES -O
-		mv hello_world/bin/hello $out
-		patchelf --shrink-rpath $out
-		strip -s $out
+		mv staged-install $out
+		patchelf --shrink-rpath $out/bin/* $out/lib/*.so # TODO doesn't handle $ORIGIN !!!
+		strip -s $out/bin/* $out/lib/*
 	'' ];
 	system = builtins.currentSystem;
 }
