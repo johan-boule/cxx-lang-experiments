@@ -38,7 +38,7 @@ ifdef MAKE_TERMOUT
   wondermake.maybe_colored_out_shell = '$1'"$2"'$(wondermake.term.0)' # $1 = set color, $2 = message
 else
   wondermake.maybe_colored_out       = $2
-  wondermake.maybe_colored_out_shell = $2
+  wondermake.maybe_colored_out_shell = "$2"
 endif
 
 ifdef MAKE_TERMERR
@@ -46,7 +46,7 @@ ifdef MAKE_TERMERR
   wondermake.maybe_colored_err_shell = '$1'"$2"'$(wondermake.term.0)' # $1 = set color, $2 = message
 else
   wondermake.maybe_colored_err       = $2
-  wondermake.maybe_colored_err_shell = $2
+  wondermake.maybe_colored_err_shell = "$2"
 endif
 
 # If the wondermake.verbose var is set or make is not in silent mode
