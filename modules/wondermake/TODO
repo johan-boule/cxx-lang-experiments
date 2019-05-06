@@ -166,6 +166,7 @@
 *	batch compilation.
 	also verify whether ar supports member pathname or just basename.
 	in any case, creating flat filenames like in wonderbuild would solve it.
+	=> confirmed ar is borked and doesn't store path.
 
 *	multiple inheritance
 	consider whether this would make for a nicer syntax or not:
