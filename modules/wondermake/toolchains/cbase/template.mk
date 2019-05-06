@@ -71,8 +71,8 @@ define wondermake.cbase.template.loop
   undefine wondermake.template.scopes_to_process
 endef
 
-wondermake.flatten_path = $(subst ..,_,$(subst /,$(wondermake.comma),$1))
 wondermake.flatten_path = $1
+wondermake.flatten_path = $(subst ..,_,$(subst /,!,$1))
 
 ###############################################################################
 # First loop: stores extra computed variables in the scopes
@@ -249,7 +249,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         $(if $(findstring / /,/ $(src)),$(src),$(wondermake.template.src_dir)$(src)) \
         $(wondermake.bld_dir)wondermake.cbase.configure \
         $(wondermake.template.scope_dir)cpp_command \
-        | $(dir $(wondermake.template.intermediate_dir)$(src))
+        | $(dir $(wondermake.template.intermediate_dir)$(call wondermake.flatten_path,$(src)))
 			$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@)
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cpp_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cpp_flags_unsigned))
@@ -272,8 +272,8 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
     )
     wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
-    wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
-    wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files))
+    wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii,$(call wondermake.flatten_path,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))
+    wondermake.clean += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(call wondermake.flatten_path,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))
   )
   wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cpp_command
   wondermake.cbase.compile_commands.json += $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.compile_commands.json,$(call wondermake.flatten_path,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))
