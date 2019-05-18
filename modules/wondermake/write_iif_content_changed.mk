@@ -80,7 +80,7 @@ endef
 
 ###############################################################################
 # A shell pipe to show diff between $@ and standard input
-wondermake.diff = | $$(command -v wdiff 1>/dev/null && echo wdiff -n || echo diff -y -W$$(tput cols)) $@ - $(if $(MAKE_TERMOUT), | $$(command -v colordiff || echo cat))
+wondermake.diff = | $$(command -v wdiff 1>/dev/null && echo wdiff -n || echo diff -y -W$$(tput cols)) $@ - $(if $(MAKE_TERMOUT), | $$(command -v colordiff 1>/dev/null && echo colordiff --color=yes || echo cat))
 
 ###############################################################################
 endif # ifndef wondermake.write_iif_content_changed.included
