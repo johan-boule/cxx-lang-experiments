@@ -57,8 +57,8 @@ define wondermake.cbase.mxx_command # $1 = scope, $$1 = unsigned flags, $(module
   $$<
 endef
 
-# Command to compile a c++ source file to an object file, $$1 = unsigned flags
-define wondermake.cbase.cxx_command # $1 = scope, $(module_map) is a var private to the object file rule (see .d files)
+# Command to compile a c++ source file to an object file
+define wondermake.cbase.cxx_command # $1 = scope, $$1 = unsigned flags, $(module_map) is a var private to the object file rule (see .d files)
   $(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
   $(call wondermake.inherit_unique,$1,cxx_flags_out_mode) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
