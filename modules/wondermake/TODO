@@ -16,7 +16,6 @@
 *	auto-link by using module import information
 
 *	pkg-config
-		use a common cache: counter := xxxx, counter += x, foreach(i, x xx xxx xxxx) cache.$i.key cache.$i.value
 		auto-generate (use pcfiledir, is this new?)
 
 *	ld
