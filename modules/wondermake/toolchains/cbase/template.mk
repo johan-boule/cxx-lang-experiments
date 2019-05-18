@@ -323,20 +323,12 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
       $(if $(call wondermake.equals,static_lib,$(wondermake.template.type)),
         # Static lib archive
 
-        # Rule to update object files in an archive
+        # Rule to collect object files into an archive
         $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope)))
         $(wondermake.template.out_files): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ar_command | $(dir $(wondermake.template.out_files))
-			$$(eval $$@.obj_files := \
-				$$(filter $$($(wondermake.template.scope).obj_files), \
-					$$(if $$(filter $(wondermake.template.scope_dir)ar_command $(wondermake.template.scope_dir)obj_files,$$?), \
-						$$+, \
-						$$(if $$(call wondermake.equals,false,$$(wondermake.cbase.use_flatten_path)),$$+,$$?) \
-					) \
-				) \
-			)
-			$$(call wondermake.announce,$(wondermake.template.scope),archive $$@,from objects $$($$@.obj_files))
+			$$(call wondermake.announce,$(wondermake.template.scope),archive $$@,from objects $$($(wondermake.template.scope).obj_files))
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).ar_command))
-			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ar_flags_unsigned),$$($$@.obj_files))
+			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ar_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
 			$$(eval undefine $$@.obj_files)
 

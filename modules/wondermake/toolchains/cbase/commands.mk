@@ -88,14 +88,15 @@ define wondermake.cbase.ld_command # $1 = scope, $$1 = unsigned flags
   $(call wondermake.user_override,LDLIBS)
 endef
 
-# Command to update object files in an archive
-define wondermake.cbase.ar_command # $1 = scope, $$1 = unsigned flags, $$2 = object files to update
+# Command to collect object files into an archive
+define wondermake.cbase.ar_command # $1 = scope, $$1 = unsigned flags
+  rm -f $$@; \
   $(or $(call wondermake.user_override,AR),$(call wondermake.inherit_unique,$1,ar)) \
   $(call wondermake.inherit_append,$1,ar_flags) \
   $$1 \
   $(call wondermake.user_override,ARFLAGS) \
   $(call wondermake.inherit_unique,$1,ar_flags_out_mode) \
-  $$2
+  $$($1.obj_files) \
   $(or $(call wondermake.user_override,RANLIB),$(call wondermake.inherit_unique,$1,ranlib))
 endef
 

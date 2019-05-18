@@ -28,7 +28,7 @@ wondermake.cbase.config[unix_elf_clang].ar_flags_out_mode  =   $$@
 # to print the include search path: g++/clang++ -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed -e '/^[^ ]/d' -e 's,^ ,-I,'
 wondermake.cbase.config[unix_elf_clang].cpp_flags := -Winvalid-pch
 wondermake.cbase.config[unix_elf_clang].cxx_flags := -pipe
-wondermake.cbase.config[unix_elf_clang].ar_flags  := rcsD
+wondermake.cbase.config[unix_elf_clang].ar_flags  := qcDs
 
 wondermake.cbase.config[unix_elf_clang].cpp_flags[c++]           := -xc++
 wondermake.cbase.config[unix_elf_clang].pch_flags[c++]           := -xc++-header
