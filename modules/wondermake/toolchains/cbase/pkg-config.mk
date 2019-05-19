@@ -32,7 +32,7 @@ define wondermake.cbase.pkg_config_command_cached_recurse # $1 = args, $2 = inde
     $(if $(call wondermake.equals,$(wondermake.cbase.pkg_config_cache[$2].key),$1), \
       $(wondermake.cbase.pkg_config_cache[$2].value), \
       $(call $0,$1,$2x))
-  , $(eval \
+  , $(eval
       wondermake.cbase.pkg_config_cache[$2].key := $1
       wondermake.cbase.pkg_config_cache[$2].value := $(shell $1)
     ) \
