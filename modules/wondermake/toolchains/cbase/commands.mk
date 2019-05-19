@@ -10,12 +10,17 @@ ifndef wondermake.cbase.commands.included
 ifndef MAKE_RESTARTS # only do this on the first make phase
   # Command to parse ISO C++ module "export module" keywords in an interface file
   define wondermake.cbase.parse_export_module_keyword0 # $1 = scope
-    sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.cbase.module_map[\1].scope := $1\nwondermake.cbase.module_map[\1].mxx_file := $<,p' $< >> $@.d
+    sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.cbase.module_map[\1].mxx_file := $<,p' $< >> $@.d
   endef
 
   # Command to parse ISO C++ module "export module" keywords in an interface file
   define wondermake.cbase.parse_export_module_keyword # $1 = bmi file
     sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^[ 	;]+)[ 	;],wondermake.cbase.module_map[\1].bmi_file := $1,p' $< >> $@
+  endef
+
+  # Command to parse ISO C++ module "module" keywords in an implementation file
+  define wondermake.cbase.parse_module_keyword0 # $1 = scope
+    sed -rn 's,^[ 	]*module[ 	]+([^[ 	;]+)[ 	;],wondermake.cbase.module_map[\1].scope := $1,p' $< >> $@.d
   endef
 
   # Command to parse ISO C++ module "module" keywords in an implementation file

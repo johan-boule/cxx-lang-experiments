@@ -274,6 +274,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cpp_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cpp_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
+			$$(call wondermake.cbase.parse_module_keyword0,$(wondermake.template.scope))
 			$$(call wondermake.cbase.parse_export_module_keyword0,$(wondermake.template.scope))
     )
 
