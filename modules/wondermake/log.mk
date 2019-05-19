@@ -96,7 +96,7 @@ wondermake.error          = $(error       $(call wondermake.maybe_colored_err,$(
 wondermake.error_shell    = printf '%s\n' $(call wondermake.maybe_colored_err_shell,$(wondermake.error_style),error: $1) 1>&2; false
 
 ifdef MAKE_RESTARTS
-  $(call wondermake.announce,make restarts)
+  $(call wondermake.announce,make restarts,$(MAKE_RESTARTS))
 endif
 
 ###############################################################################
