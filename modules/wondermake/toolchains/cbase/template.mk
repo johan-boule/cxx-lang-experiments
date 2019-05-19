@@ -100,8 +100,8 @@ define wondermake.cbase.template.first_loop
             $(or \
               $(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix) \
               $(call wondermake.inherit_unique,$(wondermake.template.scope),mxx_suffix[$(call wondermake.inherit_unique,$(wondermake.template.scope),lang)]))))
+    $(wondermake.template.scope).external_mxx_files := $(wondermake.template.external_mxx_files)
   endif
-  $(wondermake.template.scope).external_mxx_files := $(wondermake.template.external_mxx_files)
 
   wondermake.template.mxx_files := $(patsubst $(wondermake.template.src_dir)%,%, \
     $(shell find $(addprefix $(wondermake.template.src_dir),$($(wondermake.template.scope).src)) \
