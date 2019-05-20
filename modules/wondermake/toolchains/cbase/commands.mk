@@ -33,8 +33,8 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
     sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],$1.external_modules_path += $$$$(wondermake.cbase.module_map[\2].mxx_file),p' $< >> $@
     @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
     do \
-      import_last_word=$$(printf '%s' $$import | sed -rn 's,([^.]+)$$,\1 x \1,p'); \
-      fuzzy_import='[./]'$$(printf '%s' $$import | sed -r 's,\.,[./],g')'[./]'; \
+      import_last_word=$$(printf '%s' $$import | sed -r 's,^.*\.([^.]+)$$,\1,'); \
+      fuzzy_import='[./]'$$(printf '%s' $$import | sed -r 's,\.,[./],g')'[./]'$$import_last_word; \
       printf '%s ' "xxx $1 imports $$import which is" $$(echo $$import_last_word find $(call wondermake.inherit_prepend,$1,include_path) -type f -ipath \'"*$$fuzzy_import*"\'); \
       printf '\n'; \
     done
