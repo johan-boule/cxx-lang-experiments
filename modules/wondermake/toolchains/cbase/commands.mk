@@ -59,9 +59,15 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
     $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
     $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_define_pattern),$(call wondermake.inherit_append,$1,define)) \
     $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_undefine_pattern),$(call wondermake.inherit_append,$1,undefine)) \
-    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern),$(call wondermake.inherit_prepend,$1,include)) \
-    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern),$(call wondermake.inherit_prepend,$1,include_path)) \
-    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern),$(call wondermake.inherit_prepend,$1,frameworks)) \
+    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern), \
+      $(foreach i,$(call wondermake.inherit_prepend,$1,include), \
+        $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
+    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
+      $(foreach i,$(call wondermake.inherit_prepend,$1,include_path), \
+        $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
+    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern), \
+      $(foreach i,$(call wondermake.inherit_prepend,$1,frameworks), \
+        $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
     $(call wondermake.cbase.pkg_config_command,$1,--cflags) \
     $(call wondermake.inherit_append,$1,cpp_flags) \
     $$1 \

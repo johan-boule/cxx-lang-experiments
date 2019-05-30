@@ -13,9 +13,6 @@
 			import "header"
 			import <header>
 
-*	include_path should be prepended with src_dir unless it starts with a /
-	example of this has already been done in the prerequisite of the rule that defines the .ii targets
-
 *	drop external_mxx_files. include_path is the only concept.
 
 *	auto-link by using module import information
