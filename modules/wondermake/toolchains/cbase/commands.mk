@@ -37,14 +37,7 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
       import_dot_or_slash=$$(printf '%s' $$import | sed -r 's,\.,[./],g'); \
       printf '%s\n' =============; \
       printf '%s\n' "{$1} $< imports $$import ($$import_last_word)"; \
-      echo find $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)) \
-        -name '' \
-        $(foreach s, \
-          $(or \
-            $(call wondermake.inherit_unique,$1,mxx_suffix) \
-            $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
-          -o -iname "$$import.$s" -o -ipath "*/$$import_dot_or_slash.$s" -o -ipath "*/$$import_dot_or_slash/$$import_last_word.$s"); \
-      printf '=>\n'; \
+      printf 'find =>\n'; \
       find $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)) \
         -name '' \
         $(foreach s, \
@@ -52,6 +45,15 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
             $(call wondermake.inherit_unique,$1,mxx_suffix) \
             $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
           -o -iname "$$import.$s" -o -ipath "*/$$import_dot_or_slash.$s" -o -ipath "*/$$import_dot_or_slash/$$import_last_word.$s"); \
+      printf 'ls =>\n'; \
+      2>/dev/null ls $(foreach x, \
+        $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)), \
+        $(foreach s, \
+          $(or \
+            $(call wondermake.inherit_unique,$1,mxx_suffix) \
+            $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
+          "$x/$$import.$s" "$x/$$import_dot_or_slash.$s" "$x/$$import_dot_or_slash/$$import_last_word.$s")); \
+      :; \
     done
   endef
 
