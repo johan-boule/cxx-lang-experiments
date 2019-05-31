@@ -46,7 +46,7 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
             $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
           -o -iname "$$import.$s" -o -ipath "*/$$import_dot_or_slash.$s" -o -ipath "*/$$import_dot_or_slash/$$import_last_word.$s"); \
       printf 'ls =>\n'; \
-      2>/dev/null ls $(foreach x, \
+      2>/dev/null ls -1 $(foreach x, \
         $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)), \
         $(foreach s, \
           $(or \
