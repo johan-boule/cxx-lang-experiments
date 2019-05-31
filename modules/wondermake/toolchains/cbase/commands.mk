@@ -34,15 +34,24 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
     @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
     do \
       import_last_word=$$(printf '%s' $$import | sed -r 's,^.*\.([^.]+)$$,\1,'); \
-      fuzzy_import='[./]'$$(printf '%s' $$import | sed -r 's,\.,[./],g')'[./]'$$import_last_word; \
-      printf '%s ' "xxx $1 imports $$import which is" $$(echo $$import_last_word find $(call wondermake.inherit_prepend,$1,include_path) -type f -ipath \'"*$$fuzzy_import*"\'); \
-      echo find $(addprefix $($1.src_dir),$($1.src) $(call wondermake.inherit_prepend,$1,include_path)) \
-      -name '' \
-      $(patsubst %,-o -name '*.%', \
-      $(or \
-        $(call wondermake.inherit_unique,$1,mxx_suffix) \
-        $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)]))); \
-      printf '\n'; \
+      import_dot_or_slash=$$(printf '%s' $$import | sed -r 's,\.,[./],g'); \
+      printf '%s\n' =============; \
+      printf '%s\n' "{$1} $< imports $$import ($$import_last_word)"; \
+      echo find $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)) \
+        -name '' \
+        $(foreach s, \
+          $(or \
+            $(call wondermake.inherit_unique,$1,mxx_suffix) \
+            $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
+          -o -iname "$$import.$s" -o -ipath "*/$$import_dot_or_slash.$s" -o -ipath "*/$$import_dot_or_slash/$$import_last_word.$s"); \
+      printf '=>\n'; \
+      find $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)) \
+        -name '' \
+        $(foreach s, \
+          $(or \
+            $(call wondermake.inherit_unique,$1,mxx_suffix) \
+            $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
+          -o -iname "$$import.$s" -o -ipath "*/$$import_dot_or_slash.$s" -o -ipath "*/$$import_dot_or_slash/$$import_last_word.$s"); \
     done
   endef
 
