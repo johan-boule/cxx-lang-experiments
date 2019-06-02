@@ -31,29 +31,22 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
   # Command to parse ISO C++ module "import" keywords in an interface or implementation file
   define wondermake.cbase.parse_import_keyword0 # $1 = scope
     sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],$1.external_modules_path += $$$$(wondermake.cbase.module_map[\2].mxx_file),p' $< >> $@
-    @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
+    @printf '%s\n' =============; \
+    printf '%s\n' "{$1} $<"; \
+    for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
     do \
+      printf '%s' "import $$import"; \
+      import_slash=$$(printf '%s' $$import | tr . /); \
       import_last_word=$$(printf '%s' $$import | sed -r 's,^.*\.([^.]+)$$,\1,'); \
-      import_dot_or_slash=$$(printf '%s' $$import | sed -r 's,\.,[./],g'); \
-      printf '%s\n' =============; \
-      printf '%s\n' "{$1} $< imports $$import ($$import_last_word)"; \
-      printf 'find =>\n'; \
-      find $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)) \
-        -name '' \
-        $(foreach s, \
-          $(or \
-            $(call wondermake.inherit_unique,$1,mxx_suffix) \
-            $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
-          -o -iname "$$import.$s" -o -ipath "*/$$import_dot_or_slash.$s" -o -ipath "*/$$import_dot_or_slash/$$import_last_word.$s"); \
-      printf 'ls =>\n'; \
-      2>/dev/null ls -1 $(foreach x, \
+      mxx=$$(2>/dev/null ls -1 $(foreach x, \
         $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)), \
         $(foreach s, \
           $(or \
             $(call wondermake.inherit_unique,$1,mxx_suffix) \
             $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
-          "$x/$$import.$s" "$x/$$import_dot_or_slash.$s" "$x/$$import_dot_or_slash/$$import_last_word.$s")); \
-      :; \
+          "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s")) \
+        | uniq); \
+      printf ' => %s\n' "$$mxx"; \
     done
   endef
 
