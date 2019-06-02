@@ -41,9 +41,9 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
       mxx=$$(2>/dev/null ls -1 $(foreach x, \
         $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)), \
         $(foreach s, \
-          $(or \
-            $(call wondermake.inherit_unique,$1,mxx_suffix) \
-            $(call wondermake.inherit_unique,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
+          $(sort \
+            $(call wondermake.inherit_append,$1,mxx_suffix) \
+            $(call wondermake.inherit_append,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
           "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s")) \
         | uniq); \
       printf ' => %s\n' "$$mxx"; \
