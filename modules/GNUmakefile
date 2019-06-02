@@ -16,7 +16,7 @@ common.include_path := src
 common.type := lib
 common.cpp_flags := -std=c++2a
 common.cxx_flags := -std=c++2a
-common.version = 1.2.3
+common.version := 1.2.3
 
 hello-world.inherit := common
 hello-world.name := hello

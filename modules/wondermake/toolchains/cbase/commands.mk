@@ -9,35 +9,26 @@ ifndef wondermake.cbase.commands.included
 
 ifndef MAKE_RESTARTS # only do this on the first make phase
   # Command to parse ISO C++ module "export module" keywords in an interface file
-  define wondermake.cbase.parse_export_module_keyword0 # $1 = scope
-    sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].mxx_file := $<,p' $< >> $@.d
-  endef
-
-  # Command to parse ISO C++ module "export module" keywords in an interface file
   define wondermake.cbase.parse_export_module_keyword # $1 = bmi file
-    sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].bmi_file := $1,p' $< >> $@
+    @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].bmi_file := $1,p' $< >> $@
   endef
 
   # Command to parse ISO C++ module "module" keywords in an implementation file
   define wondermake.cbase.parse_module_keyword0 # $1 = scope
-    sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].scope := $1,p' $< >> $@.d
+    @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
   endef
 
   # Command to parse ISO C++ module "module" keywords in an implementation file
   define wondermake.cbase.parse_module_keyword # $1 = obj file
-    sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\1].bmi_file)\n$1: private module_map = $$(wondermake.cbase.module_map[\1].bmi_file),p' $< >> $@
+    @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\1].bmi_file)\n$1: private module_map = $$(wondermake.cbase.module_map[\1].bmi_file),p' $< >> $@
   endef
 
   # Command to parse ISO C++ module "import" keywords in an interface or implementation file
   define wondermake.cbase.parse_import_keyword0 # $1 = scope
-    sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],$1.external_modules_path += $$$$(wondermake.cbase.module_map[\2].mxx_file),p' $< >> $@
-    @printf '%s\n' =============; \
-    printf '%s\n' "{$1} $<"; \
-    for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
+    @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
     do \
-      printf '%s' "import $$import"; \
-      import_slash=$$(printf '%s' $$import | tr . /); \
-      import_last_word=$$(printf '%s' $$import | sed -r 's,^.*\.([^.]+)$$,\1,'); \
+      import_slash=$$(printf '%s' "$$import" | tr . /); \
+      import_last_word=$$(printf '%s' "$$import" | sed -r 's,^.*\.([^.]+)$$,\1,'); \
       mxx=$$(2>/dev/null ls -1 $(foreach x, \
         $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)), \
         $(foreach s, \
@@ -46,13 +37,14 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
             $(call wondermake.inherit_append,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
           "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s")) \
         | uniq); \
-      printf ' => %s\n' "$$mxx"; \
+      $(call wondermake.trace_shell,import $$import => $$mxx); \
+      printf '$1.module_map[%s].mxx_file := %s\n' "$$import" "$$mxx" >> $@; \
     done
   endef
 
   # Command to parse ISO C++ module "import" keywords in an interface or implementation file
   define wondermake.cbase.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
-    sed -rn 's,^[ 	]*(export[ 	]+|)import[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\2].bmi_file)\n$1: private module_map += $$(wondermake.cbase.module_map[\2].bmi_file:%=\2=%),p' $< >> $@
+    @sed -rn 's,^[ 	]*(export[ 	]+|)import[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\2].bmi_file)\n$1: private module_map += $$(wondermake.cbase.module_map[\2].bmi_file:%=\2=%),p' $< >> $@
   endef
 
   # Command to preprocess a c++ source file

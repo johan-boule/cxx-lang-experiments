@@ -274,8 +274,6 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cpp_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cpp_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
-			$$(call wondermake.cbase.parse_module_keyword0,$(wondermake.template.scope))
-			$$(call wondermake.cbase.parse_export_module_keyword0,$(wondermake.template.scope))
     )
 
     $(if $(wondermake.template.mxx_d_files),
@@ -291,6 +289,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
       # Rule to parse ISO C++ module keywords in an implementation file
       $(wondermake.template.cxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
+		$$(call wondermake.cbase.parse_module_keyword0,$(wondermake.template.scope))
 		$$(call wondermake.cbase.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
 		$$(call wondermake.cbase.parse_import_keyword0,$(wondermake.template.scope))
 		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
@@ -302,7 +301,8 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
   )
   wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cpp_command
   wondermake.cbase.compile_commands.json += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
-  wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+  #xxxwondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+  -include $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
 
   $(if $(wondermake.template.bmi_files),
     # Rule to precompile a c++ source file to a binary module interface file
