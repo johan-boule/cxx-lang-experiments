@@ -7,70 +7,69 @@ ifndef wondermake.cbase.commands.included
 ###############################################################################
 # Define the commands ultimately used by the template recipes
 
-ifndef MAKE_RESTARTS # only do this on the first make phase
-  # Command to parse ISO C++ module "export module" keywords in an interface file
-  define wondermake.cbase.parse_export_module_keyword # $1 = bmi file
-    @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].bmi_file := $1,p' $< >> $@
-  endef
+# Command to parse ISO C++ module "export module" keywords in an interface file
+define wondermake.cbase.parse_export_module_keyword # $1 = bmi file
+  @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].bmi_file := $1,p' $< >> $@
+endef
 
-  # Command to parse ISO C++ module "module" keywords in an implementation file
-  define wondermake.cbase.parse_module_keyword0 # $1 = scope
-    @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
-  endef
+# Command to parse ISO C++ module "module" keywords in an implementation file
+define wondermake.cbase.parse_module_keyword0 # $1 = scope
+  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
+endef
 
-  # Command to parse ISO C++ module "module" keywords in an implementation file
-  define wondermake.cbase.parse_module_keyword # $1 = obj file
-    @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\1].bmi_file)\n$1: private module_map = $$(wondermake.cbase.module_map[\1].bmi_file),p' $< >> $@
-  endef
+# Command to parse ISO C++ module "module" keywords in an implementation file
+define wondermake.cbase.parse_module_keyword # $1 = obj file
+  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\1].bmi_file)\n$1: private module_map = $$(wondermake.cbase.module_map[\1].bmi_file),p' $< >> $@
+endef
 
-  # Command to parse ISO C++ module "import" keywords in an interface or implementation file
-  define wondermake.cbase.parse_import_keyword0 # $1 = scope
-    @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
-    do \
-      import_slash=$$(printf '%s' "$$import" | tr . /); \
-      import_last_word=$$(printf '%s' "$$import" | sed -r 's,^.*\.([^.]+)$$,\1,'); \
-      mxx=$$(2>/dev/null ls -1 $(foreach x, \
-        $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)), \
-        $(foreach s, \
-          $(sort \
-            $(call wondermake.inherit_append,$1,mxx_suffix) \
-            $(call wondermake.inherit_append,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
-          "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s")) \
-        | uniq); \
-      $(call wondermake.trace_shell,import $$import => $$mxx); \
-      printf '$1.module_map[%s].mxx_file := %s\n' "$$import" "$$mxx" >> $@; \
-    done
-  endef
+# Command to parse ISO C++ module "import" keywords in an interface or implementation file
+define wondermake.cbase.parse_import_keyword0 # $1 = scope
+  @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
+  do \
+    import_slash=$$(printf '%s' "$$import" | tr . /); \
+    import_last_word=$$(printf '%s' "$$import" | sed -r 's,^.*\.([^.]+)$$,\1,'); \
+    mxx=$$(2>/dev/null ls -1 $(foreach x, \
+      $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)), \
+      $(foreach s, \
+        $(sort \
+          $(call wondermake.inherit_append,$1,mxx_suffix) \
+          $(call wondermake.inherit_append,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
+        "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s")) \
+      | uniq); \
+    $(call wondermake.trace_shell,import $$import => $$mxx); \
+    printf '$1.module_map[%s].mxx_file := %s\n' "$$import" "$$mxx" >> $@; \
+    printf '$1.external_mxx_files += %s\n' "$$mxx" >> $@; \
+  done
+endef
 
-  # Command to parse ISO C++ module "import" keywords in an interface or implementation file
-  define wondermake.cbase.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
-    @sed -rn 's,^[ 	]*(export[ 	]+|)import[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\2].bmi_file)\n$1: private module_map += $$(wondermake.cbase.module_map[\2].bmi_file:%=\2=%),p' $< >> $@
-  endef
+# Command to parse ISO C++ module "import" keywords in an interface or implementation file
+define wondermake.cbase.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
+  @sed -rn 's,^[ 	]*(export[ 	]+|)import[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\2].bmi_file)\n$1: private module_map += $$(wondermake.cbase.module_map[\2].bmi_file:%=\2=%),p' $< >> $@
+endef
 
-  # Command to preprocess a c++ source file
-  define wondermake.cbase.cpp_command # $1 = scope, $$1 = unsigned flags
-    $(or $(call wondermake.user_override,CPP),$(call wondermake.inherit_unique,$1,cpp)) \
-    $(call wondermake.inherit_unique,$1,cpp_flags_out_mode) \
-    $(call wondermake.inherit_unique,$1,cpp_flags[$(call wondermake.inherit_unique,$1,lang)]) \
-    $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
-    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_define_pattern),$(call wondermake.inherit_append,$1,define)) \
-    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_undefine_pattern),$(call wondermake.inherit_append,$1,undefine)) \
-    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern), \
-      $(foreach i,$(call wondermake.inherit_prepend,$1,include), \
-        $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
-    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
-      $(foreach i,$(call wondermake.inherit_prepend,$1,include_path), \
-        $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
-    $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern), \
-      $(foreach i,$(call wondermake.inherit_prepend,$1,frameworks), \
-        $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
-    $(call wondermake.cbase.pkg_config_command,$1,--cflags) \
-    $(call wondermake.inherit_append,$1,cpp_flags) \
-    $$1 \
-    $(call wondermake.user_override,CPPFLAGS) \
-    $$(abspath $$<)
-  endef
-endif
+# Command to preprocess a c++ source file
+define wondermake.cbase.cpp_command # $1 = scope, $$1 = unsigned flags
+  $(or $(call wondermake.user_override,CPP),$(call wondermake.inherit_unique,$1,cpp)) \
+  $(call wondermake.inherit_unique,$1,cpp_flags_out_mode) \
+  $(call wondermake.inherit_unique,$1,cpp_flags[$(call wondermake.inherit_unique,$1,lang)]) \
+  $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_define_pattern),$(call wondermake.inherit_append,$1,define)) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_undefine_pattern),$(call wondermake.inherit_append,$1,undefine)) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern), \
+    $(foreach i,$(call wondermake.inherit_prepend,$1,include), \
+      $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
+    $(foreach i,$(call wondermake.inherit_prepend,$1,include_path), \
+      $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
+  $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern), \
+    $(foreach i,$(call wondermake.inherit_prepend,$1,frameworks), \
+      $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
+  $(call wondermake.cbase.pkg_config_command,$1,--cflags) \
+  $(call wondermake.inherit_append,$1,cpp_flags) \
+  $$1 \
+  $(call wondermake.user_override,CPPFLAGS) \
+  $$(abspath $$<)
+endef
 
 # Command to precompile a c++ source file to a binary module interface file
 define wondermake.cbase.mxx_command # $1 = scope, $$1 = unsigned flags, $(module_map) is a var private to the bmi file rule (see .d files)

@@ -252,53 +252,55 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     $(wondermake.template.scope): $(wondermake.template.out_files)
   )
 
-  $(if $(MAKE_RESTARTS),, # only do this on the first make phase
-    # Rules to preprocess c++ source files (only done on the first make phase)
+  # Rules to preprocess c++ source files
 
-    # Rule to create an output directory
-    $(wondermake.template.scope_dir) \
-    $(wondermake.template.intermediate_dir) \
-    $(patsubst %,$(wondermake.template.intermediate_dir)%, \
-      $(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))) \
-    : ; mkdir -p $$@
 
-    # Rule to preprocess a c++ source file (the output directory creation is triggered here)
-    $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
-    $(foreach src,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files),
-      $(wondermake.template.intermediate_dir)$(call wondermake.cbase.flatten_path,$(src)).ii: \
-        $(if $(findstring / /,/ $(src)),$(src),$(wondermake.template.src_dir)$(src)) \
-        $(wondermake.bld_dir)wondermake.cbase.configure \
-        $(wondermake.template.scope_dir)cpp_command \
-        | $(dir $(wondermake.template.intermediate_dir)$(call wondermake.cbase.flatten_path,$(src)))
-			$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@)
-			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cpp_command))
-			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cpp_flags_unsigned))
-			$$(eval undefine $$@.evaluable_command)
-    )
+  # Rule to create an output directory
+  $(wondermake.template.scope_dir) \
+  $(wondermake.template.intermediate_dir) \
+  $(patsubst %,$(wondermake.template.intermediate_dir)%, \
+    $(sort $(dir $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))) \
+  : ; mkdir -p $$@
 
-    $(if $(wondermake.template.mxx_d_files),
-      # Rule to parse ISO C++ module keywords in an interface file
-      $(wondermake.template.mxx_d_files): %.ii.d: %.ii
+  # Rule to preprocess a c++ source file (the output directory creation is triggered here)
+  $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
+  $(foreach src,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files),
+    $(wondermake.template.intermediate_dir)$(call wondermake.cbase.flatten_path,$(src)).ii: \
+      $(if $(findstring / /,/ $(src)),$(src),$(wondermake.template.src_dir)$(src)) \
+      $(wondermake.bld_dir)wondermake.cbase.configure \
+      $(wondermake.template.scope_dir)cpp_command \
+      | $(dir $(wondermake.template.intermediate_dir)$(call wondermake.cbase.flatten_path,$(src)))
+		$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@)
+		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cpp_command))
+		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cpp_flags_unsigned))
+		$$(eval undefine $$@.evaluable_command)
+  )
+
+  $(if $(wondermake.template.mxx_d_files),
+    # Rule to parse ISO C++ module keywords in an interface file
+    $(wondermake.template.mxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.cbase.parse_export_module_keyword,$$*.$(wondermake.template.bmi_suffix))
 		$$(call wondermake.cbase.parse_import_keyword0,$(wondermake.template.scope))
 		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.bmi_suffix) $$*.$(wondermake.template.obj_suffix))
-    )
+  )
 
-    $(if $(wondermake.template.cxx_d_files),
-      # Rule to parse ISO C++ module keywords in an implementation file
-      $(wondermake.template.cxx_d_files): %.ii.d: %.ii
+  $(if $(wondermake.template.cxx_d_files),
+    # Rule to parse ISO C++ module keywords in an implementation file
+    $(wondermake.template.cxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.cbase.parse_module_keyword0,$(wondermake.template.scope))
 		$$(call wondermake.cbase.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
 		$$(call wondermake.cbase.parse_import_keyword0,$(wondermake.template.scope))
 		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
-    )
+  )
 
+  $(if $(MAKE_RESTARTS),, # only do this on the first make phase
     wondermake.clean += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
     wondermake.clean += $(patsubst %.ii.d,%.ii,$(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
     wondermake.clean += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
   )
+
   wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cpp_command
   wondermake.cbase.compile_commands.json += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
   #xxxwondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
@@ -355,9 +357,9 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 			$$(eval undefine $$@.evaluable_command)
 			$$(eval undefine $$@.obj_files)
 
-      , # Shared lib or loadable module
+      , # Shared lib or loadable module or executable
 
-        # Rule to link object files and produce an executable or shared library file
+        # Rule to link object files and produce an executable or shared library or loadable module file
         $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
         $(firstword $(wondermake.template.out_files)): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.out_files))
 			$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$($(wondermake.template.scope).obj_files))
