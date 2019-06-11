@@ -225,7 +225,6 @@ define wondermake.cbase.template.define_vars
   wondermake.template.scope_dir := $($(wondermake.template.scope).scope_dir)
   wondermake.template.intermediate_dir := $($(wondermake.template.scope).intermediate_dir)
 
-  wondermake.template.external_mxx_files := $($(wondermake.template.scope).external_mxx_files)
   wondermake.template.mxx_files := $($(wondermake.template.scope).mxx_files)
   wondermake.template.mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
     $(call wondermake.cbase.flatten_path, $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files)))
@@ -240,6 +239,32 @@ define wondermake.cbase.template.define_vars
     wondermake.template.obj_files := $($(wondermake.template.scope).obj_files)
     wondermake.template.out_files := $($(wondermake.template.scope).out_files)
   endif
+
+  o := $($(wondermake.template.scope).external_mxx_files)
+
+  .SECONDEXPANSION:
+  #xxx_wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+  -include $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+
+  $(wondermake.template.scope).external_mxx_files := $(sort $($(wondermake.template.scope).external_mxx_files))
+  wondermake.template.external_mxx_files := $($(wondermake.template.scope).external_mxx_files)
+
+  n := $(filter-out $o,$(wondermake.template.external_mxx_files))
+  $(info xxxxxxxxxxxx $(MAKE_RESTARTS) $(wondermake.template.scope) :: new $n)
+
+  wondermake.template.mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
+    $(call wondermake.cbase.flatten_path, $(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files)))
+  n := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
+    $(call wondermake.cbase.flatten_path, $n))
+
+  #wondermake.template.bmi_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.bmi_suffix),$(call wondermake.cbase.flatten_path,$(wondermake.template.external_mxx_files) $(wondermake.template.mxx_files)))
+  #$(wondermake.template.scope).bmi_files := $(wondermake.template.bmi_files)
+
+  .SECONDEXPANSION:
+  #xxx_wondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+  $(info xxxxxxxxxxxx $(MAKE_RESTARTS) $(wondermake.template.scope) :: include $n)
+  -include $n
+  $(info xxxxxxxxxxxx $(MAKE_RESTARTS) $(wondermake.template.scope) :: ls $(if $n,$(shell ls $n)))
 endef
 
 ###############################################################################
@@ -254,6 +279,9 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
   # Rules to preprocess c++ source files
 
+  -include $(wondermake.template.scope_dir)external_mxx_files
+  $(wondermake.template.scope_dir)external_mxx_files: | $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+		echo 'dummy := $(wondermake.template.external_mxx_files)' > $$@
 
   # Rule to create an output directory
   $(wondermake.template.scope_dir) \
@@ -303,8 +331,6 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
   wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cpp_command
   wondermake.cbase.compile_commands.json += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
-  #xxxwondermake.dynamically_generated_makefiles += $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
-  -include $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
 
   $(if $(wondermake.template.bmi_files),
     # Rule to precompile a c++ source file to a binary module interface file
