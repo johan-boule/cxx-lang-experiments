@@ -24,7 +24,6 @@ hello-world.type := executable
 hello-world.src := src/hello_world.cxx
 hello-world.private_deps := phrases
 hello-world.include_path := external-include
-hello-world.external_modules_path := external-include/new_line.mxx
 wondermake += hello-world
 
 phrases.inherit := common

@@ -32,13 +32,12 @@ define wondermake.main
     ###############################################################################
     # Include the dynamically generated makefiles
     # GNU make will first build (if need be) all of these makefiles
-    # before restarting itself to build the actual goal.
+    # before restarting itself to build the actual goal (if that goal depends on these makefiles?).
     #
     # In the case of implicit dependency files (.d files),
     # this will in turn trigger the building of the .ii files, on which the .d files depend.
     # So, preprocessing occurs on the first make phase.
     # Secondary expansion is used to allow variables to be defined out of order.
-    # (Without secondary expansion, we have to include $(mxx).d before $(cxx).d)
     ifeq '' '$(or $(call wondermake.equals,clean,$(MAKECMDGOALS)),$(call wondermake.equals,wondermake.clean,$(MAKECMDGOALS)))' # don't remake the .d files when only cleaning
       .SECONDEXPANSION:
       -include $(filter-out $(wondermake.dynamically_generated_makefiles.included),$(wondermake.dynamically_generated_makefiles))

@@ -38,7 +38,7 @@ define wondermake.cbase.parse_import_keyword0 # $1 = scope
       | uniq); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
     printf '$1.module_map[%s].mxx_file := %s\n' "$$import" "$$mxx" >> $@; \
-    printf '$1.external_mxx_files += %s\n' "$$mxx" >> $@; \
+    printf '$1.implicit_mxx_files += %s\n' "$$mxx" >> $@; \
   done
 endef
 
