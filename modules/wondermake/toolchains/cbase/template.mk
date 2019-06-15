@@ -131,8 +131,6 @@ define wondermake.cbase.template.first_loop
     endif
     $(wondermake.template.scope).out_files := $(wondermake.template.out_files)
 
-    ################################## WIP ####################################
-
     wondermake.template.cxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.cxx_files)))
     $(wondermake.template.scope).cxx_d_files := $(wondermake.template.cxx_d_files)
@@ -157,8 +155,6 @@ define wondermake.cbase.template.first_loop
     wondermake.template.implicit_mxx_files := # This is an immediate var.
     wondermake.template.implicit_mxx_d_files := # This is an immediate var.
     $(eval $(value wondermake.cbase.template.recursive_include))
-    undefine wondermake.template.new_implicit_mxx_files
-    undefine wondermake.template.new_implicit_mxx_d_files
     $(wondermake.template.scope).implicit_mxx_files := $(wondermake.template.implicit_mxx_files)
     $(wondermake.template.scope).implicit_mxx_d_files := $(wondermake.template.implicit_mxx_d_files)
 
@@ -168,8 +164,6 @@ define wondermake.cbase.template.first_loop
     wondermake.template.bmi_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.bmi_suffix), \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.implicit_mxx_files) $(wondermake.template.mxx_files)))
     $(wondermake.template.scope).bmi_files := $(wondermake.template.bmi_files)
-
-    ################################## /WIP ####################################
 
     undefine wondermake.template.implicit_mxx_files
 
