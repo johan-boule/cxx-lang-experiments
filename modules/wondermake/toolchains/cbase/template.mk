@@ -135,13 +135,13 @@ define wondermake.cbase.template.first_loop
 
     wondermake.template.cxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.cxx_files)))
-    $($(wondermake.template.scope).cxx_d_files) := wondermake.template.cxx_d_files
+    $(wondermake.template.scope).cxx_d_files := $(wondermake.template.cxx_d_files)
 
     wondermake.template.mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.mxx_files)))
-    $($(wondermake.template.scope).mxx_d_files) := wondermake.template.mxx_d_files
+    $(wondermake.template.scope).mxx_d_files := $(wondermake.template.mxx_d_files)
 
-    $($(wondermake.template.scope).implicit_mxx_files) := # This is an immediate var.
+    $(wondermake.template.scope).implicit_mxx_files := # This is an immediate var.
 
     # Include the dynamically generated makefiles
     # GNU make will first build (if need be) all of these makefiles
@@ -159,8 +159,8 @@ define wondermake.cbase.template.first_loop
     $(eval $(value wondermake.cbase.template.recursive_include))
     undefine wondermake.template.new_implicit_mxx_files
     undefine wondermake.template.new_implicit_mxx_d_files
-    $($(wondermake.template.scope).implicit_mxx_files) := $(wondermake.template.implicit_mxx_files)
-    $($(wondermake.template.scope).implicit_mxx_d_files) := $(wondermake.template.implicit_mxx_d_files)
+    $(wondermake.template.scope).implicit_mxx_files := $(wondermake.template.implicit_mxx_files)
+    $(wondermake.template.scope).implicit_mxx_d_files := $(wondermake.template.implicit_mxx_d_files)
 
     wondermake.template.bmi_suffix := $(call wondermake.inherit_unique,$(wondermake.template.scope),bmi_suffix)
     $(wondermake.template.scope).bmi_suffix := $(wondermake.template.bmi_suffix)
