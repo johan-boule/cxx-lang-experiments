@@ -32,8 +32,11 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
         "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s")) \
       | uniq); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
-    printf '$1.implicit_mxx_files += %s\n$2: $$$$($1.module_map[%s].bmi_file)\n$2: private module_map += %s=$$($1.module_map[%s].bmi_file)\n' \
-      "$$mxx" "$$import" "$$import" "$$import" >> $@; \
+    printf '%s\n' \
+      "$1.implicit_mxx_files += $$mxx" \
+      "$2: \$$\$$($1.module_map[$$import].bmi_file)" \
+      "$2: private module_map += $$import=\$$($1.module_map[$$import].bmi_file)" \
+      >> $@; \
   done
 endef
 
