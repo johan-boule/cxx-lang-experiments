@@ -14,7 +14,7 @@ endef
 
 # Command to parse ISO C++ module "module" keywords in an implementation file
 define wondermake.cbase.parse_module_keyword # $1 = scope, $2 = obj file
-  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$2: $$($1.module_map[\1].bmi_file)\n$2: private module_map = $$($1.module_map[\1].bmi_file)\nwondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
+  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$2: $$$$($1.module_map[\1].bmi_file)\n$2: private module_map = $$($1.module_map[\1].bmi_file)\nwondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "import" keywords in an interface or implementation file
