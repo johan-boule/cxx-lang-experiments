@@ -8,22 +8,17 @@ ifndef wondermake.cbase.commands.included
 # Define the commands ultimately used by the template recipes
 
 # Command to parse ISO C++ module "export module" keywords in an interface file
-define wondermake.cbase.parse_export_module_keyword # $1 = bmi file
-  @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].bmi_file := $1,p' $< >> $@
+define wondermake.cbase.parse_export_module_keyword # $1 = scope, $2 = bmi file
+  @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],$1.module_map[\1].bmi_file := $2,p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "module" keywords in an implementation file
-define wondermake.cbase.parse_module_keyword0 # $1 = scope
-  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
-endef
-
-# Command to parse ISO C++ module "module" keywords in an implementation file
-define wondermake.cbase.parse_module_keyword # $1 = obj file
-  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\1].bmi_file)\n$1: private module_map = $$(wondermake.cbase.module_map[\1].bmi_file),p' $< >> $@
+define wondermake.cbase.parse_module_keyword # $1 = scope, $2 = obj file
+  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$2: private module_map = $$($1.module_map[\1].bmi_file)\nwondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "import" keywords in an interface or implementation file
-define wondermake.cbase.parse_import_keyword0 # $1 = scope
+define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj file, or obj+bmi files)
   @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
   do \
     import_slash=$$(printf '%s' "$$import" | tr . /); \
@@ -37,14 +32,9 @@ define wondermake.cbase.parse_import_keyword0 # $1 = scope
         "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s")) \
       | uniq); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
-    printf '$1.module_map[%s].mxx_file := %s\n' "$$import" "$$mxx" >> $@; \
-    printf '$1.implicit_mxx_files += %s\n' "$$mxx" >> $@; \
+    printf '$1.implicit_mxx_files += %s\n$2: $$$$($1.module_map[%s].bmi_file)\n$2: private module_map += %s=$$($1.module_map[%s].bmi_file)\n' \
+      "$$mxx" "$$import" "$$import" "$$import" >> $@; \
   done
-endef
-
-# Command to parse ISO C++ module "import" keywords in an interface or implementation file
-define wondermake.cbase.parse_import_keyword # $1 = targets (obj file, or obj+bmi files)
-  @sed -rn 's,^[ 	]*(export[ 	]+|)import[ 	]+([^[ 	;]+)[ 	;],$1: $$$$(wondermake.cbase.module_map[\2].bmi_file)\n$1: private module_map += $$(wondermake.cbase.module_map[\2].bmi_file:%=\2=%),p' $< >> $@
 endef
 
 # Command to preprocess a c++ source file

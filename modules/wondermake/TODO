@@ -13,7 +13,7 @@
 			import "header"
 			import <header>
 
-*	drop external_mxx_files. include_path is the only concept.
+*	review clean and auto-clean after make restarts
 
 *	auto-link by using module import information
 

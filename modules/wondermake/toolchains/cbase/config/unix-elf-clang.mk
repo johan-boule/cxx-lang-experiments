@@ -88,28 +88,26 @@ endif
 ###############################################################################
 # Configuration
 
-ifndef MAKE_RESTARTS # only do this on the first make phase
-  define wondermake.cbase.config[unix_elf_clang].check_toolchain_version # $1 = min_required_clang_major_version
-    $(call wondermake.announce,configure,check clang version,requires clang version >= $1)
-    @set -e && \
-    if ! command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) 1>/dev/null; \
-    then \
-      $(call wondermake.error_shell,clang version >= $1 is required. compiler is '$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp))' and cannot be found.); \
-    fi; \
-    actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cbase.config[unix_elf_clang].cpp) -E -xc++ - | tail -n1); \
-    if test $$actual_clang_major_version = __clang_major__; \
-    then \
-      $(call wondermake.error_shell,clang version >= $1 is required. compiler is '$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp))' and does not define '__clang_major__'. \
-        Note: '$(wondermake.cbase.config[unix_elf_clang].cpp) --version' reads \"$(shell $(wondermake.cbase.config[unix_elf_clang].cpp) --version 2>/dev/null)\" \
-        Note: '$(wondermake.cbase.config[unix_elf_clang].cpp) -dumpversion' reads \"$(shell $(wondermake.cbase.config[unix_elf_clang].cpp) -dumpversion 2>/dev/null)\"); \
-    fi; \
-    if test $$actual_clang_major_version -lt $1; \
-    then \
-      $(call wondermake.error_shell,clang version >= $1 is required. $(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) is version $$actual_clang_major_version.); \
-    fi; \
-    $(call wondermake.trace_shell,$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) is version $$actual_clang_major_version.)
-  endef
-endif
+define wondermake.cbase.config[unix_elf_clang].check_toolchain_version # $1 = min_required_clang_major_version
+  $(call wondermake.announce,configure,check clang version,requires clang version >= $1)
+  @set -e && \
+  if ! command -v $(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) 1>/dev/null; \
+  then \
+    $(call wondermake.error_shell,clang version >= $1 is required. compiler is '$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp))' and cannot be found.); \
+  fi; \
+  actual_clang_major_version=$$(echo __clang_major__ | $(wondermake.cbase.config[unix_elf_clang].cpp) -E -xc++ - | tail -n1); \
+  if test $$actual_clang_major_version = __clang_major__; \
+  then \
+    $(call wondermake.error_shell,clang version >= $1 is required. compiler is '$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp))' and does not define '__clang_major__'. \
+      Note: '$(wondermake.cbase.config[unix_elf_clang].cpp) --version' reads \"$(shell $(wondermake.cbase.config[unix_elf_clang].cpp) --version 2>/dev/null)\" \
+      Note: '$(wondermake.cbase.config[unix_elf_clang].cpp) -dumpversion' reads \"$(shell $(wondermake.cbase.config[unix_elf_clang].cpp) -dumpversion 2>/dev/null)\"); \
+  fi; \
+  if test $$actual_clang_major_version -lt $1; \
+  then \
+    $(call wondermake.error_shell,clang version >= $1 is required. $(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) is version $$actual_clang_major_version.); \
+  fi; \
+  $(call wondermake.trace_shell,$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) is version $$actual_clang_major_version.)
+endef
 
 ###############################################################################
 endif # ifndef wondermake.cbase.config.unix_elf_clang.included

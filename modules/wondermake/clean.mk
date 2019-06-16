@@ -15,16 +15,14 @@ wondermake.clean := # this is an immediate var
 .PHONY: wondermake.clean
 wondermake.clean:
 	$(call wondermake.announce,clean)
-	$(if $(MAKE_RESTARTS),$(call wondermake.error,cannot clean after make restarts))
 	printf '%s' '$(wondermake.clean)' | xargs rm -f; \
 	printf '%s' '$(sort $(dir $(wondermake.clean)))' | xargs rmdir -p 2>/dev/null || true
 
 ###############################################################################
 # Auto-clean rule
 
-ifndef MAKE_RESTARTS # only do this on the first make phase
-  wondermake.default: $(wondermake.bld_dir)wondermake.auto-clean
-  $(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_dir) # new way S(file < S@)
+wondermake.default: $(wondermake.bld_dir)wondermake.auto-clean
+$(wondermake.bld_dir)wondermake.auto-clean: wondermake.force | $(wondermake.bld_dir) # new way S(file < S@)
 	$(eval $@.old := $(shell cat $@ 2>/dev/null))
 	$(eval $@.new := $(sort $(wondermake.clean)))
 	$(if $(call wondermake.equals,$($@.old),$($@.new)), \
@@ -47,10 +45,9 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 	)
 	$(eval undefine $@.old)
 	$(eval undefine $@.new)
-  wondermake.clean += \
-    $(wondermake.bld_dir)wondermake.auto-clean \
-    $(wondermake.bld_dir)wondermake.auto-clean.new
-endif
+wondermake.clean += \
+  $(wondermake.bld_dir)wondermake.auto-clean \
+  $(wondermake.bld_dir)wondermake.auto-clean.new
 
 ###############################################################################
 endif # ifndef wondermake.clean.included

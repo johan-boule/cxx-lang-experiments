@@ -32,18 +32,17 @@ wondermake.cbase.default_type[lib]        := shared_lib
 ###############################################################################
 # Configuration support
 
-ifndef MAKE_RESTARTS # only do this on the first make phase
-  # This rule is done only on first build or when changes in the env are detected.
-  $(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9# First version with ISO C++ module TS support
-  $(wondermake.bld_dir)wondermake.cbase.configure: clang_min_required_version := 6# First version with ISO C++ module TS support
-  $(wondermake.bld_dir)wondermake.cbase.configure: $(wondermake.bld_dir)wondermake.cbase.toolchain | $(wondermake.bld_dir)
-		$(call wondermake.cbase.config[unix_elf_clang].check_toolchain_version,$(clang_min_required_version))
-		@touch $@
-		@$(call wondermake.announce_shell,configure,toolchain cbase configured,with $(wondermake.cbase.inherit))
-  wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.configure
+# This rule is done only on first build or when changes in the env are detected.
+$(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9# First version with ISO C++ module TS support
+$(wondermake.bld_dir)wondermake.cbase.configure: clang_min_required_version := 6# First version with ISO C++ module TS support
+$(wondermake.bld_dir)wondermake.cbase.configure: $(wondermake.bld_dir)wondermake.cbase.toolchain | $(wondermake.bld_dir)
+	$(call wondermake.cbase.config[unix_elf_clang].check_toolchain_version,$(clang_min_required_version))
+	@touch $@
+	@$(call wondermake.announce_shell,configure,toolchain cbase configured,with $(wondermake.cbase.inherit))
+wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.configure
 
-  $(wondermake.bld_dir)wondermake.cbase.toolchain: $(wondermake.bld_dir)wondermake.cbase.env
-  $(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.bld_dir)wondermake.cbase.toolchain, \
+$(wondermake.bld_dir)wondermake.cbase.toolchain: $(wondermake.bld_dir)wondermake.cbase.env
+$(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.bld_dir)wondermake.cbase.toolchain, \
 	printf '%s\n' \
 		"stat: env CPP CXX LD AR RANLIB PKG_CONFIG" \
 		"$$$$(stat -Lc'	%Y %n' \
@@ -78,10 +77,10 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		"	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=$$(PKG_CONFIG_ALLOW_SYSTEM_CFLAGS)" \
 		"	PKG_CONFIG_ALLOW_SYSTEM_LIBS=$$(PKG_CONFIG_ALLOW_SYSTEM_LIBS)" \
 		"	PKG_CONFIG_SYSROOT_DIR=$$(PKG_CONFIG_SYSROOT_DIR)" \
-  ))
+))
 
-  # Note: LIBRARY_PATH used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO
-  $(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.bld_dir)wondermake.cbase.env, \
+# Note that LIBRARY_PATH used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO
+$(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.bld_dir)wondermake.cbase.env, \
 	printf '%s\n' \
 		"PATH=$$(PATH)" \
 		"linux/solaris/macosx LD_LIBRARY_PATH=$$(LD_LIBRARY_PATH)" \
@@ -92,12 +91,11 @@ ifndef MAKE_RESTARTS # only do this on the first make phase
 		"LIBRARY_PATH=$$(LIBRARY_PATH)" \
 		"GCC_EXEC_PREFIX=$$(GCC_EXEC_PREFIX)" \
 		"COMPILER_PATH=$$(COMPILER_PATH)" \
-  ))
+))
 
-  # This rule ensures wondermake.auto-clean is called even when specific goals have been given on the make command line.
-  # Otherwise, auto-clean is only done when the wondermake.default phony target is triggered.
-  $(wondermake.bld_dir)wondermake.cbase.env: | $(wondermake.bld_dir)wondermake.auto-clean
-endif
+# This rule ensures wondermake.auto-clean is called even when specific goals have been given on the make command line.
+# Otherwise, auto-clean is only done when the wondermake.default phony target is triggered.
+$(wondermake.bld_dir)wondermake.cbase.env: | $(wondermake.bld_dir)wondermake.auto-clean
 
 ###############################################################################
 undefine wondermake.cbase.config.makefile_dir

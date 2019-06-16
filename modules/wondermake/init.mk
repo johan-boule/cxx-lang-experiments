@@ -35,10 +35,4 @@ endif
 wondermake.scopes_dir := $(wondermake.bld_dir)wondermake.scopes/
 
 ###############################################################################
-# Create accumulator vars as immediate
-
-wondermake.dynamically_generated_makefiles := # this is an immediate var
-wondermake.dynamically_generated_makefiles.included := # this is an immediate var
-
-###############################################################################
 endif # ifndef wondermake.init.included

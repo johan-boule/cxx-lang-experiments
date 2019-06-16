@@ -139,24 +139,28 @@ define wondermake.cbase.template.first_loop
       $(call wondermake.cbase.flatten_path,$(wondermake.template.mxx_files)))
     $(wondermake.template.scope).mxx_d_files := $(wondermake.template.mxx_d_files)
 
-    $(wondermake.template.scope).implicit_mxx_files := # This is an immediate var.
+    $(wondermake.template.scope).implicit_mxx_files := # this is an immediate var
 
-    # Include the dynamically generated makefiles
-    # GNU make will first build (if need be) all of these makefiles
-    # before restarting itself to build the actual goal (if that goal depends on these makefiles?).
-    #
-    # In the case of implicit dependency files (.d files),
-    # this will in turn trigger the building of the .ii files, on which the .d files depend.
-    # So, preprocessing occurs on the first make phase.
-    # Secondary expansion is used to allow variables to be defined out of order.
-    .SECONDEXPANSION:
-    -include $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
-
-    wondermake.template.implicit_mxx_files := # This is an immediate var.
-    wondermake.template.implicit_mxx_d_files := # This is an immediate var.
-    $(eval $(value wondermake.cbase.template.recursive_include))
-    $(wondermake.template.scope).implicit_mxx_files := $(wondermake.template.implicit_mxx_files)
-    $(wondermake.template.scope).implicit_mxx_d_files := $(wondermake.template.implicit_mxx_d_files)
+    ifeq '' '$(or $(call wondermake.equals,clean,$(MAKECMDGOALS)),$(call wondermake.equals,wondermake.clean,$(MAKECMDGOALS)))' # don't remake the .d files when only cleaning
+      # Include the dynamically generated makefiles
+      # GNU make will first build (if need be) all of these makefiles
+      # before restarting itself to build the actual goal.
+      # This will in turn trigger the building of the .ii files, on which the .d files depend.
+      # So, preprocessing occurs on the first make phase.
+      # Secondary expansion is used to allow variables to be defined out of order.
+      ifneq '' '$(wondermake.verbose)'
+        $(foreach i,$(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files), \
+          $(call wondermake.announce,$(wondermake.template.scope),include $i,$(if $(wildcard $i),found,to be built)))
+      endif
+      .SECONDEXPANSION:
+      -include $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+      # Recursively includes the dynamically generated makefiles
+      wondermake.template.implicit_mxx_files := # this is an immediate var
+      wondermake.template.implicit_mxx_d_files := # this is an immediate var
+      $(eval $(value wondermake.cbase.template.recursive_include))
+      $(wondermake.template.scope).implicit_mxx_files := $(wondermake.template.implicit_mxx_files)
+      $(wondermake.template.scope).implicit_mxx_d_files := $(wondermake.template.implicit_mxx_d_files)
+    endif
 
     wondermake.template.bmi_suffix := $(call wondermake.inherit_unique,$(wondermake.template.scope),bmi_suffix)
     $(wondermake.template.scope).bmi_suffix := $(wondermake.template.bmi_suffix)
@@ -202,7 +206,10 @@ define wondermake.cbase.template.recursive_include
     wondermake.template.new_implicit_mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.new_implicit_mxx_files)))
     wondermake.template.implicit_mxx_d_files += $(wondermake.template.new_implicit_mxx_d_files)
-    $(info xxxxxxxxxxxx $(MAKE_RESTARTS) $(wondermake.template.scope) :: include $(wondermake.template.new_implicit_mxx_d_files))
+    ifneq '' '$(wondermake.verbose)'
+      $(foreach i,$(wondermake.template.new_implicit_mxx_d_files), \
+        $(call wondermake.announce,$(wondermake.template.scope),include $i,$(if $(wildcard $i),found,to be built)))
+    endif
     -include $(wondermake.template.new_implicit_mxx_d_files)
     undefine wondermake.template.new_implicit_mxx_files
     undefine wondermake.template.new_implicit_mxx_d_files
@@ -323,36 +330,29 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     # Rule to parse ISO C++ module keywords in an interface file
     $(wondermake.template.implicit_mxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
-		$$(call wondermake.cbase.parse_export_module_keyword,$$*.$(wondermake.template.bmi_suffix))
-		$$(call wondermake.cbase.parse_import_keyword0,$(wondermake.template.scope))
-		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.bmi_suffix))
+		$$(call wondermake.cbase.parse_export_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.bmi_suffix))
+		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.bmi_suffix))
   )
 
   $(if $(wondermake.template.mxx_d_files),
     # Rule to parse ISO C++ module keywords in an interface file
     $(wondermake.template.mxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
-		$$(call wondermake.cbase.parse_export_module_keyword,$$*.$(wondermake.template.bmi_suffix))
-		$$(call wondermake.cbase.parse_import_keyword0,$(wondermake.template.scope))
-		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.bmi_suffix) $$*.$(wondermake.template.obj_suffix))
+		$$(call wondermake.cbase.parse_export_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.bmi_suffix))
+		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.bmi_suffix) $$*.$(wondermake.template.obj_suffix))
   )
 
   $(if $(wondermake.template.cxx_d_files),
     # Rule to parse ISO C++ module keywords in an implementation file
     $(wondermake.template.cxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
-		$$(call wondermake.cbase.parse_module_keyword0,$(wondermake.template.scope))
-		$$(call wondermake.cbase.parse_module_keyword,$$*.$(wondermake.template.obj_suffix))
-		$$(call wondermake.cbase.parse_import_keyword0,$(wondermake.template.scope))
-		$$(call wondermake.cbase.parse_import_keyword,$$*.$(wondermake.template.obj_suffix))
+		$$(call wondermake.cbase.parse_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.obj_suffix))
+		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.obj_suffix))
   )
 
-  $(if $(MAKE_RESTARTS),, # only do this on the first make phase
-    wondermake.clean += $(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
-    wondermake.clean += $(patsubst %.ii.d,%.ii,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
-    wondermake.clean += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
-  )
-
+  wondermake.clean += $(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
+  wondermake.clean += $(patsubst %.ii.d,%.ii,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
+  wondermake.clean += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
   wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cpp_command
   wondermake.cbase.compile_commands.json += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
 
@@ -364,10 +364,8 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).mxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 		$$(eval undefine $$@.evaluable_command)
-    $(if $(MAKE_RESTARTS),, # only do this on the first make phase
-      wondermake.clean += $(wondermake.template.bmi_files)
-      wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.bmi_files))
-    )
+    wondermake.clean += $(wondermake.template.bmi_files)
+    wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.bmi_files))
     wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)mxx_command
     wondermake.cbase.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.bmi_files))
   )
@@ -381,10 +379,8 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 		$$(eval undefine $$@.evaluable_command)
-    $(if $(MAKE_RESTARTS),, # only do this on the first make phase
-      wondermake.clean += $(wondermake.template.obj_files)
-      wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
-    )
+    wondermake.clean += $(wondermake.template.obj_files)
+    wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
     wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cxx_command
     wondermake.cbase.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.obj_files))
 
@@ -437,9 +433,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         $(eval undefine wondermake.template.deep_deps)
       )
 
-      $(if $(MAKE_RESTARTS),, # only do this on the first make phase
-        wondermake.clean += $(wondermake.template.out_files)
-      )
+      wondermake.clean += $(wondermake.template.out_files)
     )
   )
 endef
