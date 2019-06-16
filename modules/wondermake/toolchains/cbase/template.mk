@@ -213,7 +213,7 @@ define wondermake.cbase.template.recursive_include
     -include $(wondermake.template.new_implicit_mxx_d_files)
     undefine wondermake.template.new_implicit_mxx_files
     undefine wondermake.template.new_implicit_mxx_d_files
-    $(eval $(value wondermake.cbase.template.recursive_include)) # 0
+    $(eval $(value wondermake.cbase.template.recursive_include))
   else
     undefine wondermake.template.new_implicit_mxx_files
   endif

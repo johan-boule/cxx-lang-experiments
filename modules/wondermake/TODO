@@ -13,7 +13,7 @@
 			import "header"
 			import <header>
 
-*	review clean and auto-clean after make restarts
+*	fix clean/auto-clean: leaves implicit mxx derivations
 
 *	auto-link by using module import information
 
