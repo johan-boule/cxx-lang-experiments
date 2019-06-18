@@ -19,7 +19,7 @@ ifndef wondermake.bld_dir
   # Appart from having the benefit of not polluting the source dir,
   # it also prevents any implicit rule defined outside of wondermake from kicking in and interfering.
   ifneq '' '$(call wondermake.equals,$(realpath $(dir $(firstword $(MAKEFILE_LIST)))),$(realpath $(CURDIR)))'
-    wondermake.bld_dir := ++wondermake-build/
+    wondermake.bld_dir := ++wondermake.build/
   endif
 endif
 
