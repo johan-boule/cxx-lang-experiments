@@ -23,14 +23,20 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
   do \
     import_slash=$$(printf '%s' "$$import" | tr . /); \
     import_last_word=$$(printf '%s' "$$import" | sed -r 's,^.*\.([^.]+)$$,\1,'); \
-    mxx=$$(2>/dev/null ls -1 $(foreach x, \
-      $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(patsubst /%,,$i),$($1.src_dir)$i,$i)), \
-      $(foreach s, \
-        $(sort \
-          $(call wondermake.inherit_append,$1,mxx_suffix) \
-          $(call wondermake.inherit_append,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
-        "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s")) \
-      | uniq); \
+    mxx=$$( \
+      ls -1 2>/dev/null \
+        $(foreach x, \
+          $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(patsubst /%,,$i),$($1.src_dir)$i,$i)), \
+          $(foreach s, \
+            $(sort \
+              $(call wondermake.inherit_append,$1,mxx_suffix) \
+              $(call wondermake.inherit_append,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
+            "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s" \
+          ) \
+        ) \
+      | uniq \
+      | sed -r 's,^\./,,' \
+    ); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
     printf '%s\n' \
       "$1.implicit_mxx_files += $$mxx" \

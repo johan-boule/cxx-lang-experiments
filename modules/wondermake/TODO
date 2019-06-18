@@ -15,9 +15,6 @@
 
 *	fix clean/auto-clean: leaves implicit mxx derivations
 
-*	explicit mxx files have path with no ./ while implicit ones have ./
-	This means we don't deduplicate correctly.
-
 *	auto-link by using module import information
 
 *	pkg-config
