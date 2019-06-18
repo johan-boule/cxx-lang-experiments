@@ -316,7 +316,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
   $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),cpp_command,$$(call wondermake.cbase.cpp_command,$(wondermake.template.scope)))
   $(foreach src,$(wondermake.template.implicit_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files),
     $(wondermake.template.intermediate_dir)$(call wondermake.cbase.flatten_path,$(src)).ii: \
-      $(if $(findstring / /,/ $(src)),$(src),$(wondermake.template.src_dir)$(src)) \
+      $(if $(patsubst /%,,$(src)),$(wondermake.template.src_dir)$(src),$(src)) \
       $(wondermake.bld_dir)wondermake.cbase.configure \
       $(wondermake.template.scope_dir)cpp_command \
       | $(dir $(wondermake.template.intermediate_dir)$(call wondermake.cbase.flatten_path,$(src)))

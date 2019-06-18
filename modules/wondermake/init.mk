@@ -25,10 +25,7 @@ endif
 
 ifneq '' '$(wondermake.bld_dir)'
   # If it's not empty, then it must end with a /
-  $(if $(findstring / /,$(wondermake.bld_dir) /),, \
-    $(wondermake.bld_dir) := $(wondermake.bld_dir)/ \
-  )
-
+  wondermake.bld_dir := $(wondermake.bld_dir:%/=%)/
   $(wondermake.bld_dir): ; mkdir -p $@
 endif
 

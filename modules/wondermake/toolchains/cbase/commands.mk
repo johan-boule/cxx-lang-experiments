@@ -24,7 +24,7 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
     import_slash=$$(printf '%s' "$$import" | tr . /); \
     import_last_word=$$(printf '%s' "$$import" | sed -r 's,^.*\.([^.]+)$$,\1,'); \
     mxx=$$(2>/dev/null ls -1 $(foreach x, \
-      $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(findstring / /,/ $i),$i,$($1.src_dir)$i)), \
+      $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(patsubst /%,,$i),$($1.src_dir)$i,$i)), \
       $(foreach s, \
         $(sort \
           $(call wondermake.inherit_append,$1,mxx_suffix) \
@@ -50,13 +50,13 @@ define wondermake.cbase.cpp_command # $1 = scope, $$1 = unsigned flags
   $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_undefine_pattern),$(call wondermake.inherit_append,$1,undefine)) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_pattern), \
     $(foreach i,$(call wondermake.inherit_prepend,$1,include), \
-      $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
+      $(if $(patsubst /%,,$i),$($1.src_dir)$i,$i))) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
     $(foreach i,$(call wondermake.inherit_prepend,$1,include_path), \
-      $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
+      $(if $(patsubst /%,,$i),$($1.src_dir)$i,$i))) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_framework_pattern), \
     $(foreach i,$(call wondermake.inherit_prepend,$1,frameworks), \
-      $(if $(findstring / /,/ $i),$i,$($1.src_dir)$i))) \
+      $(if $(patsubst /%,,$i),$($1.src_dir)$i,$i))) \
   $(call wondermake.cbase.pkg_config_command,$1,--cflags) \
   $(call wondermake.inherit_append,$1,cpp_flags) \
   $$1 \
