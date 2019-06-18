@@ -66,14 +66,14 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
   wondermake.notice        = $(info        $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$1))
   wondermake.notice_shell  = printf '%s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.notice_style),$1)
 
-  wondermake.announce_style := $(wondermake.term.blue)$(wondermake.term.bold)
+  wondermake.standout_style := $(wondermake.term.blue)$(wondermake.term.bold)
 
   wondermake.announce = \
     $(if $(MAKE_TERMOUT),,$(info ===============================================================================)) \
     $(if $4, \
       $(info \
         $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.bold),{$1})) \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.announce_style),$2)) \
+        $(strip $(call wondermake.maybe_colored_out,$(wondermake.standout_style),$2)) \
         $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style),$3)) \
         $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.dim),$4)) \
       ), \
@@ -87,7 +87,7 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
     $(if $(MAKE_TERMOUT),,printf '===============================================================================\n';) \
     $(if $4, \
       printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.bold),{$1}); \
-      printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.announce_style),$2); \
+      printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.standout_style),$2); \
       printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style),$3); \
       printf ' %s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.dim),$4) \
     , \
@@ -104,7 +104,7 @@ else # Be quiet. We need a no-op definition for the shell, because these calls m
   wondermake.announce_shell := :
 endif
 
-wondermake.warning_style := $(wondermake.term.bold)$(wondermake.term.yellow)
+wondermake.warning_style := $(wondermake.term.bold)$(wondermake.term.magenta)
 wondermake.warning        = $(warning     $(call wondermake.maybe_colored_err,$(wondermake.warning_style),warning: $1))
 wondermake.warning_shell  = printf '%s\n' $(call wondermake.maybe_colored_err_shell,$(wondermake.warning_style),warning: $1) 1>&2
 
