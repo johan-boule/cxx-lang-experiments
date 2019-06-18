@@ -40,9 +40,9 @@ define wondermake.write_iif_content_changed.recipe # $1 = announce, $2 = var, $3
 			$(call wondermake.notice_shell,changed:); \
 			$(call wondermake.notice_shell,"'- $(filter-out $($2),$($2.old))'"); \
 			$(call wondermake.notice_shell,"'+ $(filter-out $($2.old),$($2))'"); \
-			$(call wondermake.if_not_silent_shell,printf '%s\n' '$($2)' $(wondermake.diff)); \
+			$(call wondermake.print_shell,'$($2)' $(wondermake.diff)); \
 		else \
-			$(call wondermake.if_not_silent_shell,printf '%s\n' '$($2)'); \
+			$(call wondermake.print_shell,'$($2)'); \
 		fi; \
 		printf '%s\n' '$($2)' > $@ \
 	)
@@ -70,9 +70,9 @@ define wondermake.write_iif_content_changed_shell.recipe # $1 = announce, $2 = v
 		if test -e $@; \
 		then \
 			$(call wondermake.notice_shell,changed:); \
-			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new" $(wondermake.diff)); \
+			$(call wondermake.print_shell,"$$new" $(wondermake.diff)); \
 		else \
-			$(call wondermake.if_not_silent_shell,printf '%s\n' "$$new"); \
+			$(call wondermake.print_shell,"$$new"); \
 		fi; \
 		printf '%s\n' "$$new" > $@; \
 	fi

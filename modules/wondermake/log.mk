@@ -33,17 +33,17 @@ ifneq '' '$(MAKE_TERMOUT)$(MAKE_TERMERR)'
   undefine wondermake.term
 endif
 
-ifdef MAKE_TERMOUT
-  wondermake.maybe_colored_out       = $1$2$(wondermake.term.0)       # $1 = set color, $2 = message
-  wondermake.maybe_colored_out_shell = '$1'"$2"'$(wondermake.term.0)' # $1 = set color, $2 = message
+ifdef MAKE_TERMOUT # $1 = set color, $2 = message
+  wondermake.maybe_colored_out       = $1$2$(wondermake.term.0)
+  wondermake.maybe_colored_out_shell = '$1'"$2"'$(wondermake.term.0)'
 else
   wondermake.maybe_colored_out       = $2
   wondermake.maybe_colored_out_shell = "$2"
 endif
 
-ifdef MAKE_TERMERR
-  wondermake.maybe_colored_err       = $1$2$(wondermake.term.0)       # $1 = set color, $2 = message
-  wondermake.maybe_colored_err_shell = '$1'"$2"'$(wondermake.term.0)' # $1 = set color, $2 = message
+ifdef MAKE_TERMERR # $1 = set color, $2 = message
+  wondermake.maybe_colored_err       = $1$2$(wondermake.term.0)
+  wondermake.maybe_colored_err_shell = '$1'"$2"'$(wondermake.term.0)'
 else
   wondermake.maybe_colored_err       = $2
   wondermake.maybe_colored_err_shell = "$2"
@@ -51,8 +51,8 @@ endif
 
 # If the wondermake.verbose var is set or make is not in silent mode
 ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS))))'
-  wondermake.if_not_silent       = $1
-  wondermake.if_not_silent_shell = $1
+  wondermake.print         = $(info $1)
+  wondermake.print_shell   = printf '%s\n' $1
 
   wondermake.trace_style  := $(wondermake.term.cyan)$(wondermake.term.dim)
   wondermake.trace         = $(info        $(call wondermake.maybe_colored_out,$(wondermake.trace_style),$1))
@@ -71,32 +71,32 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
     $(if $(MAKE_TERMOUT),,$(info ===============================================================================)) \
     $(if $4, \
       $(info \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.announce_style)$(wondermake.term.bold),{$1})) \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.bold),$2)) \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style),$3)) \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.dim),$4)) \
+        $(call wondermake.maybe_colored_out,$(wondermake.announce_style)$(wondermake.term.bold),{$1}) \
+        $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.bold),$2) \
+        $(call wondermake.maybe_colored_out,$(wondermake.info_style),$3) \
+        $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.dim),$4) \
       ), \
       $(info \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.announce_style)$(wondermake.term.bold),{$1})) \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style),$2)) \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.dim),$3)) \
+        $(call wondermake.maybe_colored_out,$(wondermake.announce_style)$(wondermake.term.bold),{$1}) \
+        $(call wondermake.maybe_colored_out,$(wondermake.info_style),$2) \
+        $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.dim),$3) \
       ) \
     )
   wondermake.announce_shell = \
     $(if $(MAKE_TERMOUT),,printf '===============================================================================\n';) \
     $(if $4, \
-      printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.announce_style)$(wondermake.term.bold),{$1}); \
+      printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.announce_style),{$1}); \
       printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.bold),$2); \
       printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style),$3); \
       printf ' %s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.dim),$4) \
     , \
-      printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.announce_style)$(wondermake.term.bold),{$1}); \
+      printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.announce_style),{$1}); \
       printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style),$2); \
       printf ' %s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.dim),$3) \
     )
 
 else # Be quiet. We need a no-op definition for the shell, because these calls may be followed by a semicolon and it's syntax error to have a stray semicolon.
-  wondermake.if_not_silent_shell := :
+  wondermake.print_shell := :
   wondermake.trace_shell := :
   wondermake.info_shell := :
   wondermake.notice_shell := :
