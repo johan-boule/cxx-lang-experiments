@@ -66,19 +66,18 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
   wondermake.notice        = $(info        $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$1))
   wondermake.notice_shell  = printf '%s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.notice_style),$1)
 
-  wondermake.standout_style := $(wondermake.term.blue)$(wondermake.term.bold)
-
+  wondermake.announce_style := $(wondermake.term.blue)$(wondermake.term.bold)
   wondermake.announce = \
     $(if $(MAKE_TERMOUT),,$(info ===============================================================================)) \
     $(if $4, \
       $(info \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.standout_style)$(wondermake.term.bold),{$1})) \
+        $(strip $(call wondermake.maybe_colored_out,$(wondermake.announce_style)$(wondermake.term.bold),{$1})) \
         $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.bold),$2)) \
         $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style),$3)) \
         $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.dim),$4)) \
       ), \
       $(info \
-        $(strip $(call wondermake.maybe_colored_out,$(wondermake.standout_style)$(wondermake.term.bold),{$1})) \
+        $(strip $(call wondermake.maybe_colored_out,$(wondermake.announce_style)$(wondermake.term.bold),{$1})) \
         $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style),$2)) \
         $(strip $(call wondermake.maybe_colored_out,$(wondermake.info_style)$(wondermake.term.dim),$3)) \
       ) \
@@ -86,12 +85,12 @@ ifeq '' '$(if $(wondermake.verbose),,$(findstring s, $(firstword x$(MAKEFLAGS)))
   wondermake.announce_shell = \
     $(if $(MAKE_TERMOUT),,printf '===============================================================================\n';) \
     $(if $4, \
-      printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.standout_style)$(wondermake.term.bold),{$1}); \
+      printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.announce_style)$(wondermake.term.bold),{$1}); \
       printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.bold),$2); \
       printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style),$3); \
       printf ' %s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.dim),$4) \
     , \
-      printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.standout_style)$(wondermake.term.bold),{$1}); \
+      printf  '%s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.announce_style)$(wondermake.term.bold),{$1}); \
       printf ' %s'   $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style),$2); \
       printf ' %s\n' $(call wondermake.maybe_colored_out_shell,$(wondermake.info_style)$(wondermake.term.dim),$3) \
     )
