@@ -29,7 +29,17 @@ wondermake.comma := ,
 # Query the value of a variable from the make command line: make wondermake.print:some-var
 # It's equivalent to: echo '$(info $(some-var))' | make -f makefile -f -
 # Note that make's --eval option seems to be processed before any -f option, so that's not an alternative.
-wondermake.print\:%: ; $(eval wondermake.print := $($*)) $(info $* = $(wondermake.print)) $(eval undefine wondermake.print)
+wondermake.print\:%:
+	$(eval wondermake.print := $($*))
+	$(info $* = $(value wondermake.print))
+	$(eval undefine wondermake.print)
+
+wondermake.print-pattern\:%:
+	$(foreach v,$(sort $(.VARIABLES)), \
+		$(if $(patsubst $*,,$v),, \
+			$(info $v = $(value $v)) \
+		) \
+	)
 
 ###############################################################################
 # Rules that need to be always executed use this phony target as prerequisite

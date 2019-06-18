@@ -320,7 +320,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
       $(wondermake.bld_dir)wondermake.cbase.configure \
       $(wondermake.template.scope_dir)cpp_command \
       | $(dir $(wondermake.template.intermediate_dir)$(call wondermake.cbase.flatten_path,$(src)))
-		$$(call wondermake.announce,$(wondermake.template.scope),preprocess $$<,to $$@)
+		$$(call wondermake.announce,$(wondermake.template.scope),preprocess,$$<,to $$@)
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cpp_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cpp_flags_unsigned))
 		$$(eval undefine $$@.evaluable_command)
@@ -360,7 +360,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     # Rule to precompile a c++ source file to a binary module interface file
     $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),mxx_command,$$(call wondermake.cbase.mxx_command,$(wondermake.template.scope)))
     $(wondermake.template.bmi_files): %.$(wondermake.template.bmi_suffix): %.ii $(wondermake.template.scope_dir)mxx_command | %.ii.d # don't continue if .d failed to build
-		$$(call wondermake.announce,$(wondermake.template.scope),precompile $$<,to $$@)
+		$$(call wondermake.announce,$(wondermake.template.scope),precompile,$$<,to $$@)
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).mxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 		$$(eval undefine $$@.evaluable_command)
@@ -375,7 +375,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     # Rule to compile a c++ source file to an object file
     $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
     $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope_dir)cxx_command | %.ii.d # don't continue if .d failed to build
-		$$(call wondermake.announce,$(wondermake.template.scope),compile $$<,to $$@)
+		$$(call wondermake.announce,$(wondermake.template.scope),compile,$$<,to $$@)
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 		$$(eval undefine $$@.evaluable_command)
@@ -397,7 +397,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         # Rule to collect object files into an archive
         $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),ar_command,$$(call wondermake.cbase.ar_command,$(wondermake.template.scope)))
         $(wondermake.template.out_files): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ar_command | $(dir $(wondermake.template.out_files))
-			$$(call wondermake.announce,$(wondermake.template.scope),archive $$@,from objects $$($(wondermake.template.scope).obj_files))
+			$$(call wondermake.announce,$(wondermake.template.scope),archive,$$@,from objects $$($(wondermake.template.scope).obj_files))
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).ar_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ar_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
@@ -408,7 +408,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
         # Rule to link object files and produce an executable or shared library or loadable module file
         $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),ld_command,$$(call wondermake.cbase.ld_command,$(wondermake.template.scope)))
         $(firstword $(wondermake.template.out_files)): $(wondermake.template.obj_files) $(wondermake.template.scope_dir)ld_command | $(dir $(wondermake.template.out_files))
-			$$(call wondermake.announce,$(wondermake.template.scope),link $$@,from objects $$($(wondermake.template.scope).obj_files))
+			$$(call wondermake.announce,$(wondermake.template.scope),link,$$@,from objects $$($(wondermake.template.scope).obj_files))
 			$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).ld_command))
 			$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),ld_flags_unsigned))
 			$$(eval undefine $$@.evaluable_command)
