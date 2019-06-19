@@ -26,18 +26,14 @@ endef
 wondermake.comma := ,
 
 ###############################################################################
-# Query the value of a variable from the make command line: make wondermake.print:some-var
-# It's equivalent to: echo '$(info $(some-var))' | make -f makefile -f -
+# Query the value of variables whose names match a %-pattern from the make command line: make wondermake.print:foo.%
+# Without pattern, i.e. for one variable, it's equivalent to: echo '$(info $(some-var))' | make -f makefile -f -
 # Note that make's --eval option seems to be processed before any -f option, so that's not an alternative.
 wondermake.print\:%:
-	$(if $(findstring %,$*), \
-		$(foreach v,$(sort $(.VARIABLES)), \
-			$(if $(patsubst $*,,$v),, \
-				$(info $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$v) = $(value $v)) \
-			) \
+	$(foreach v,$(sort $(.VARIABLES)), \
+		$(if $(patsubst $*,,$v),, \
+			$(info $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$v) $(patsubst simple,:=,$(patsubst recursive,=,$(flavor $v))) $(value $v)) \
 		) \
-	, \
-		$(info $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$*) = $(value $*)) \
 	)
 
 ###############################################################################
