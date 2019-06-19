@@ -30,13 +30,14 @@ wondermake.comma := ,
 # It's equivalent to: echo '$(info $(some-var))' | make -f makefile -f -
 # Note that make's --eval option seems to be processed before any -f option, so that's not an alternative.
 wondermake.print\:%:
-	$(info $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$*) = $(value $*))
-
-wondermake.print-pattern\:%:
-	$(foreach v,$(sort $(.VARIABLES)), \
-		$(if $(patsubst $*,,$v),, \
-			$(info $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$v) = $(value $v)) \
+	$(if $(findstring %,$*), \
+		$(foreach v,$(sort $(.VARIABLES)), \
+			$(if $(patsubst $*,,$v),, \
+				$(info $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$v) = $(value $v)) \
+			) \
 		) \
+	, \
+		$(info $(call wondermake.maybe_colored_out,$(wondermake.notice_style),$*) = $(value $*)) \
 	)
 
 ###############################################################################
