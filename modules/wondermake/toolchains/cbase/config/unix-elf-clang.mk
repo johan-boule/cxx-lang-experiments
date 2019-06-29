@@ -30,10 +30,18 @@ wondermake.cbase.config[unix_elf_clang].cpp_flags := -Winvalid-pch
 wondermake.cbase.config[unix_elf_clang].cxx_flags := -pipe
 wondermake.cbase.config[unix_elf_clang].ar_flags  := qcDs
 
+# commit 8af8b8611c5daee5f04eac93e9315368f42ab70e
+# Author: Richard Smith <richard-llvm@metafoo.co.uk>
+# Date:   Thu Apr 11 21:18:23 2019 +0000
+# 
+#     [C++20] Implement context-sensitive header-name lexing and pp-import parsing in the preprocessor.
+# 
+#     llvm-svn: 358231
+
 wondermake.cbase.config[unix_elf_clang].cpp_flags[c++]           := -xc++
 wondermake.cbase.config[unix_elf_clang].pch_flags[c++]           := -xc++-header
-wondermake.cbase.config[unix_elf_clang].cxx_flags[c++]           := -xc++-cpp-output -fmodules-ts
-wondermake.cbase.config[unix_elf_clang].mxx_flags[c++]           := -xc++-module -fmodules-ts
+wondermake.cbase.config[unix_elf_clang].cxx_flags[c++]           := -xc++-cpp-output -std=c++2a -fmodules-ts
+wondermake.cbase.config[unix_elf_clang].mxx_flags[c++]           := -xc++-module -std=c++2a -fmodules-ts
 wondermake.cbase.config[unix_elf_clang].cpp_flags[objective-c++] := -xobjective-c++
 wondermake.cbase.config[unix_elf_clang].pch_flags[objective-c++] := -xobjective-c++-header
 wondermake.cbase.config[unix_elf_clang].cxx_flags[objective-c++] := -xobjective-c++-cpp-output
