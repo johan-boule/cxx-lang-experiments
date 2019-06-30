@@ -40,8 +40,8 @@ wondermake.cbase.config[unix_elf_clang].ar_flags  := qcDs
 
 wondermake.cbase.config[unix_elf_clang].cpp_flags[c++]           := -xc++
 wondermake.cbase.config[unix_elf_clang].pch_flags[c++]           := -xc++-header
-wondermake.cbase.config[unix_elf_clang].cxx_flags[c++]           := -xc++-cpp-output -std=c++2a -fmodules-ts
-wondermake.cbase.config[unix_elf_clang].mxx_flags[c++]           := -xc++-module -std=c++2a -fmodules-ts
+wondermake.cbase.config[unix_elf_clang].cxx_flags[c++]           := -xc++-cpp-output -std=c++2a
+wondermake.cbase.config[unix_elf_clang].mxx_flags[c++]           := -xc++-module -std=c++2a
 wondermake.cbase.config[unix_elf_clang].cpp_flags[objective-c++] := -xobjective-c++
 wondermake.cbase.config[unix_elf_clang].pch_flags[objective-c++] := -xobjective-c++-header
 wondermake.cbase.config[unix_elf_clang].cxx_flags[objective-c++] := -xobjective-c++-cpp-output

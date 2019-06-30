@@ -14,8 +14,8 @@ common.lang := c++
 common.src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
 common.include_path := src
 common.type := lib
-common.cpp_flags := -std=c++2a
-common.cxx_flags := -std=c++2a
+#common.cpp_flags := -std=c++2a
+#common.cxx_flags := -std=c++2a
 common.version := 1.2.3
 
 hello-world.inherit := common
