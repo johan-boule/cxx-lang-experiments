@@ -14,5 +14,5 @@ trace=
 exec $trace \
 	${MAKE:-make} \
 		-C $bld_dir -f ../GNUmakefile \
-		-j$(($(getconf _NPROCESSORS_ONLN) * 3 / 2)) -O --no-print-directory \
+		-j$(($(nproc || getconf _NPROCESSORS_ONLN) * 3 / 2)) -O --no-print-directory \
 		"$@"
