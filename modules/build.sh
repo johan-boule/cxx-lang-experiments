@@ -8,7 +8,10 @@ bld_dir=++wondermake.build
 
 mkdir -p $bld_dir
 
-exec time strace -cf \
+trace='time strace -cf'
+trace=
+
+exec $trace \
 	${MAKE:-make} \
 		-C $bld_dir -f ../GNUmakefile \
 		-j$(($(getconf _NPROCESSORS_ONLN) * 2)) -O --no-print-directory \
