@@ -8,17 +8,17 @@ ifndef wondermake.cbase.commands.included
 # Define the commands ultimately used by the template recipes
 
 # Command to parse ISO C++ module "export module" keywords in an interface file
-define wondermake.cbase.parse_export_module_keyword # $1 = scope, $2 = bmi file
-  @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],$1.module_map[\1].bmi_file := $2,p' $< >> $@
+define wondermake.cbase.parse_export_module_keyword # $1 = scope, $2 = cmi file
+  @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],$1.module_map[\1].cmi_file := $2,p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "module" keywords in an implementation file
 define wondermake.cbase.parse_module_keyword # $1 = scope, $2 = obj file
-  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$2: $$$$($1.module_map[\1].bmi_file)\n$2: private module_map = $$($1.module_map[\1].bmi_file)\nwondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
+  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$2: $$$$($1.module_map[\1].cmi_file)\n$2: private module_map = $$($1.module_map[\1].cmi_file)\nwondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "import" keywords in an interface or implementation file
-define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj file, or obj+bmi files)
+define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj file, or obj+cmi files)
   @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
   do \
     import_slash=$$(printf '%s' "$$import" | tr . /); \
@@ -40,8 +40,8 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
     $(call wondermake.trace_shell,import $$import => $$mxx); \
     printf '%s\n' \
       "$1.implicit_mxx_files += $$mxx" \
-      "$2: \$$\$$($1.module_map[$$import].bmi_file)" \
-      "$2: private module_map += $$import=\$$($1.module_map[$$import].bmi_file)" \
+      "$2: \$$\$$($1.module_map[$$import].cmi_file)" \
+      "$2: private module_map += $$import=\$$($1.module_map[$$import].cmi_file)" \
       >> $@; \
   done
 endef
@@ -71,7 +71,7 @@ define wondermake.cbase.cpp_command # $1 = scope, $$1 = unsigned flags
 endef
 
 # Command to precompile a c++ source file to a binary module interface file
-define wondermake.cbase.mxx_command # $1 = scope, $$1 = unsigned flags, $(module_map) is a var private to the bmi file rule (see .d files)
+define wondermake.cbase.mxx_command # $1 = scope, $$1 = unsigned flags, $(module_map) is a var private to the cmi file rule (see .d files)
   $(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
   $(call wondermake.inherit_unique,$1,mxx_flags_out_mode) \
   $(call wondermake.inherit_unique,$1,mxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \

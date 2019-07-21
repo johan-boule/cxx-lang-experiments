@@ -162,20 +162,20 @@ define wondermake.cbase.template.first_loop
       $(wondermake.template.scope).implicit_mxx_d_files := $(wondermake.template.implicit_mxx_d_files)
     endif
 
-    wondermake.template.bmi_suffix := $(call wondermake.inherit_unique,$(wondermake.template.scope),bmi_suffix)
-    $(wondermake.template.scope).bmi_suffix := $(wondermake.template.bmi_suffix)
+    wondermake.template.cmi_suffix := $(call wondermake.inherit_unique,$(wondermake.template.scope),cmi_suffix)
+    $(wondermake.template.scope).cmi_suffix := $(wondermake.template.cmi_suffix)
 
-    wondermake.template.bmi_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.bmi_suffix), \
+    wondermake.template.cmi_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.cmi_suffix), \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.implicit_mxx_files) $(wondermake.template.mxx_files)))
-    $(wondermake.template.scope).bmi_files := $(wondermake.template.bmi_files)
+    $(wondermake.template.scope).cmi_files := $(wondermake.template.cmi_files)
 
     undefine wondermake.template.implicit_mxx_files
 
     undefine wondermake.template.implicit_mxx_d_files
     undefine wondermake.template.mxx_d_files
 
-    undefine wondermake.template.bmi_suffix
-    undefine wondermake.template.bmi_files
+    undefine wondermake.template.cmi_suffix
+    undefine wondermake.template.cmi_files
 
     undefine wondermake.template.cxx_files
     undefine wondermake.template.cxx_d_files
@@ -257,10 +257,10 @@ define wondermake.cbase.template.undefine_vars
   undefine wondermake.template.mxx_d_files
   undefine wondermake.template.cxx_d_files
 
-  undefine wondermake.template.bmi_suffix
+  undefine wondermake.template.cmi_suffix
   undefine wondermake.template.obj_suffix
 
-  undefine wondermake.template.bmi_files
+  undefine wondermake.template.cmi_files
   undefine wondermake.template.obj_files
 
   undefine wondermake.template.out_files
@@ -281,8 +281,8 @@ define wondermake.cbase.template.define_vars
   wondermake.template.implicit_mxx_d_files := $($(wondermake.template.scope).implicit_mxx_d_files)
   wondermake.template.mxx_files := $($(wondermake.template.scope).mxx_files)
   wondermake.template.mxx_d_files := $($(wondermake.template.scope).mxx_d_files)
-  wondermake.template.bmi_suffix := $($(wondermake.template.scope).bmi_suffix)
-  wondermake.template.bmi_files := $($(wondermake.template.scope).bmi_files)
+  wondermake.template.cmi_suffix := $($(wondermake.template.scope).cmi_suffix)
+  wondermake.template.cmi_files := $($(wondermake.template.scope).cmi_files)
 
   ifneq 'headers' '$(wondermake.template.type)'
     wondermake.template.cxx_files := $($(wondermake.template.scope).cxx_files)
@@ -330,16 +330,16 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
     # Rule to parse ISO C++ module keywords in an interface file
     $(wondermake.template.implicit_mxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
-		$$(call wondermake.cbase.parse_export_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.bmi_suffix))
-		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.bmi_suffix))
+		$$(call wondermake.cbase.parse_export_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.cmi_suffix))
+		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.cmi_suffix))
   )
 
   $(if $(wondermake.template.mxx_d_files),
     # Rule to parse ISO C++ module keywords in an interface file
     $(wondermake.template.mxx_d_files): %.ii.d: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
-		$$(call wondermake.cbase.parse_export_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.bmi_suffix))
-		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.bmi_suffix) $$*.$(wondermake.template.obj_suffix))
+		$$(call wondermake.cbase.parse_export_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.cmi_suffix))
+		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.cmi_suffix) $$*.$(wondermake.template.obj_suffix))
   )
 
   $(if $(wondermake.template.cxx_d_files),
@@ -356,18 +356,18 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
   wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cpp_command
   wondermake.cbase.compile_commands.json += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
 
-  $(if $(wondermake.template.bmi_files),
+  $(if $(wondermake.template.cmi_files),
     # Rule to precompile a c++ source file to a binary module interface file
     $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),mxx_command,$$(call wondermake.cbase.mxx_command,$(wondermake.template.scope)))
-    $(wondermake.template.bmi_files): %.$(wondermake.template.bmi_suffix): %.ii $(wondermake.template.scope_dir)mxx_command | %.ii.d # don't continue if .d failed to build
+    $(wondermake.template.cmi_files): %.$(wondermake.template.cmi_suffix): %.ii $(wondermake.template.scope_dir)mxx_command | %.ii.d # don't continue if .d failed to build
 		$$(call wondermake.announce,$(wondermake.template.scope),precompile,$$<,to $$@)
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).mxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
 		$$(eval undefine $$@.evaluable_command)
-    wondermake.clean += $(wondermake.template.bmi_files)
-    wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.bmi_files))
+    wondermake.clean += $(wondermake.template.cmi_files)
+    wondermake.clean += $(addsuffix .compile_commands.json,$(wondermake.template.cmi_files))
     wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)mxx_command
-    wondermake.cbase.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.bmi_files))
+    wondermake.cbase.compile_commands.json += $(addsuffix .compile_commands.json,$(wondermake.template.cmi_files))
   )
 
   $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),type,$(wondermake.template.type))

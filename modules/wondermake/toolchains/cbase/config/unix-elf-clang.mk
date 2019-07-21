@@ -76,7 +76,7 @@ wondermake.cbase.config[unix_elf_clang].cxx_flags[loadable_module]   := $(wonder
 wondermake.cbase.config[unix_elf_clang].ld_flags[loadable_module]    := $(wondermake.cbase.config[unix_elf_clang].ld_flags[shared_lib])
 
 wondermake.cbase.config[unix_elf_clang].pch_suffix := pch
-wondermake.cbase.config[unix_elf_clang].bmi_suffix := pcm
+wondermake.cbase.config[unix_elf_clang].cmi_suffix := pcm
 wondermake.cbase.config[unix_elf_clang].obj_suffix := o
 
 wondermake.cbase.config[unix_elf_clang].out_file_pattern[dynamic_executable] := $(wondermake.fhs.bin)%
