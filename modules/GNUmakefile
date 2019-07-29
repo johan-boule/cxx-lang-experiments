@@ -4,7 +4,7 @@
 dummy.define := DUMMY_DEFINE=demo
 dummy.undefine := DUMMY_DEFINE
 dummy.libs := m dl
-dummy.pkg_config := zlib
+dummy.pkg_config := zlib gio-2.0
 dummy.cxx_flags := #-pthreads
 dummy.ld_flags := #-pthreads
 

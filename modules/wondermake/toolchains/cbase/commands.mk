@@ -26,7 +26,11 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
     mxx=$$( \
       ls -1 2>/dev/null \
         $(foreach x, \
-          $(foreach i,$(call wondermake.inherit_prepend,$1,include_path),$(if $(patsubst /%,,$i),$($1.src_dir)$i,$i)), \
+            $(foreach i,$(call wondermake.inherit_prepend,$1,include_path), \
+              $(if $(patsubst /%,,$i),$($1.src_dir)$i,$i)) \
+            $(patsubst $(call wondermake.inherit_unique,$1,cpp_include_path_pattern),%, \
+              $(call wondermake.cbase.pkg_config_command,$1,--cflags-only-I)) \
+          , \
           $(foreach s, \
             $(sort \
               $(call wondermake.inherit_append,$1,mxx_suffix) \
@@ -39,7 +43,7 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
     ); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
     printf '%s\n' \
-      "$1.implicit_mxx_files += $$mxx" \
+      "$1.implicit_mxx_files += \$$(patsubst $($1.src_dir)%,%,$$mxx)" \
       "$2: \$$\$$($1.module_map[$$import].cmi_file)" \
       "$2: private module_map += $$import=\$$($1.module_map[$$import].cmi_file)" \
       >> $@; \
