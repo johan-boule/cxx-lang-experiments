@@ -61,6 +61,7 @@ $(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.
 		"	CPATH=$$(CPATH)" \
 		"	CPLUS_INCLUDE_PATH=$$(CPLUS_INCLUDE_PATH)" \
 		"	C_INCLUDE_PATH=$$(C_INCLUDE_PATH)" \
+		"	OBJC_INCLUDE_PATH=$$(OBJC_INCLUDE_PATH)" \
 		"ld env:" \
 		"	GNUTARGET=$$(GNUTARGET)" \
 		"	LDEMULATION=$$(LDEMULATION)" \
