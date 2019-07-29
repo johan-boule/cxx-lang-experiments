@@ -39,7 +39,6 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
           ) \
         ) \
       | uniq \
-      | sed -r 's,^\./,,' \
     ); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
     printf '%s\n' \
