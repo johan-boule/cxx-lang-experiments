@@ -29,7 +29,8 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
             $(foreach i,$(call wondermake.inherit_prepend,$1,include_path), \
               $(if $(patsubst /%,,$i),$($1.src_dir)$i,$i)) \
             $(patsubst $(call wondermake.inherit_unique,$1,cpp_include_path_pattern),%, \
-              $(call wondermake.cbase.pkg_config_command,$1,--cflags-only-I)) \
+              $(filter $(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
+                $(call wondermake.cbase.pkg_config_command,$1,--cflags))) \
           , \
           $(foreach s, \
             $(sort \
@@ -81,7 +82,8 @@ define wondermake.cbase.mxx_command # $1 = scope, $$1 = unsigned flags, $(module
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
   $$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-  $(call wondermake.cbase.pkg_config_command,$1,--cflags-only-other) \
+  $(filter-out $(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
+    $(call wondermake.cbase.pkg_config_command,$1,--cflags)) \
   $(call wondermake.inherit_append,$1,cxx_flags) \
   $$1 \
   $(call wondermake.user_override,CXXFLAGS) \
@@ -96,7 +98,8 @@ define wondermake.cbase.cxx_command # $1 = scope, $$1 = unsigned flags, $(module
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
   $$(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_map_pattern),$(call wondermake.inherit_prepend,$1,module_map) $$(module_map)) \
-  $(call wondermake.cbase.pkg_config_command,$1,--cflags-only-other) \
+  $(filter-out $(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
+    $(call wondermake.cbase.pkg_config_command,$1,--cflags)) \
   $(call wondermake.inherit_append,$1,cxx_flags) \
   $$1 \
   $(call wondermake.user_override,CXXFLAGS) \
