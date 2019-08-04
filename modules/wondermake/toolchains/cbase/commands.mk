@@ -131,7 +131,7 @@ define wondermake.cbase.ar_command # $1 = scope, $$1 = unsigned flags
   $(call wondermake.user_override,ARFLAGS) \
   $(call wondermake.inherit_unique,$1,ar_flags_out_mode) \
   $$($1.obj_files) \
-  $(if $(or $(call wondermake.user_override,RANLIB),$(call wondermake.inherit_unique,$1,ranlib)), \
+  $(if $(strip $(or $(call wondermake.user_override,RANLIB),$(call wondermake.inherit_unique,$1,ranlib))), \
     ; $(or $(call wondermake.user_override,RANLIB),$(call wondermake.inherit_unique,$1,ranlib)) \
     $(call wondermake.inherit_append,$1,ranlib_flags) \
     $(call wondermake.inherit_unique,$1,ranlib_flags_out_mode) \
