@@ -16,19 +16,21 @@ wondermake.cbase.config[unix_elf_clang].ranlib := $(call wondermake.user_overrid
 ###############################################################################
 # Toolchain configuration variables
 
-wondermake.cbase.config[unix_elf_clang].cpp_flags_out_mode = -o$$@ -E -MD -MF$$@.d -MT$$@ -MP -MJ$$@.compile_commands.json
-wondermake.cbase.config[unix_elf_clang].pch_flags_out_mode = -o$$@    -MD -MF$$@.d -MT$$@ -MP -MJ$$@.compile_commands.json
-wondermake.cbase.config[unix_elf_clang].cxx_flags_out_mode = -o$$@ -c -MJ$$@.compile_commands.json
-wondermake.cbase.config[unix_elf_clang].mxx_flags_out_mode = -o$$@ --precompile -MJ$$@.compile_commands.json
-wondermake.cbase.config[unix_elf_clang].ld_flags_out_mode  = -o$$@
-wondermake.cbase.config[unix_elf_clang].ar_flags_out_mode  =   $$@
+wondermake.cbase.config[unix_elf_clang].cpp_flags_out_mode     = -o$$@ -E -MD -MF$$@.d -MT$$@ -MP -MJ$$@.compile_commands.json
+wondermake.cbase.config[unix_elf_clang].pch_flags_out_mode     = -o$$@    -MD -MF$$@.d -MT$$@ -MP -MJ$$@.compile_commands.json
+wondermake.cbase.config[unix_elf_clang].cxx_flags_out_mode     = -o$$@ -c -MJ$$@.compile_commands.json
+wondermake.cbase.config[unix_elf_clang].mxx_flags_out_mode     = -o$$@ --precompile -MJ$$@.compile_commands.json
+wondermake.cbase.config[unix_elf_clang].ld_flags_out_mode      = -o$$@
+wondermake.cbase.config[unix_elf_clang].ar_flags_out_mode      =   $$@
+wondermake.cbase.config[unix_elf_clang].ranlib_flags_out_mode  =   $$@
 
 # some useful options: -Wmissing-include-dirs -Winvalid-pch -H -fpch-deps -Wp,-v
 # g++/clang++ -print-search-dirs ; ld --verbose | grep SEARCH_DIR | tr -s ' ;' \\012
 # to print the include search path: g++/clang++ -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed -e '/^[^ ]/d' -e 's,^ ,-I,'
-wondermake.cbase.config[unix_elf_clang].cpp_flags := -Winvalid-pch
-wondermake.cbase.config[unix_elf_clang].cxx_flags := -pipe
-wondermake.cbase.config[unix_elf_clang].ar_flags  := qcDs
+wondermake.cbase.config[unix_elf_clang].cpp_flags     := -Winvalid-pch
+wondermake.cbase.config[unix_elf_clang].cxx_flags     := -pipe
+wondermake.cbase.config[unix_elf_clang].ar_flags      := qcDs
+wondermake.cbase.config[unix_elf_clang].ranlib_flags  := -D
 
 # commit 8af8b8611c5daee5f04eac93e9315368f42ab70e
 # Author: Richard Smith <richard-llvm@metafoo.co.uk>
