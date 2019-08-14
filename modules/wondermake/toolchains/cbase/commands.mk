@@ -31,6 +31,7 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
             $(patsubst $(call wondermake.inherit_unique,$1,cpp_include_path_pattern),%, \
               $(filter $(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
                 $(call wondermake.cbase.pkg_config_command,$1,--cflags))) \
+            $(call wondermake.inherit_unique,$1,builtin_include_path)
           , \
           $(foreach s, \
             $(sort \

@@ -16,16 +16,16 @@ wondermake.cbase.config[unix_elf_clang].ranlib := $(call wondermake.user_overrid
 ###############################################################################
 # Toolchain configuration variables
 
-wondermake.cbase.config[unix_elf_clang].cpp_flags_out_mode     = -o$$@ -E -MD -MF$$@.d -MT$$@ -MP -MJ$$@.compile_commands.json
-wondermake.cbase.config[unix_elf_clang].pch_flags_out_mode     = -o$$@    -MD -MF$$@.d -MT$$@ -MP -MJ$$@.compile_commands.json
-wondermake.cbase.config[unix_elf_clang].cxx_flags_out_mode     = -o$$@ -c -MJ$$@.compile_commands.json
-wondermake.cbase.config[unix_elf_clang].mxx_flags_out_mode     = -o$$@ --precompile -MJ$$@.compile_commands.json
+wondermake.cbase.config[unix_elf_clang].cpp_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json -E -MD -MF$$@.d -MT$$@ -MP
+wondermake.cbase.config[unix_elf_clang].pch_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json    -MD -MF$$@.d -MT$$@ -MP
+wondermake.cbase.config[unix_elf_clang].cxx_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json -c
+wondermake.cbase.config[unix_elf_clang].mxx_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json --precompile
 wondermake.cbase.config[unix_elf_clang].ld_flags_out_mode      = -o$$@
 wondermake.cbase.config[unix_elf_clang].ar_flags_out_mode      =   $$@
 wondermake.cbase.config[unix_elf_clang].ranlib_flags_out_mode  =   $$@
 
 # some useful options: -Wmissing-include-dirs -Winvalid-pch -H -fpch-deps -Wp,-v
-# g++/clang++ -print-search-dirs ; ld --verbose | grep SEARCH_DIR | tr -s ' ;' \\012
+# to print the programs and lib search paths: g++/clang++ -print-search-dirs ; g++/clang++ -print-prog-name=ld ; ld --verbose | grep SEARCH_DIR | tr -s ' ;' \\012 ;
 # to print the include search path: g++/clang++ -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed -e '/^[^ ]/d' -e 's,^ ,-I,'
 wondermake.cbase.config[unix_elf_clang].cpp_flags     := -Winvalid-pch
 wondermake.cbase.config[unix_elf_clang].cxx_flags     := -pipe
@@ -117,6 +117,12 @@ define wondermake.cbase.config[unix_elf_clang].check_toolchain_version # $1 = mi
     $(call wondermake.error_shell,clang version >= $1 is required. $(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) is version $$actual_clang_major_version.); \
   fi; \
   $(call wondermake.trace_shell,$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) is version $$actual_clang_major_version.)
+endef
+
+define wondermake.cbase.config[unix_elf_clang].builtin_include_path
+  $(call wondermake.announce,configure,builtin include path)
+  $(eval wondermake.cbase.config[unix_elf_clang].builtin_include_path := $(shell $(wondermake.cbase.config[unix_elf_clang].cpp) -xc++ /dev/null -E -Wp,-v 2>&1 1>/dev/null | sed '/^[^ ]/d'))
+  $(call wondermake.print,$(wondermake.cbase.config[unix_elf_clang].builtin_include_path))
 endef
 
 ###############################################################################
