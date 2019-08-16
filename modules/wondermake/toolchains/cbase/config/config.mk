@@ -33,13 +33,25 @@ wondermake.cbase.default_type[lib]        := shared_lib
 # Configuration support
 
 # This rule is done only on first build or when changes in the env are detected.
-$(wondermake.bld_dir)wondermake.cbase.configure: gcc_min_required_version   := 9# First version with ISO C++ module TS support
-$(wondermake.bld_dir)wondermake.cbase.configure: clang_min_required_version := 6# First version with ISO C++ module TS support
 $(wondermake.bld_dir)wondermake.cbase.configure: $(wondermake.bld_dir)wondermake.cbase.toolchain | $(wondermake.bld_dir)
-	$(call wondermake.cbase.config[unix_elf_clang].check_toolchain_version,$(clang_min_required_version))
+	$(call $(wondermake.cbase.inherit).check_toolchain_version)
+	$(call $(wondermake.cbase.inherit).print_builtin_include_path) > $(wondermake.bld_dir)wondermake.cbase.builtin_include_path
 	@touch $@
 	@$(call wondermake.announce_shell,configure,toolchain cbase configured,with $(wondermake.cbase.inherit))
 wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.configure
+wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.builtin_include_path
+
+define $(wondermake.cbase.inherit).builtin_include_path
+  $(eval $(wondermake.cbase.inherit).builtin_include_path := $(file < $(wondermake.bld_dir)wondermake.cbase.builtin_include_path))
+  $($(wondermake.cbase.inherit).builtin_include_path)
+endef
+# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+$(wondermake.cbase.inherit).builtin_include_path :=
+# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
 
 $(wondermake.bld_dir)wondermake.cbase.toolchain: $(wondermake.bld_dir)wondermake.cbase.env
 $(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.bld_dir)wondermake.cbase.toolchain, \
@@ -54,44 +66,42 @@ $(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.
 			$$$$(command -v $(firstword $(call wondermake.inherit_unique,wondermake.cbase,ranlib))) \
 			$$$$(command -v $(firstword $(call wondermake.inherit_unique,wondermake.cbase,pkg_config_prog))) \
 		)" \
-		"min required version:" \
-		"	gcc: $$(gcc_min_required_version)" \
-		"	clang: $$(clang_min_required_version)" \
+		"min required version: $$(min_required_version)" \
 		"cxx env:" \
-		"	CPATH=$$(CPATH)" \
-		"	CPLUS_INCLUDE_PATH=$$(CPLUS_INCLUDE_PATH)" \
-		"	C_INCLUDE_PATH=$$(C_INCLUDE_PATH)" \
-		"	OBJC_INCLUDE_PATH=$$(OBJC_INCLUDE_PATH)" \
+		"	CPATH=$$$$CPATH" \
+		"	CPLUS_INCLUDE_PATH=$$$$CPLUS_INCLUDE_PATH" \
+		"	C_INCLUDE_PATH=$$$$C_INCLUDE_PATH" \
+		"	OBJC_INCLUDE_PATH=$$$$OBJC_INCLUDE_PATH" \
 		"ld env:" \
-		"	GNUTARGET=$$(GNUTARGET)" \
-		"	LDEMULATION=$$(LDEMULATION)" \
-		"	COLLECT_NO_DEMANGLE=$$(COLLECT_NO_DEMANGLE)" \
+		"	GNUTARGET=$$$$GNUTARGET" \
+		"	LDEMULATION=$$$$LDEMULATION" \
+		"	COLLECT_NO_DEMANGLE=$$$$COLLECT_NO_DEMANGLE" \
 		"	native-elf (linux/solaris):" \
-		"		LD_RUN_PATH=$$(LD_RUN_PATH)" \
-		"		DT_RUNPATH=$$(DT_RUNPATH)" \
-		"		DT_RPATH=$$(DT_RPATH)" \
+		"		LD_RUN_PATH=$$$$LD_RUN_PATH" \
+		"		DT_RUNPATH=$$$$DT_RUNPATH" \
+		"		DT_RPATH=$$$$DT_RPATH" \
 		"pkg-config env:" \
-		"	PKG_CONFIG_PATH=$$(PKG_CONFIG_PATH)" \
-		"	PKG_CONFIG_LIBDIR=$$(PKG_CONFIG_LIBDIR)" \
-		"	PKG_CONFIG_DISABLE_UNINSTALLED=$$(PKG_CONFIG_DISABLE_UNINSTALLED)" \
-		"	PKG_CONFIG_TOP_BUILD_DIR=$$(PKG_CONFIG_TOP_BUILD_DIR)" \
-		"	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=$$(PKG_CONFIG_ALLOW_SYSTEM_CFLAGS)" \
-		"	PKG_CONFIG_ALLOW_SYSTEM_LIBS=$$(PKG_CONFIG_ALLOW_SYSTEM_LIBS)" \
-		"	PKG_CONFIG_SYSROOT_DIR=$$(PKG_CONFIG_SYSROOT_DIR)" \
+		"	PKG_CONFIG_PATH=$$$$PKG_CONFIG_PATH" \
+		"	PKG_CONFIG_LIBDIR=$$$$PKG_CONFIG_LIBDIR" \
+		"	PKG_CONFIG_DISABLE_UNINSTALLED=$$$$PKG_CONFIG_DISABLE_UNINSTALLED" \
+		"	PKG_CONFIG_TOP_BUILD_DIR=$$$$PKG_CONFIG_TOP_BUILD_DIR" \
+		"	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=$$$$PKG_CONFIG_ALLOW_SYSTEM_CFLAGS" \
+		"	PKG_CONFIG_ALLOW_SYSTEM_LIBS=$$$$PKG_CONFIG_ALLOW_SYSTEM_LIBS" \
+		"	PKG_CONFIG_SYSROOT_DIR=$$$$PKG_CONFIG_SYSROOT_DIR" \
 ))
 
-# Note that LIBRARY_PATH used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO
+# Note that LIBRARY_PATH is used by both the compiler and the linker according to man page. see http://www.mingw.org/wiki/LibraryPathHOWTO
 $(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.bld_dir)wondermake.cbase.env, \
 	printf '%s\n' \
-		"PATH=$$(PATH)" \
-		"linux/solaris/macosx LD_LIBRARY_PATH=$$(LD_LIBRARY_PATH)" \
-		"macosx DYLD_LIBRARY_PATH=$$(DYLD_LIBRARY_PATH)" \
-		"macosx DYLD_FALLBACK_LIBRARY_PATH=$$(DYLD_FALLBACK_LIBRARY_PATH)" \
-		"hpux SHLIB_PATH=$$(SHLIB_PATH)" \
-		"aix LIBPATH=$$(LIBPATH)" \
-		"LIBRARY_PATH=$$(LIBRARY_PATH)" \
-		"GCC_EXEC_PREFIX=$$(GCC_EXEC_PREFIX)" \
-		"COMPILER_PATH=$$(COMPILER_PATH)" \
+		"PATH=$$$$PATH" \
+		"linux/solaris/macosx LD_LIBRARY_PATH=$$$$LD_LIBRARY_PATH" \
+		"macosx DYLD_LIBRARY_PATH=$$$$DYLD_LIBRARY_PATH" \
+		"macosx DYLD_FALLBACK_LIBRARY_PATH=$$$$DYLD_FALLBACK_LIBRARY_PATH" \
+		"hpux SHLIB_PATH=$$$$SHLIB_PATH" \
+		"aix LIBPATH=$$$$LIBPATH" \
+		"LIBRARY_PATH=$$$$LIBRARY_PATH" \
+		"GCC_EXEC_PREFIX=$$$$GCC_EXEC_PREFIX" \
+		"COMPILER_PATH=$$$$COMPILER_PATH" \
 ))
 
 # This rule ensures wondermake.auto-clean is called even when specific goals have been given on the make command line.
