@@ -123,7 +123,12 @@ define wondermake.cbase.config[unix_elf_clang].check_toolchain_version
   $(call wondermake.trace_shell,$(firstword $(wondermake.cbase.config[unix_elf_clang].cpp)) is version $$actual_clang_major_version.)
 endef
 
-wondermake.cbase.config[unix_elf_clang].print_builtin_include_path = $(wondermake.cbase.config[unix_elf_clang].cpp) -E -xc++ /dev/null -Wp,-v 2>&1 1>/dev/null | sed '/^[^ ]/d'
+define wondermake.cbase.config[unix_elf_clang].print_builtin_include_path
+  @$(call wondermake.announce_shell,configure,print builtin include path)
+  @$(wondermake.cbase.config[unix_elf_clang].cpp) -E -xc++ /dev/null -Wp,-v 2>&1 1>/dev/null \
+  | sed '/^[^ ]/d' \
+  | tr -s '\n ' ' '
+endef
 
 ###############################################################################
 endif # ifndef wondermake.cbase.config.unix_elf_clang.included
