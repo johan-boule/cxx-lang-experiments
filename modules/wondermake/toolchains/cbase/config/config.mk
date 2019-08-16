@@ -45,13 +45,6 @@ define $(wondermake.cbase.inherit).builtin_include_path
   $(eval $(wondermake.cbase.inherit).builtin_include_path := $(file < $(wondermake.bld_dir)wondermake.cbase.builtin_include_path))
   $($(wondermake.cbase.inherit).builtin_include_path)
 endef
-# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-$(wondermake.cbase.inherit).builtin_include_path :=
-# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-# TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
 
 $(wondermake.bld_dir)wondermake.cbase.toolchain: $(wondermake.bld_dir)wondermake.cbase.env
 $(eval $(call wondermake.write_iif_content_changed_shell,configure,$(wondermake.bld_dir)wondermake.cbase.toolchain, \
