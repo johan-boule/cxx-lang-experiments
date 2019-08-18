@@ -21,8 +21,8 @@ endef
 define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj file, or obj+cmi files)
   @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
   do \
-    import_slash=$$(printf '%s' "$$import" | tr . /); \
-    import_last_word=$$(printf '%s' "$$import" | sed -r 's,^.*\.([^.]+)$$,\1,'); \
+    import_slash=$$(printf '%s' $$import | tr . /); \
+    import_last_word=$$(printf '%s' $$import | sed -r 's,^.*\.([^.]+)$$,\1,'); \
     mxx=$$( \
       ls -1 2>/dev/null \
         $(foreach include_path, \
