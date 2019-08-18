@@ -25,29 +25,31 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
     import_last_word=$$(printf '%s' "$$import" | sed -r 's,^.*\.([^.]+)$$,\1,'); \
     mxx=$$( \
       ls -1 2>/dev/null \
-        $(foreach x, \
+        $(foreach include_path, \
             $(foreach i,$(call wondermake.inherit_prepend,$1,include_path), \
               $(if $(patsubst /%,,$i),$($1.src_dir)$i,$i)) \
             $(patsubst $(call wondermake.inherit_unique,$1,cpp_include_path_pattern),%, \
               $(filter $(call wondermake.inherit_unique,$1,cpp_include_path_pattern), \
                 $(call wondermake.cbase.pkg_config_command,$1,--cflags))) \
-            $(call wondermake.inherit_unique,$1,builtin_include_path)
+            $(call wondermake.inherit_unique,$1,builtin_include_path) \
           , \
-          $(foreach s, \
-            $(sort \
-              $(call wondermake.inherit_append,$1,mxx_suffix) \
-              $(call wondermake.inherit_append,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])), \
-            "$x/$$import.$s" "$x/$$import_slash.$s" "$x/$$import_slash/$$import_last_word.$s" \
-          ) \
+            $(foreach suffix, \
+              $(sort \
+                $(call wondermake.inherit_append,$1,mxx_suffix) \
+                $(call wondermake.inherit_append,$1,mxx_suffix[$(call wondermake.inherit_unique,$1,lang)])) \
+            , \
+              $(include_path)/$$import.$(suffix) \
+              $(include_path)/$$import_slash.$(suffix) \
+              $(include_path)/$$import_slash/$$import_last_word.$(suffix) \
+            ) \
         ) \
       | uniq \
     ); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
-    printf '%s\n' \
+    printf '%s\n' >>$@ \
       "$1.implicit_mxx_files += \$$(patsubst $($1.src_dir)%,%,$$mxx)" \
       "$2: \$$\$$($1.module_map[$$import].cmi_file)" \
-      "$2: private module_map += $$import=\$$($1.module_map[$$import].cmi_file)" \
-      >> $@; \
+      "$2: private module_map += $$import=\$$($1.module_map[$$import].cmi_file)"; \
   done
 endef
 
