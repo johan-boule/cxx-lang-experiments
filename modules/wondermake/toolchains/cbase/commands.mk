@@ -9,18 +9,27 @@ ifndef wondermake.cbase.commands.included
 
 # Command to parse ISO C++ module "export module" keywords in an interface file
 define wondermake.cbase.parse_export_module_keyword # $1 = scope, $2 = cmi file
-  @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],$1.module_map[\1].cmi_file := $2,p' $< >> $@
+  @sed -rn 's,^[ 	]*export[ 	]+module[ 	]+([^ 	;]+)[ 	;],wondermake.cbase.module_map[\1].cmi_file := $2,p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "module" keywords in an implementation file
 define wondermake.cbase.parse_module_keyword # $1 = scope, $2 = obj file
-  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$2: $$$$($1.module_map[\1].cmi_file)\n$2: private module_map = $$($1.module_map[\1].cmi_file)\nwondermake.cbase.module_map[\1].scope := $1,p' $< >> $@
+  @sed -rn 's,^[ 	]*module[ 	]+([^ 	;]+)[ 	;],$2: $$$$(wondermake.cbase.module_map[\1].cmi_file)\n$2: private module_map = $$(wondermake.cbase.module_map[\1].cmi_file),p' $< >> $@
 endef
 
 # Command to parse ISO C++ module "import" keywords in an interface or implementation file
 define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj file, or obj+cmi files)
   @for import in $$(sed -rn 's,^[ 	]*(export[ 	]+)?import[ 	]+([^ 	;]+)[ 	;],\2,p' $<); \
   do \
+    printf '%s\n' >>$@ \
+      "$1.imports += $$import" \
+      "$2: \$$\$$(wondermake.cbase.module_map[$$import].cmi_file)" \
+      "$2: private module_map += $$import=\$$(wondermake.cbase.module_map[$$import].cmi_file)"; \
+  done
+endef
+
+define wondermake.cbase.find_import # $1 = scope, $2 = import
+    import=$2; \
     import_slash=$$(printf '%s' $$import | tr . /); \
     import_last_word=$$(printf '%s' $$import | sed -r 's,^.*\.([^.]+)$$,\1,'); \
     mxx=$$( \
@@ -47,10 +56,7 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
     ); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
     printf '%s\n' >>$@ \
-      "$1.implicit_mxx_files += \$$(patsubst $($1.src_dir)%,%,$$mxx)" \
-      "$2: \$$\$$($1.module_map[$$import].cmi_file)" \
-      "$2: private module_map += $$import=\$$($1.module_map[$$import].cmi_file)"; \
-  done
+      "$1.implicit_mxx_files += \$$(patsubst $($1.src_dir)%,%,$$mxx)";
 endef
 
 # Command to preprocess a c++ source file

@@ -8,7 +8,7 @@ import words;
 import punctuations;
 
 export namespace phrases {
-	std::string hello_world() {
+	inline std::string hello_world() {
 		using namespace words;
 		using namespace punctuations;
 		return hello() + comma() + space() + world() + exclamation_mark();

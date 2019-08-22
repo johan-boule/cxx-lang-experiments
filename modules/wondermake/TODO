@@ -13,6 +13,8 @@
 			import "header"
 			import <header>
 
+*	-MJ to .new then cmp and mv to final if changed. clean += .new
+
 *	fix clean/auto-clean:
 	bug1)
 		leaves implicit mxx derivations.

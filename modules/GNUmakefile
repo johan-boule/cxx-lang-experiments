@@ -28,12 +28,12 @@ wondermake += hello-world
 
 phrases.inherit := common
 phrases.src := src/phrases/
-phrases.private_deps := words
+phrases.public_deps := words punctuations
 wondermake += phrases
 
 words.inherit := common
 words.src := src/words/
-words.private_deps := letters punctuations
+words.private_deps := letters
 wondermake += words
 
 letters.inherit := common
