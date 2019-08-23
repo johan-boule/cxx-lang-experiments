@@ -127,7 +127,7 @@ define wondermake.cbase.template.first_loop
     # Include the dynamically generated makefiles
     # GNU make will first build (if need be) all of these makefiles
     # before restarting itself to build the actual goal.
-    # This will in turn trigger the building of the .ii files, on which the .d files depend.
+    # This will in turn trigger the building of the .ii files, on which the .d.mk files depend.
     # So, preprocessing occurs on the first make phase.
     # Secondary expansion is used to allow variables to be defined out of order.
     ifneq '' '$(wondermake.verbose)'
@@ -275,9 +275,6 @@ define wondermake.cbase.template.define_vars
   wondermake.template.cmi_files += $(patsubst %,$(wondermake.template.intermediate_dir)%.$(wondermake.template.cmi_suffix), \
     $(call wondermake.cbase.flatten_path,$(wondermake.template.implicit_mxx_files)))
   $(wondermake.template.scope).cmi_files := $(wondermake.template.cmi_files)
-endef
-
-define wondermake.cbase.template.define_vars.implicit_mxx
 endef
 
 ###############################################################################
