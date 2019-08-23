@@ -49,7 +49,7 @@ define wondermake.cbase.find_import_mxx_file # $1 = scope, $2 = import
       | uniq \
     ); \
     $(call wondermake.trace_shell,import $$import => $$mxx); \
-    printf '%s\n' >>$@ \
+    printf '%s\n' >$@ \
       "$1.implicit_mxx_files += \$$(patsubst $($1.src_dir)%,%,$$mxx)";
 endef
 
