@@ -16,8 +16,8 @@ wondermake.cbase.config[unix_elf_clang].ranlib := $(call wondermake.user_overrid
 ###############################################################################
 # Toolchain configuration variables
 
-wondermake.cbase.config[unix_elf_clang].cpp_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json -E -MD -MF$$@.d -MT$$@ -MP
-wondermake.cbase.config[unix_elf_clang].pch_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json    -MD -MF$$@.d -MT$$@ -MP
+wondermake.cbase.config[unix_elf_clang].cpp_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json -E -MD -MF$$(patsubst %.ii,%.d.mk,$$@) -MT$$@ -MP
+wondermake.cbase.config[unix_elf_clang].pch_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json    -MD -MF$$(patsubst %.ii,%.d.mk,$$@) -MT$$@ -MP
 wondermake.cbase.config[unix_elf_clang].cxx_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json -c
 wondermake.cbase.config[unix_elf_clang].mxx_flags_out_mode     = -o$$@ -MJ$$@.compile_commands.json --precompile
 wondermake.cbase.config[unix_elf_clang].ld_flags_out_mode      = -o$$@

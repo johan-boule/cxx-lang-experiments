@@ -3,5 +3,5 @@ export module new_line;
 import dummy;
 
 export namespace new_line {
-	inline char new_line() { dummy(); return '\n'; }
+	inline char new_line() { /*dummy();*/ return '\n'; }
 }

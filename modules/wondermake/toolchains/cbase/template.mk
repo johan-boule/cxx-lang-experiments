@@ -111,12 +111,12 @@ define wondermake.cbase.template.first_loop
     $(wondermake.template.scope).cxx_files := $(wondermake.template.cxx_files)
   endif
 
-  wondermake.template.mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
+  wondermake.template.mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.d.mk, \
     $(call wondermake.cbase.flatten_path,$(wondermake.template.mxx_files)))
   $(wondermake.template.scope).mxx_d_files := $(wondermake.template.mxx_d_files)
 
   ifneq 'headers' '$(wondermake.template.type)'
-    wondermake.template.cxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
+    wondermake.template.cxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.d.mk, \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.cxx_files)))
     $(wondermake.template.scope).cxx_d_files := $(wondermake.template.cxx_d_files)
   endif
@@ -294,7 +294,7 @@ define wondermake.cbase.template.recursive_include
   wondermake.template.new_implicit_mxx_files := $(filter-out $(wondermake.template.mxx_files) $(wondermake.template.implicit_mxx_files),$(wondermake.template.new_implicit_mxx_files))
   ifneq '' '$(wondermake.template.new_implicit_mxx_files)'
     wondermake.template.implicit_mxx_files += $(wondermake.template.new_implicit_mxx_files)
-    wondermake.template.new_implicit_mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.ii.d, \
+    wondermake.template.new_implicit_mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.d.mk, \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.new_implicit_mxx_files)))
     wondermake.template.implicit_mxx_d_files += $(wondermake.template.new_implicit_mxx_d_files)
     ifneq '' '$(wondermake.verbose)'
@@ -364,7 +364,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
   $(if $(wondermake.template.implicit_mxx_d_files),
     # Rule to parse ISO C++ module keywords in an interface file
-    $(wondermake.template.implicit_mxx_d_files): %.ii.d: %.ii
+    $(wondermake.template.implicit_mxx_d_files): %.d.mk: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.cbase.parse_export_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.cmi_suffix))
 		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.cmi_suffix))
@@ -372,7 +372,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
   $(if $(wondermake.template.mxx_d_files),
     # Rule to parse ISO C++ module keywords in an interface file
-    $(wondermake.template.mxx_d_files): %.ii.d: %.ii
+    $(wondermake.template.mxx_d_files): %.d.mk: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.cbase.parse_export_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.cmi_suffix))
 		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.cmi_suffix) $$*.$(wondermake.template.obj_suffix))
@@ -380,22 +380,22 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
   $(if $(wondermake.template.cxx_d_files),
     # Rule to parse ISO C++ module keywords in an implementation file
-    $(wondermake.template.cxx_d_files): %.ii.d: %.ii
+    $(wondermake.template.cxx_d_files): %.d.mk: %.ii
 		$$(call wondermake.announce,$(wondermake.template.scope),extract-deps $$<,to $$@)
 		$$(call wondermake.cbase.parse_module_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.obj_suffix))
 		$$(call wondermake.cbase.parse_import_keyword,$(wondermake.template.scope),$$*.$(wondermake.template.obj_suffix))
   )
 
   wondermake.clean += $(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files)
-  wondermake.clean += $(patsubst %.ii.d,%.ii,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
-  wondermake.clean += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
+  wondermake.clean += $(patsubst %.d.mk,%.ii,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
+  wondermake.clean += $(patsubst %.d.mk,%.ii.compile_commands.json,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
   wondermake.cbase.compile_commands += $(wondermake.template.scope_dir)cpp_command
-  wondermake.cbase.compile_commands.json += $(patsubst %.ii.d,%.ii.compile_commands.json,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
+  wondermake.cbase.compile_commands.json += $(patsubst %.d.mk,%.ii.compile_commands.json,$(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))
 
   $(if $(wondermake.template.cmi_files),
     # Rule to precompile a c++ source file to a binary module interface file
     $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),mxx_command,$$(call wondermake.cbase.mxx_command,$(wondermake.template.scope)))
-    $(wondermake.template.cmi_files): %.$(wondermake.template.cmi_suffix): %.ii $(wondermake.template.scope_dir)mxx_command | %.ii.d # don't continue if .d failed to build
+    $(wondermake.template.cmi_files): %.$(wondermake.template.cmi_suffix): %.ii $(wondermake.template.scope_dir)mxx_command | %.d.mk # don't continue if .d.mk failed to build
 		$$(call wondermake.announce,$(wondermake.template.scope),precompile,$$<,to $$@)
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).mxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
@@ -410,7 +410,7 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
   $(if $(call wondermake.equals,headers,$(wondermake.template.type)),,
     # Rule to compile a c++ source file to an object file
     $(call wondermake.write_iif_content_changed_scope_var,$(wondermake.template.scope),cxx_command,$$(call wondermake.cbase.cxx_command,$(wondermake.template.scope)))
-    $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope_dir)cxx_command | %.ii.d # don't continue if .d failed to build
+    $(wondermake.template.obj_files): %.$(wondermake.template.obj_suffix): %.ii $(wondermake.template.scope_dir)cxx_command | %.d.mk # don't continue if .d.mk failed to build
 		$$(call wondermake.announce,$(wondermake.template.scope),compile,$$<,to $$@)
 		$$(eval $$@.evaluable_command = $$($(wondermake.template.scope).cxx_command))
 		$$(call $$@.evaluable_command,$$(call wondermake.inherit_append,$(wondermake.template.scope),cxx_flags_unsigned))
