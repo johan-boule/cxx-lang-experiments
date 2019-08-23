@@ -322,17 +322,17 @@ define wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx
     $(if $(wondermake.cbase.module_map[$(import)].cmi_file),,
       $(if $(wondermake.cbase.module_map[$(import)].seen),,
         $(eval wondermake.cbase.module_map[$(import)].seen := true)
-        $(wondermake.bld_dir)wondermake.cbase.module_map/$(import).mk: | $(dir $(wondermake.bld_dir)wondermake.cbase.module_map/$(import).mk)
+        $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk: | $(dir $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk)
 			$$(call wondermake.announce,$(wondermake.template.scope),find-module $(import))
 			$$(call wondermake.cbase.find_import_mxx_file,$(wondermake.template.scope),$(import))
-        wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.module_map/$(import).mk
+        wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk
         $(wondermake.template.scope).implicit_mxx_files := # this is an immediate var
-        $(info XXX 			include $(wondermake.bld_dir)wondermake.cbase.module_map/$(import).mk)
+        $(info XXX 			include $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk)
         $(if $(wondermake.verbose),
-          $(foreach i,$(wondermake.bld_dir)wondermake.cbase.module_map/$(import).mk,
+          $(foreach i,$(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk,
             $(call wondermake.announce,$(wondermake.template.scope),include $i,$(if $(wildcard $i),found,to be built)))
         )
-        -include $(wondermake.bld_dir)wondermake.cbase.module_map/$(import).mk
+        -include $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk
       )
     )
   )
