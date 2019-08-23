@@ -1,0 +1,5 @@
+export module dummy;
+
+export namespace dummy {
+	inline void dummy() {}
+}
