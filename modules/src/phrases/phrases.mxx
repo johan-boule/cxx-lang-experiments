@@ -6,9 +6,11 @@ export module phrases;
 
 import words;
 import punctuations;
+import dummy;
 
 export namespace phrases {
 	inline std::string hello_world() {
+		dummy::dummy();
 		using namespace words;
 		using namespace punctuations;
 		return hello() + comma() + space() + world() + exclamation_mark();

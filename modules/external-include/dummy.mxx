@@ -1,5 +1,7 @@
 export module dummy;
 
+import dummy.indirect;
+
 export namespace dummy {
-	inline void dummy() {}
+	inline void dummy() { indirect::dummy(); }
 }

@@ -12,7 +12,7 @@ common.inherit := dummy
 common.toolchain := cbase
 common.lang := c++
 common.src_dir := $(dir $(lastword $(MAKEFILE_LIST)))
-common.include_path := src
+common.include_path := src external-include
 common.type := lib
 #common.cpp_flags := -std=c++2a
 #common.cxx_flags := -std=c++2a
@@ -23,7 +23,6 @@ hello-world.name := hello
 hello-world.type := executable
 hello-world.src := src/hello_world.cxx
 hello-world.private_deps := phrases
-hello-world.include_path := external-include
 wondermake += hello-world
 
 phrases.inherit := common

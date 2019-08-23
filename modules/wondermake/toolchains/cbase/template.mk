@@ -200,16 +200,6 @@ define wondermake.cbase.template.second_loop
   $(eval $(value wondermake.cbase.template.define_vars))
 
   ifneq '' '$(filter template,$(wondermake.verbose))'
-    $(info $(wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx))
-  endif
-  $(eval $(wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx))
-
-  ifneq '' '$(filter template,$(wondermake.verbose))'
-    $(info $(wondermake.cbase.template.define_vars.implicit_mxx))
-  endif
-  $(eval $(value wondermake.cbase.template.define_vars.implicit_mxx))
-
-  ifneq '' '$(filter template,$(wondermake.verbose))'
     $(info $(wondermake.cbase.template.rules_with_evaluated_recipes))
   endif
   $(eval $(wondermake.cbase.template.rules_with_evaluated_recipes))
@@ -270,12 +260,14 @@ define wondermake.cbase.template.define_vars
     wondermake.template.obj_files := $($(wondermake.template.scope).obj_files)
     wondermake.template.out_files := $($(wondermake.template.scope).out_files)
   endif
-endef
 
-define wondermake.cbase.template.define_vars.implicit_mxx
   # Recursively includes the dynamically generated makefiles
   wondermake.template.implicit_mxx_files := # this is an immediate var
   wondermake.template.implicit_mxx_d_files := # this is an immediate var
+  $(wondermake.template.scope).implicit_mxx_files := # this is an immediate var
+  ifneq '' '$(filter template,$(wondermake.verbose))'
+    $(info $(wondermake.cbase.template.recursive_include))
+  endif
   $(eval $(value wondermake.cbase.template.recursive_include))
   $(wondermake.template.scope).implicit_mxx_files := $(wondermake.template.implicit_mxx_files)
   $(wondermake.template.scope).implicit_mxx_d_files := $(wondermake.template.implicit_mxx_d_files)
@@ -285,14 +277,20 @@ define wondermake.cbase.template.define_vars.implicit_mxx
   $(wondermake.template.scope).cmi_files := $(wondermake.template.cmi_files)
 endef
 
+define wondermake.cbase.template.define_vars.implicit_mxx
+endef
+
 ###############################################################################
 # Recursively includes the dynamically generated makefiles
 
 define wondermake.cbase.template.recursive_include
+  $(eval $(wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx))
   wondermake.template.new_implicit_mxx_files := $($(wondermake.template.scope).implicit_mxx_files)
   wondermake.template.new_implicit_mxx_files := $(sort $(wondermake.template.new_implicit_mxx_files))
   wondermake.template.new_implicit_mxx_files := $(filter-out $(wondermake.template.mxx_files) $(wondermake.template.implicit_mxx_files),$(wondermake.template.new_implicit_mxx_files))
-  ifneq '' '$(wondermake.template.new_implicit_mxx_files)'
+  ifeq '' '$(wondermake.template.new_implicit_mxx_files)'
+    undefine wondermake.template.new_implicit_mxx_files
+  else
     wondermake.template.implicit_mxx_files += $(wondermake.template.new_implicit_mxx_files)
     wondermake.template.new_implicit_mxx_d_files := $(patsubst %,$(wondermake.template.intermediate_dir)%.d.mk, \
       $(call wondermake.cbase.flatten_path,$(wondermake.template.new_implicit_mxx_files)))
@@ -302,12 +300,9 @@ define wondermake.cbase.template.recursive_include
         $(call wondermake.announce,$(wondermake.template.scope),include $i,$(if $(wildcard $i),found,to be built)))
     endif
     -include $(wondermake.template.new_implicit_mxx_d_files)
-    $(eval $(wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx))
     undefine wondermake.template.new_implicit_mxx_files
     undefine wondermake.template.new_implicit_mxx_d_files
     $(eval $(value wondermake.cbase.template.recursive_include))
-  else
-    undefine wondermake.template.new_implicit_mxx_files
   endif
 endef
 
@@ -315,30 +310,26 @@ endef
 # Define the template rules with recipes that have the temporary loop variables evaluated
 
 define wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx
-  $(info XXX scope $(wondermake.template.scope))
   $(foreach import,$($(wondermake.template.scope).imports),
-    $(info XXX 	import $(import))
-    $(info XXX 		cmi file $(wondermake.cbase.module_map[$(import)].cmi_file))
     $(if $(wondermake.cbase.module_map[$(import)].cmi_file),,
       $(if $(wondermake.cbase.module_map[$(import)].seen),,
         $(eval wondermake.cbase.module_map[$(import)].seen := true)
-        $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk: | $(dir $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk)
-			$$(call wondermake.announce,$(wondermake.template.scope),find-module $(import))
+        $(wondermake.template.scope_dir)external_module_mxx_paths/[$(import)].mk: \
+          $(wondermake.bld_dir)wondermake.cbase.configure \
+          $(wondermake.template.scope_dir)cpp_command \
+          | $(dir $(wondermake.template.scope_dir)external_module_mxx_paths/[$(import)].mk)
+			$$(call wondermake.announce,$(wondermake.template.scope),find-import-mxx-file $(import))
 			$$(call wondermake.cbase.find_import_mxx_file,$(wondermake.template.scope),$(import))
-        wondermake.clean += $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk
-        $(wondermake.template.scope).implicit_mxx_files := # this is an immediate var
-        $(info XXX 			include $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk)
+        wondermake.clean += $(wondermake.template.scope_dir)external_module_mxx_paths/[$(import)].mk
         $(if $(wondermake.verbose),
-          $(foreach i,$(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk,
+          $(foreach i,$(wondermake.template.scope_dir)external_module_mxx_paths/[$(import)].mk,
             $(call wondermake.announce,$(wondermake.template.scope),include $i,$(if $(wildcard $i),found,to be built)))
         )
-        -include $(wondermake.bld_dir)wondermake.cbase.module_map/$(import)!$(wondermake.template.scope).mk
+        -include $(wondermake.template.scope_dir)external_module_mxx_paths/[$(import)].mk
       )
     )
   )
 endef
-
-$(wondermake.bld_dir)wondermake.cbase.module_map/: ; mkdir -p $@
 
 define wondermake.cbase.template.rules_with_evaluated_recipes
   wondermake.default: $(wondermake.template.scope)
@@ -349,9 +340,8 @@ define wondermake.cbase.template.rules_with_evaluated_recipes
 
   # Rule to create output directories
   $(wondermake.template.scope_dir) \
-  $(wondermake.template.intermediate_dir) \
-  $(patsubst %,$(wondermake.template.intermediate_dir)%, \
-    $(sort $(dir $(wondermake.template.implicit_mxx_files) $(wondermake.template.mxx_files) $(wondermake.template.cxx_files)))) \
+  $(wondermake.template.scope_dir)external_module_mxx_paths/ \
+  $(sort $(dir $(wondermake.template.implicit_mxx_d_files) $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files))) \
   : ; mkdir -p $$@
 
   # Rule to preprocess a c++ source file
