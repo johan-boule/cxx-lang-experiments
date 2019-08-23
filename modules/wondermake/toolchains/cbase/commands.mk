@@ -28,7 +28,7 @@ define wondermake.cbase.parse_import_keyword # $1 = scope, $2 = targets (obj fil
   done
 endef
 
-define wondermake.cbase.find_import # $1 = scope, $2 = import
+define wondermake.cbase.find_import_mxx_file # $1 = scope, $2 = import
     import=$2; \
     import_slash=$$(printf '%s' $$import | tr . /); \
     import_last_word=$$(printf '%s' $$import | sed -r 's,^.*\.([^.]+)$$,\1,'); \
