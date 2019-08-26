@@ -12,6 +12,9 @@
 		- header units:
 			import "header"
 			import <header>
+			$CXX -fmodules-ts -std=c++2a -I. --precompile -xc++-header string.hxx -fmodule-name=string -ostring.pcm
+			$CXX -fmodules-ts -std=c++2a -I. --precompile -xc++-header t.hxx -fmodule-name=t -ot.pcm -fmodule-file=string.pcm
+			$CXX -fmodules-ts -std=c++2a -I. -xc++ t.cxx -fmodule-file=string.pcm -fmodule-file=t.pcm -MD -MFt.cxx.d.mk
 
 *	-MJ to .new then cmp and mv to final if changed. clean += .new
 
