@@ -5,10 +5,6 @@
 			module foo:part;
 			module foo;
 			import :part; // imports foo:part
-		- global module fragment:
-			module;
-			#include "header"
-			export module foo;
 		- header units:
 			import "header"
 			import <header>
