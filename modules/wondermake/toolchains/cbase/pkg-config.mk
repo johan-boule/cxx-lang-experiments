@@ -34,12 +34,12 @@ define wondermake.cbase.pkg_config_command_cached_recurse # $1 = scope, $2 = arg
       $(wondermake.cbase.pkg_config_cache[$3].value), \
       $(call $0,$1,$2,$3x))
   ,
-    $(call wondermake.announce,pkg-config,$2) \
+    $(if $(wondermake.verbose),$(call wondermake.announce,pkg-config,$2)) \
     $(eval
       wondermake.cbase.pkg_config_cache[$3].key := $2
-      wondermake.cbase.pkg_config_cache[$3].value := $(shell $2)
+      wondermake.cbase.pkg_config_cache[$3].value := $(shell $2 || printf '%s ' '$$(call wondermake.error,'$2 'failed)')
     ) \
-    $(call wondermake.print,$(wondermake.cbase.pkg_config_cache[$3].value)) \
+    $(if $(wondermake.verbose),$(call wondermake.print,$(wondermake.cbase.pkg_config_cache[$3].value))) \
     $(if $(wondermake.verbose),$(call wondermake.announce,$1,$2,put new result into cache: $(wondermake.cbase.pkg_config_cache[$3].value))) \
     $(wondermake.cbase.pkg_config_cache[$3].value) \
   )
