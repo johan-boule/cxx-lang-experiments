@@ -53,17 +53,6 @@ punctuations.inherit := common
 punctuations.src := src/punctuations/
 wondermake += punctuations
 
-prog.inherit := common
-prog.type := executable
-prog.src := prog.cxx
-prog.private_deps := lib
-wondermake += prog
-
-lib.inherit := common
-lib.type := static_lib
-lib.src := lib.hxx lib.cxx
-wondermake += lib
-
 include $(common.src_dir)/wondermake/main.mk
 
 test: test-hello
