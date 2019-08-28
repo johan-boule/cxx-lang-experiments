@@ -56,7 +56,6 @@ endef
 # Command to preprocess a c++ source file
 define wondermake.cbase.cpp_command # $1 = scope, $$1 = unsigned flags
   $(or $(call wondermake.user_override,CPP),$(call wondermake.inherit_unique,$1,cpp)) \
-  $(call wondermake.inherit_unique,$1,cpp_flags_out_mode) \
   $(call wondermake.inherit_unique,$1,cpp_flags[$(call wondermake.inherit_unique,$1,lang)]) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cpp_define_pattern),$(call wondermake.inherit_append,$1,define)) \
@@ -74,13 +73,13 @@ define wondermake.cbase.cpp_command # $1 = scope, $$1 = unsigned flags
   $(call wondermake.inherit_append,$1,cpp_flags) \
   $$1 \
   $(call wondermake.user_override,CPPFLAGS) \
+  $(call wondermake.inherit_unique,$1,cpp_flags_out_mode) \
   $$(abspath $$<)
 endef
 
 # Command to precompile a c++ source file to a binary module interface file
 define wondermake.cbase.mxx_command # $1 = scope, $$1 = unsigned flags, $(module_map) is a var private to the cmi file rule (see .d files)
   $(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
-  $(call wondermake.inherit_unique,$1,mxx_flags_out_mode) \
   $(call wondermake.inherit_unique,$1,mxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
@@ -90,13 +89,13 @@ define wondermake.cbase.mxx_command # $1 = scope, $$1 = unsigned flags, $(module
   $(call wondermake.inherit_append,$1,cxx_flags) \
   $$1 \
   $(call wondermake.user_override,CXXFLAGS) \
+  $(call wondermake.inherit_unique,$1,mxx_flags_out_mode) \
   $$<
 endef
 
 # Command to compile a c++ source file to an object file
 define wondermake.cbase.cxx_command # $1 = scope, $$1 = unsigned flags, $(module_map) is a var private to the object file rule (see .d files)
   $(or $(call wondermake.user_override,CXX),$(call wondermake.inherit_unique,$1,cxx)) \
-  $(call wondermake.inherit_unique,$1,cxx_flags_out_mode) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,lang)]) \
   $(call wondermake.inherit_unique,$1,cxx_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,cxx_module_path_pattern),$(call wondermake.inherit_prepend,$1,module_path)) \
@@ -106,13 +105,13 @@ define wondermake.cbase.cxx_command # $1 = scope, $$1 = unsigned flags, $(module
   $(call wondermake.inherit_append,$1,cxx_flags) \
   $$1 \
   $(call wondermake.user_override,CXXFLAGS) \
+  $(call wondermake.inherit_unique,$1,cxx_flags_out_mode) \
   $$<
 endef
 
 # Command to link object files and produce an executable or shared library file
 define wondermake.cbase.ld_command # $1 = scope, $$1 = unsigned flags
   $(or $(call wondermake.user_override,LD),$(call wondermake.inherit_unique,$1,ld)) \
-  $(call wondermake.inherit_unique,$1,ld_flags_out_mode) \
   $(call wondermake.inherit_unique,$1,ld_flags[$(call wondermake.inherit_unique,$1,type)]) \
   $(call wondermake.inherit_append,$1,ld_flags) \
   $$1 \
@@ -122,7 +121,8 @@ define wondermake.cbase.ld_command # $1 = scope, $$1 = unsigned flags
   $(patsubst %,$(call wondermake.inherit_unique,$1,ld_lib_pattern),$(call wondermake.inherit_append,$1,libs)) \
   $(patsubst %,$(call wondermake.inherit_unique,$1,ld_framework_pattern),$(call wondermake.inherit_append,$1,frameworks)) \
   $(call wondermake.cbase.pkg_config_command,$1,--libs) \
-  $(call wondermake.user_override,LDLIBS)
+  $(call wondermake.user_override,LDLIBS) \
+  $(call wondermake.inherit_unique,$1,ld_flags_out_mode)
 endef
 
 # Command to collect object files into an archive
