@@ -6,11 +6,15 @@
 			module foo;
 			import :part; // imports foo:part
 		- header units:
-			import "header"
-			import <header>
-			$CXX -fmodules-ts -std=c++2a -I. --precompile -xc++-header string.hxx -fmodule-name=string -ostring.pcm
-			$CXX -fmodules-ts -std=c++2a -I. --precompile -xc++-header t.hxx -fmodule-name=t -ot.pcm -fmodule-file=string.pcm
-			$CXX -fmodules-ts -std=c++2a -I. -xc++ t.cxx -fmodule-file=string.pcm -fmodule-file=t.pcm -MD -MFt.cxx.d.mk
+			import "header";
+			import <header>;
+			rm -f *.d *.pcm *.o main
+			$CLANG -fmodules-ts -std=c++2a --precompile -xc++-header /usr/lib/gcc/x86_64-linux-gnu/5.4.0/../../../../include/c++/5.4.0/iostream -fmodule-name=iostream -oiostream.pcm -MD -MFiostream.d -MP
+			$CLANG -fmodules-ts -std=c++2a --precompile -xc++-module hello.mxx -ohello.pcm -MD -MFhello.mxx.d -MP
+			$CLANG -fmodules-ts -std=c++2a -c hello.pcm -ohello.pcm.o
+			$CLANG -fmodules-ts -std=c++2a -fmodule-file=hello.pcm -c -xc++ main.cxx -omain.o -MD -MFmain.cxx.d -MP
+			$CLANG -fmodules-ts -std=c++2a -fmodule-file=iostream.pcm -fmodule-file=hello.pcm -c -xc++ hello.cxx -ohello.cxx.o -MD -MFhello.cxx.d -MP
+			$CLANG hello.pcm.o hello.cxx.o main.o -omain
 
 *	-MJ to .new then cmp and mv to final if changed. clean += .new
 
@@ -41,6 +45,34 @@
 	cl -? => First line "XXX Version X.Y.Z for XXX"
 	In the end: 3 "kinds": gcc, msvc, posix (which prolly won't work)
 	See also g++/clang++ -print-prog-name=ld, g++/clang++ -Wl,--version
+
+*	no global var but rather hook in scope that holds the toolchain attribute
+
+*	GCC module-mapper
+	nc -lkU /tmp/socket
+	rm -f *.d *.o main gcm.cache -R
+
+	#-fno-note-include-translate no effect on INCLUDE query
+	#-fmodule-only => -oiostream.o ignored
+	$GCC -fmodule-mapper==/tmp/socket -fmodules-ts -std=c++2a -c -fmodule-header -fmodule-only -xc++ ~/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream -oiostream.o -MD -MFiostream.d -MP
+	HELLO 0 GCC /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
+	HELLO 0 wondermake gcm.cache
+	+EXPORT /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
+	-
+	OK iostreamx.gcm
+	INCLUDE /home/.no-ecryptfs/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/x86_64-pc-linux-gnu/bits/c++config.h
+	TEXT
+	INCLUDE ...
+	TEXT
+	INCLUDE ...
+	TEXT
+	INCLUDE ...
+	TEXT
+	INCLUDE ...
+	TEXT
+	INCLUDE ...
+	TEXT
+	DONE /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
 
 *	cross-compilation
 	#if defined __ELF__
