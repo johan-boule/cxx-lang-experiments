@@ -10,11 +10,11 @@
 			import <header>;
 			rm -f *.d *.pcm *.o main
 			$CLANG -fmodules-ts -std=c++2a --precompile -xc++-header /usr/lib/gcc/x86_64-linux-gnu/5.4.0/../../../../include/c++/5.4.0/iostream -fmodule-name=iostream -oiostream.pcm -MD -MFiostream.d -MP
-			$CLANG -fmodules-ts -std=c++2a --precompile -xc++-module hello.mxx -ohello.pcm -MD -MFhello.mxx.d -MP
-			$CLANG -fmodules-ts -std=c++2a -c hello.pcm -ohello.pcm.o
-			$CLANG -fmodules-ts -std=c++2a -fmodule-file=hello.pcm -c -xc++ main.cxx -omain.o -MD -MFmain.cxx.d -MP
-			$CLANG -fmodules-ts -std=c++2a -fmodule-file=iostream.pcm -fmodule-file=hello.pcm -c -xc++ hello.cxx -ohello.cxx.o -MD -MFhello.cxx.d -MP
-			$CLANG hello.pcm.o hello.cxx.o main.o -omain
+			$CLANG -fmodules-ts -std=c++2a --precompile -xc++-module hello.mxx -ohello.mxx.pcm -MD -MFhello.mxx.d -MP
+			$CLANG -fmodules-ts -std=c++2a -c hello.mxx.pcm -ohello.mxx.pcm.o
+			$CLANG -fmodules-ts -std=c++2a -fmodule-file=hello.mxx.pcm -c -xc++ main.cxx -omain.cxx.o -MD -MFmain.cxx.d -MP
+			$CLANG -fmodules-ts -std=c++2a -fmodule-file=iostream.pcm -fmodule-file=hello.mxx.pcm -c -xc++ hello.cxx -ohello.cxx.o -MD -MFhello.cxx.d -MP
+			$CLANG hello.mxx.pcm.o hello.cxx.o main.cxx.o -omain
 
 *	-MJ to .new then cmp and mv to final if changed. clean += .new
 
@@ -48,31 +48,56 @@
 
 *	no global var but rather hook in scope that holds the toolchain attribute
 
-*	GCC module-mapper
-	nc -lkU /tmp/socket
-	rm -f *.d *.o main gcm.cache -R
+*	-fdirectives-only
+*	-fpreprocessed
+*	-imacros
 
+*	GCC module-mapper
+	#nc -lkU /tmp/socket
+	#-fmodule-mapper==/tmp/socket
+	rm -f *.d *.o main gcm.cache -R
 	#-fno-note-include-translate no effect on INCLUDE query
 	#-fmodule-only => -oiostream.o ignored
-	$GCC -fmodule-mapper==/tmp/socket -fmodules-ts -std=c++2a -c -fmodule-header -fmodule-only -xc++ ~/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream -oiostream.o -MD -MFiostream.d -MP
+	$GCC_NATHAN -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -fmodule-header -fmodule-only -xc++ ~/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream -oiostream.o -MD -MFiostream.d -MP
 	HELLO 0 GCC /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
 	HELLO 0 wondermake gcm.cache
 	+EXPORT /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
 	-
 	OK iostreamx.gcm
-	INCLUDE /home/.no-ecryptfs/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/x86_64-pc-linux-gnu/bits/c++config.h
-	TEXT
-	INCLUDE ...
-	TEXT
-	INCLUDE ...
-	TEXT
-	INCLUDE ...
-	TEXT
-	INCLUDE ...
-	TEXT
 	INCLUDE ...
 	TEXT
 	DONE /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
+	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -fmodule-header -fmodule-only -xc++ ~/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream -oiostream.o -MD -MFiostream.d -MP
+	HELLO 0 GCC /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
+	HELLO 0 wondermake gcm.cache
+	INCLUDE ...
+	INCLUDE
+	+EXPORT /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
+	-
+	EXPORT iostream.gcm
+	DONE /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
+	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -xc++ hello.mxx -ohello.mxx.o -MD -MFhello.mxx.d -MP
+	HELLO 0 GCC hello.mxx
+	HELLO 0 wondermake gcm.cache
+	+EXPORT hello
+	-
+	EXPORT hello.gcm
+	DONE hello
+	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -xc++ main.cxx -omain.cxx.o -MD -MFmain.cxx.d -MP
+	HELLO 0 GCC main.cxx
+	HELLO 0 wondermake gcm.cache
+	+IMPORT hello
+	-
+	IMPORT hello.gcm
+	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -xc++ hello.cxx -ohello.cxx.o -MD -MFhello.cxx.d -MP
+	HELLO 0 GCC hello.cxx
+	HELLO 0 wondermake gcm.cache
+	IMPORT <iostream> /home/.no-ecryptfs/bohan/devel/gcc.git/++install/include/c++/10.0.0/iostream
+	IMPORT iostream.gcm
+	+IMPORT hello
+	-
+	IMPORT hello.gcm
+	$GCC_BORIS hello.mxx.o hello.cxx.o main.cxx.o -omain
 
 *	cross-compilation
 	#if defined __ELF__
