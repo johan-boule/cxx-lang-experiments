@@ -67,15 +67,15 @@
 	INCLUDE ...
 	TEXT
 	DONE /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
-	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -fmodule-header -fmodule-only -xc++ ~/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream -oiostream.o -MD -MFiostream.d -MP
+	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -fmodule-header -fmodule-only -xc++ ~/devel/gcc.git/++install/include/c++/10.0.0/iostream -oiostream.o -MD -MFiostream.d -MP
 	HELLO 0 GCC /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
 	HELLO 0 wondermake gcm.cache
 	INCLUDE ...
 	INCLUDE
-	+EXPORT /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
+	+EXPORT /home/bohan/devel/gcc.git/++install/include/c++/10.0.0/iostream
 	-
 	EXPORT iostream.gcm
-	DONE /home/bohan/devel/gcc/branches/c++-modules/++install/include/c++/10.0.0/iostream
+	DONE /home/bohan/devel/gcc.git/++install/include/c++/10.0.0/iostream
 	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -xc++ hello.mxx -ohello.mxx.o -MD -MFhello.mxx.d -MP
 	HELLO 0 GCC hello.mxx
 	HELLO 0 wondermake gcm.cache
