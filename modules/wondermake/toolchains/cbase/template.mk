@@ -308,6 +308,7 @@ endef
 # Define the template rules with recipes that have the temporary loop variables evaluated
 
 define wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx
+  # When cleaning, imports is not set, so include is not rebuilt.
   $(foreach import,$($(wondermake.template.scope).imports),
     $(if $(wondermake.cbase.module_map[$(import)].cmi_file),,
       $(if $(wondermake.cbase.module_map[$(import)].seen),,
