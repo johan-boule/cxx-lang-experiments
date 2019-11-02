@@ -23,7 +23,8 @@
 		leaves implicit mxx derivations.
 		This is because we don't include $(wondermake.template.mxx_d_files) $(wondermake.template.cxx_d_files),
 		which means $(wondermake.template.scope).imports is not set,
-		which means wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx does not loop and set wondermake.clean
+		which means wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx does not loop,
+		and so doesn't set wondermake.clean for .mk files and wondermake.template.implicit_mxx_d_files for the rest.
 	bug2)
 		when previous build succeeded and current one fails before the last make restarts,
 		it removes yet-to-be-discovered previous derived files.
