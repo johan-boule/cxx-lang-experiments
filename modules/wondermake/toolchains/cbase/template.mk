@@ -282,6 +282,7 @@ endef
 
 define wondermake.cbase.template.recursive_include
   $(eval $(wondermake.cbase.template.rules_with_evaluated_recipes.implicit_mxx))
+  # The includes append to the scope's implicit_mxx_files.
   wondermake.template.new_implicit_mxx_files := $($(wondermake.template.scope).implicit_mxx_files)
   wondermake.template.new_implicit_mxx_files := $(sort $(wondermake.template.new_implicit_mxx_files))
   wondermake.template.new_implicit_mxx_files := $(filter-out $(wondermake.template.mxx_files) $(wondermake.template.implicit_mxx_files),$(wondermake.template.new_implicit_mxx_files))
