@@ -38,8 +38,9 @@
 	note: to list clang's supported names, use clang++ -xc++ -std= -
 
 *	detect compiler
-	c++/cc/g++/gcc/clang++/clang -dumpversion (note: clang => fake old gcc version)
+	c++/cc/g++/gcc/clang++/clang -dumpversion (note: clang => used to fake old gcc version, but changed since version 9, same for GNUC macro)
 	cl -? => First line "XXX Version X.Y.Z for XXX"
+	clang-cl
 	In the end: 3 "kinds": gcc, msvc, posix (which prolly won't work)
 	See also g++/clang++ -print-prog-name=ld, g++/clang++ -Wl,--version
 
@@ -76,6 +77,8 @@
 	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -xc++ hello.mxx -ohello.mxx.o -MD -MFhello.mxx.d -MP
 	HELLO 0 GCC hello.mxx
 	HELLO 0 wondermake gcm.cache
+	INCLUDE 'stdc-predef.h' /usr/include/stdc-predef.h
+	INCLUDE
 	+EXPORT hello
 	-
 	EXPORT hello.gcm
@@ -83,12 +86,16 @@
 	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -xc++ main.cxx -omain.cxx.o -MD -MFmain.cxx.d -MP
 	HELLO 0 GCC main.cxx
 	HELLO 0 wondermake gcm.cache
+	INCLUDE 'stdc-predef.h' /usr/include/stdc-predef.h
+	INCLUDE
 	+IMPORT hello
 	-
 	IMPORT hello.gcm
 	$GCC_BORIS -fmodule-mapper='<>' -fmodules-ts -std=c++2a -c -xc++ hello.cxx -ohello.cxx.o -MD -MFhello.cxx.d -MP
 	HELLO 0 GCC hello.cxx
 	HELLO 0 wondermake gcm.cache
+	INCLUDE 'stdc-predef.h' /usr/include/stdc-predef.h
+	INCLUDE
 	IMPORT <iostream> /home/.no-ecryptfs/bohan/devel/gcc.git/++install/include/c++/10.0.0/iostream
 	IMPORT iostream.gcm
 	+IMPORT hello
