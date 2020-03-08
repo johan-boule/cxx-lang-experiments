@@ -2,7 +2,7 @@ with import <nixpkgs> {};
 derivation {
 	name = "cxx-lang-experiments-modules";
 	src = ./.;
-	clang = clang_9;
+	clang = clang_10;
 	inherit gnumake coreutils findutils gnused patchelf;
 	binutils = binutils-unwrapped;
 	pkg_config = pkg-config;
